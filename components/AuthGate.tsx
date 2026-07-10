@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { useAppData } from "@/lib/store";
 import { LogoMark } from "@/components/Logo";
@@ -13,6 +13,7 @@ const PUBLIC_PATHS = ["/impressum", "/datenschutz", "/agb", "/passwort-zurueckse
 
 function AuthForm() {
   const { reload } = useAppData();
+  const router = useRouter();
   const [mode, setMode] = useState<"login" | "register" | "reset">("login");
   const [firma, setFirma] = useState("");
   const [vorname, setVorname] = useState("");
@@ -29,6 +30,7 @@ function AuthForm() {
     setError(null);
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) setError(error.message);
+    else router.push("/");
     setLoading(false);
   }
 
@@ -78,6 +80,7 @@ function AuthForm() {
     }
 
     await reload();
+    router.push("/");
     setLoading(false);
   }
 
