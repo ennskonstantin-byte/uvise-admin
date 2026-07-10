@@ -188,12 +188,14 @@ export default function MitarbeiterPage() {
                       </div>
                     )}
                     <div className="flex-1 min-w-0">
-                      <p className="font-medium truncate">
-                        {e.vorname} {e.nachname}
-                      </p>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <p className="font-medium truncate">
+                          {e.vorname} {e.nachname}
+                        </p>
+                        <QualiIcons icons={e.qualifikationsIcons} />
+                      </div>
                       <p className="text-xs text-foreground/50">{e.personalnummer}</p>
                     </div>
-                    <QualiIcons icons={e.qualifikationsIcons} />
                     <Link
                       href={`/mitarbeiter/${e.id}`}
                       className="text-sm rounded-full border border-border px-3 py-1.5 hover:border-foreground/30"
