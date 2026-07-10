@@ -3,24 +3,88 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  --surface: #f4f4f5;
+  --border: #e4e4e7;
+  --page-bg: #f3f2f8;
+
+  --accent-violet: #7c5cfc;
+  --accent-blue: #3b82f6;
+  --accent-cyan: #22d3ee;
+  --accent-gradient: linear-gradient(
+    90deg,
+    var(--accent-violet),
+    var(--accent-blue),
+    var(--accent-cyan)
+  );
+
+  --ampel-red: #ef4444;
+  --ampel-green: #22c55e;
+
+  --sidebar-from: #1c1130;
+  --sidebar-to: #0a0a0f;
+}
+
+:root.dark {
+  --background: #0b0b0d;
+  --foreground: #ededed;
+  --surface: #17171a;
+  --border: #2a2a2e;
+  --page-bg: #131316;
+}
+
+/* Dark Mode automatisch nach Systemeinstellung (außer explizit hell erzwungen) */
+@media (prefers-color-scheme: dark) {
+  :root:not(.light) {
+    --background: #0b0b0d;
+    --foreground: #ededed;
+    --surface: #17171a;
+    --border: #2a2a2e;
+    --page-bg: #131316;
+  }
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+  --color-surface: var(--surface);
+  --color-border: var(--border);
+  --color-page-bg: var(--page-bg);
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --color-accent-violet: var(--accent-violet);
+  --color-accent-blue: var(--accent-blue);
+  --color-accent-cyan: var(--accent-cyan);
+
+  --color-ampel-red: var(--ampel-red);
+  --color-ampel-green: var(--ampel-green);
+
+  --color-sidebar-from: var(--sidebar-from);
+  --color-sidebar-to: var(--sidebar-to);
+
+  --font-display: var(--font-display);
+  --font-body: var(--font-body);
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-body), system-ui, sans-serif;
+}
+
+/* Barrierefreiheit: deutlich sichtbarer Fokus-Ring bei Tastatur-Bedienung */
+:focus-visible {
+  outline: 3px solid var(--accent-blue);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+/* Barrierefreiheit: Animationen reduzieren, wenn das System es wünscht */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+h1, h2, h3, h4 {
+  font-family: var(--font-display), serif;
 }

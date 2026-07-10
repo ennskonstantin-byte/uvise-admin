@@ -1,65 +1,178 @@
-import Image from "next/image";
+"use client";
 
-export default function Home() {
+import { useMemo, useState } from "react";
+import Link from "next/link";
+import { Search, UserPlus, FilePlus2 } from "lucide-react";
+import { DashboardShell } from "@/components/DashboardShell";
+import { PageHeader } from "@/components/PageHeader";
+import { Card } from "@/components/Card";
+import { EmployeeCard } from "@/components/EmployeeCard";
+import { NewEmployeeWizard } from "@/components/NewEmployeeWizard";
+import { NewTrainingWizard } from "@/components/NewTrainingWizard";
+import { useAppData } from "@/lib/store";
+
+export default function DashboardPage() {
+  const { employees, categories, company, qualifications, trainings } = useAppData();
+  const empName = (id: string) => {
+    const e = employees.find((x) => x.id === id);
+    return e ? `${e.vorname} ${e.nachname}` : "";
+  };
+  const reminders = [
+    ...qualifications
+      .filter((q) => q.status === "laeuft_ab" || q.status === "abgelaufen")
+      .map((q) => ({
+        key: "q" + q.id,
+        text: `${q.name} — ${empName(q.employeeId)}`,
+        sub: q.status === "abgelaufen" ? `abgelaufen (${q.ablaufdatum})` : `läuft ab: ${q.ablaufdatum}`,
+        overdue: q.status === "abgelaufen",
+      })),
+    ...trainings
+      .filter((t) => t.status === "laeuft_ab")
+      .map((t) => ({
+        key: "t" + t.id,
+        text: `${t.name} (Unterweisung)`,
+        sub: "Jährliche Kontrolle: noch aktuell? / läuft ab",
+        overdue: false,
+      })),
+    ...employees
+      .filter((e) => !e.archiviert && e.minderjaehrig)
+      .map((e) => ({
+        key: "m" + e.id,
+        text: `${e.vorname} ${e.nachname} — minderjährig`,
+        sub: "Unterweisung 2× jährlich (halbjährlich) erforderlich",
+        overdue: false,
+      })),
+  ];
+  const TABS = ["Alle", ...categories.map((c) => c.name)];
+  const [category, setCategory] = useState("Alle");
+  const [query, setQuery] = useState("");
+  const [showEmployeeWizard, setShowEmployeeWizard] = useState(false);
+  const [showTrainingWizard, setShowTrainingWizard] = useState(false);
+
+  const filtered = useMemo(() => {
+    return employees.filter((e) => {
+      if (e.archiviert) return false;
+      const matchesCategory = category === "Alle" || e.kategorie === category;
+      const matchesQuery = `${e.vorname} ${e.nachname}`
+        .toLowerCase()
+        .includes(query.toLowerCase());
+      return matchesCategory && matchesQuery;
+    });
+  }, [employees, category, query]);
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+    <DashboardShell>
+      <div
+        className="rounded-2xl px-5 py-3 mb-6 flex items-center justify-between text-sm text-white"
+        style={{ background: "var(--accent-gradient)" }}
+      >
+        <span>Testphase: noch 4 Tage kostenlos.</span>
+        <Link
+          href="/einstellungen"
+          className="rounded-full bg-white/20 px-4 py-1.5 font-medium hover:bg-white/30 transition-colors"
+        >
+          Abo wählen
+        </Link>
+      </div>
+
+      {reminders.length > 0 && (
+        <div className="mb-6 rounded-2xl border border-amber-300/60 bg-amber-50 px-5 py-4">
+          <p className="text-sm font-semibold text-amber-900 mb-2">
+            🔔 {reminders.length} Erinnerung(en) — läuft bald ab
+          </p>
+          <ul className="space-y-1">
+            {reminders.slice(0, 6).map((r) => (
+              <li key={r.key} className="flex items-center gap-2 text-sm text-foreground/80">
+                <span className={`h-2 w-2 rounded-full ${r.overdue ? "bg-red-500" : "bg-amber-500"}`} />
+                <span className="font-medium">{r.text}</span>
+                <span className="text-foreground/50">· {r.sub}</span>
+              </li>
+            ))}
+          </ul>
+          <p className="text-xs text-amber-800/80 mt-2 italic">
+            Automatische E-Mail an Chef & Mitarbeiter (1 Monat vorher) wird aktiv, sobald Resend eingerichtet ist.
           </p>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
+      )}
+
+      <PageHeader
+        title="Dashboard"
+        subtitle={`2026 · ${company?.name ?? ""}`}
+        action={
+          <div className="flex flex-wrap gap-3">
+            <button
+              onClick={() => setShowEmployeeWizard(true)}
+              className="flex items-center gap-2 rounded-full px-5 py-2.5 text-sm font-medium text-white"
+              style={{ background: "var(--accent-gradient)" }}
+            >
+              <UserPlus size={16} />
+              Mitarbeiter einladen
+            </button>
+            <button
+              onClick={() => setShowTrainingWizard(true)}
+              className="flex items-center gap-2 rounded-full px-5 py-2.5 text-sm font-medium border border-border bg-background"
+            >
+              <FilePlus2 size={16} />
+              Unterweisung erstellen
+            </button>
+          </div>
+        }
+      />
+
+      <Card>
+        <div className="flex flex-wrap items-center gap-4 mb-6">
+          <div className="flex flex-wrap gap-2">
+            {TABS.map((c) => (
+              <button
+                key={c}
+                onClick={() => setCategory(c)}
+                className={`rounded-full px-4 py-2 text-sm transition-colors ${
+                  category === c
+                    ? "text-white"
+                    : "border border-border text-foreground/70 hover:border-foreground/30"
+                }`}
+                style={
+                  category === c ? { background: "var(--accent-gradient)" } : undefined
+                }
+              >
+                {c}
+              </button>
+            ))}
+          </div>
+
+          <div className="relative ml-auto w-64">
+            <Search
+              size={16}
+              className="absolute left-3.5 top-1/2 -translate-y-1/2 text-foreground/40"
             />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+            <input
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Name oder MA-Nummer"
+              className="w-full rounded-full border border-border bg-surface pl-9 pr-4 py-2 text-sm outline-none focus:border-foreground/30"
+            />
+          </div>
         </div>
-      </main>
-    </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {filtered.map((employee) => (
+            <EmployeeCard key={employee.id} employee={employee} />
+          ))}
+        </div>
+
+        {filtered.length === 0 && (
+          <p className="text-foreground/50 text-sm mt-10 text-center">
+            Keine Mitarbeiter gefunden.
+          </p>
+        )}
+      </Card>
+
+      {showEmployeeWizard && (
+        <NewEmployeeWizard onClose={() => setShowEmployeeWizard(false)} />
+      )}
+      {showTrainingWizard && (
+        <NewTrainingWizard onClose={() => setShowTrainingWizard(false)} />
+      )}
+    </DashboardShell>
   );
 }
