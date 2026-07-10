@@ -104,7 +104,9 @@ export function Sidebar() {
       </nav>
 
       <div className="flex items-center justify-between mx-3 mb-2 px-4 py-2.5 text-sm text-white/70">
-        <span className="flex items-center gap-2">{dark ? "🌙" : "☀️"} Dunkles Design</span>
+        <span className="flex items-center gap-2">
+          {dark ? "🌙 Dunkles Design" : "☀️ Helles Design"}
+        </span>
         <Switch checked={dark} onChange={toggleTheme} label="Dunkles Design umschalten" inactiveColor="rgba(255,255,255,0.25)" />
       </div>
 
