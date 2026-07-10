@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useAppData } from "@/lib/store";
 import { QUALIFICATION_PRESETS } from "@/lib/mockData";
+import { DateSelect } from "@/components/DateSelect";
 
 export function NewQualificationModal({ onClose }: { onClose: () => void }) {
   const { employees, addQualification } = useAppData();
@@ -88,12 +89,7 @@ export function NewQualificationModal({ onClose }: { onClose: () => void }) {
 
           <div>
             <p className="text-xs text-foreground/50 mb-1">Ablaufdatum (optional)</p>
-            <input
-              type="date"
-              value={ablaufdatum}
-              onChange={(e) => setAblaufdatum(e.target.value)}
-              className="w-full rounded-full border border-border bg-surface px-4 py-2.5 text-sm outline-none"
-            />
+            <DateSelect value={ablaufdatum} onChange={setAblaufdatum} minYear={2024} maxYear={2045} />
           </div>
         </div>
 

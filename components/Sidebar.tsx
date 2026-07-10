@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -14,6 +15,7 @@ import {
 } from "lucide-react";
 import { useAppData } from "@/lib/store";
 import { LogoMark } from "@/components/Logo";
+import { Switch } from "@/components/Switch";
 
 const NAV_ITEMS = [
   { label: "Dashboard", href: "/", icon: LayoutDashboard },
@@ -30,6 +32,19 @@ export function Sidebar() {
   const { questions, company, signOut } = useAppData();
   const openQuestions = questions.filter((q) => q.status === "offen").length;
   const companyName = company?.name ?? "SicherAkte";
+
+  const [dark, setDark] = useState(false);
+  useEffect(() => {
+    setDark(document.documentElement.classList.contains("dark"));
+  }, []);
+
+  function toggleTheme(nextDark: boolean) {
+    setDark(nextDark);
+    const mode = nextDark ? "dark" : "light";
+    document.documentElement.classList.remove("light", "dark");
+    document.documentElement.classList.add(mode);
+    localStorage.setItem("uvise-theme", mode);
+  }
 
   return (
     <aside
@@ -87,6 +102,11 @@ export function Sidebar() {
           );
         })}
       </nav>
+
+      <div className="flex items-center justify-between mx-3 mb-2 px-4 py-2.5 text-sm text-white/70">
+        <span className="flex items-center gap-2">{dark ? "🌙" : "☀️"} Dunkles Design</span>
+        <Switch checked={dark} onChange={toggleTheme} label="Dunkles Design umschalten" inactiveColor="rgba(255,255,255,0.25)" />
+      </div>
 
       <button
         onClick={() => signOut()}

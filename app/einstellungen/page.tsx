@@ -8,27 +8,7 @@ import { Card } from "@/components/Card";
 import { useToast } from "@/components/Toast";
 import { useAppData } from "@/lib/store";
 import { SUPPORT_EMAIL } from "@/lib/legal";
-
-const PLANS = [
-  {
-    name: "Starter",
-    preis: "19",
-    limit: "bis 5 Mitarbeiter",
-    features: ["Unterweisungen & Fristen", "Ampelsystem & Badges", "E-Mail-Erinnerungen"],
-  },
-  {
-    name: "Team",
-    preis: "29",
-    limit: "bis 15 Mitarbeiter",
-    features: ["Alles aus Starter", "Bundle-Vorlagen", "App-Push-Erinnerungen"],
-  },
-  {
-    name: "Betrieb",
-    preis: "49",
-    limit: "bis 30 Mitarbeiter",
-    features: ["Alles aus Team", "Priorisierter Support", "Erweitertes Archiv"],
-  },
-];
+import { PLANS } from "@/lib/mockData";
 
 export default function EinstellungenPage() {
   const { company, session, updateCompany, uploadCompanyLogo } = useAppData();
@@ -40,7 +20,6 @@ export default function EinstellungenPage() {
   const [selectedPlan, setSelectedPlan] = useState("Team");
   const [saving, setSaving] = useState(false);
   const [uploadingLogo, setUploadingLogo] = useState(false);
-  const [dark, setDark] = useState(false);
   const [sendingTestMail, setSendingTestMail] = useState(false);
 
   async function sendTestMail() {
@@ -60,18 +39,6 @@ export default function EinstellungenPage() {
     } finally {
       setSendingTestMail(false);
     }
-  }
-
-  useEffect(() => {
-    // Aktuelle Darstellung ermitteln (gespeicherte Wahl oder Systemeinstellung)
-    setDark(document.documentElement.classList.contains("dark"));
-  }, []);
-
-  function applyTheme(mode: "light" | "dark") {
-    setDark(mode === "dark");
-    document.documentElement.classList.remove("light", "dark");
-    document.documentElement.classList.add(mode);
-    localStorage.setItem("uvise-theme", mode);
   }
 
   async function handleLogo(e: React.ChangeEvent<HTMLInputElement>) {
@@ -200,38 +167,6 @@ export default function EinstellungenPage() {
             >
               {saving ? "Speichert…" : "Speichern"}
             </button>
-          </Card>
-        </section>
-
-        <section>
-          <h2 className="font-medium">Darstellung</h2>
-          <p className="text-foreground/60 text-sm mb-4">
-            Wähle helles oder dunkles Design.
-          </p>
-          <Card className="max-w-lg">
-            <div className="flex gap-2">
-              {(
-                [
-                  { key: "light", label: "☀️ Hell" },
-                  { key: "dark", label: "🌙 Dunkel" },
-                ] as const
-              ).map((opt) => {
-                const active = dark === (opt.key === "dark");
-                return (
-                  <button
-                    key={opt.key}
-                    onClick={() => applyTheme(opt.key)}
-                    aria-pressed={active}
-                    className={`rounded-full px-5 py-2.5 text-sm ${
-                      active ? "text-white" : "border border-border text-foreground/70"
-                    }`}
-                    style={active ? { background: "var(--accent-gradient)" } : undefined}
-                  >
-                    {opt.label}
-                  </button>
-                );
-              })}
-            </div>
           </Card>
         </section>
 

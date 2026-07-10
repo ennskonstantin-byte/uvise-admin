@@ -2,8 +2,9 @@
 
 import { useState } from "react";
 import { WizardShell } from "@/components/WizardShell";
-import { CATEGORY_ICON_OPTIONS, istMinderjaehrig as isMinderjaehrig } from "@/lib/mockData";
+import { CATEGORY_ICON_OPTIONS, QUALIFICATION_PRESETS, istMinderjaehrig as isMinderjaehrig } from "@/lib/mockData";
 import { useAppData } from "@/lib/store";
+import { DateSelect } from "@/components/DateSelect";
 
 const STEP_LABELS = [
   "Persönliche Daten",
@@ -14,11 +15,17 @@ const STEP_LABELS = [
   "Zusammenfassung",
 ];
 
-const QUALIFICATION_OPTIONS = ["Ersthelfer", "Sonstiges…", "Brandschutzhelfer", "Staplerschein"];
-
 export function NewEmployeeWizard({ onClose }: { onClose: () => void }) {
-  const { trainings, bundles, categories, addEmployee, addCategory, assignTraining, addQualification } =
-    useAppData();
+  const {
+    trainings,
+    bundles,
+    categories,
+    addEmployee,
+    addCategory,
+    assignTraining,
+    addQualification,
+    uploadEmployeePhoto,
+  } = useAppData();
   const [step, setStep] = useState(0);
   const [vorname, setVorname] = useState("");
   const [nachname, setNachname] = useState("");
@@ -37,7 +44,17 @@ export function NewEmployeeWizard({ onClose }: { onClose: () => void }) {
   const [selectedTrainings, setSelectedTrainings] = useState<string[]>([]);
   const [selectedQualifications, setSelectedQualifications] = useState<string[]>([]);
   const [qualificationDates, setQualificationDates] = useState<Record<string, string>>({});
+  const [customQualification, setCustomQualification] = useState("");
+  const [photoFile, setPhotoFile] = useState<File | null>(null);
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const [done, setDone] = useState(false);
+
+  function handlePhotoPick(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setPhotoFile(file);
+    setPhotoPreview(URL.createObjectURL(file));
+  }
 
   const canProceedStep0 = vorname.trim() !== "" && nachname.trim() !== "";
   const canProceedStep2 = kategorie !== null;
@@ -102,6 +119,15 @@ export function NewEmployeeWizard({ onClose }: { onClose: () => void }) {
           name: qualificationName,
           ablaufdatum: qualificationDates[qualificationName] || null,
         });
+      }
+
+      if (photoFile) {
+        try {
+          await uploadEmployeePhoto(employee.id, photoFile);
+        } catch {
+          // Mitarbeiter ist trotzdem angelegt — Foto kann später über
+          // "Bearbeiten" nachgetragen werden, kein Abbruch nötig.
+        }
       }
 
       setDone(true);
@@ -188,15 +214,12 @@ export function NewEmployeeWizard({ onClose }: { onClose: () => void }) {
             placeholder="Nachname"
             className="w-full rounded-full border border-border bg-surface px-4 py-2.5 text-sm outline-none focus:border-foreground/30"
           />
-          <input
-            type="date"
-            value={geburtsdatum}
-            onChange={(e) => setGeburtsdatum(e.target.value)}
-            min="1940-01-01"
-            max="2015-12-31"
-            title="Geburtsdatum (für minderjährige Mitarbeiter)"
-            className="w-full rounded-full border border-border bg-surface px-4 py-2.5 text-sm outline-none focus:border-foreground/30"
-          />
+          <div>
+            <span className="text-xs text-foreground/50 mb-1 block">
+              Geburtsdatum (für minderjährige Mitarbeiter)
+            </span>
+            <DateSelect value={geburtsdatum} onChange={setGeburtsdatum} minYear={1940} maxYear={2015} />
+          </div>
           {geburtsdatum && isMinderjaehrig(geburtsdatum) && (
             <p className="text-xs text-amber-600">
               ⚠️ Minderjährig — Unterweisungen 2× jährlich (halbjährlich) erforderlich.
@@ -228,17 +251,30 @@ export function NewEmployeeWizard({ onClose }: { onClose: () => void }) {
       {step === 1 && (
         <div className="flex flex-col items-center py-6">
           <div className="relative">
-            <div className="h-28 w-28 rounded-full bg-surface border border-border flex items-center justify-center text-foreground/30 text-sm">
-              Foto
-            </div>
-            <button
-              className="absolute bottom-0 right-0 h-8 w-8 rounded-full text-white flex items-center justify-center text-lg"
+            {photoPreview ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={photoPreview}
+                alt="Vorschau"
+                className="h-28 w-28 rounded-full object-cover border border-border"
+              />
+            ) : (
+              <div className="h-28 w-28 rounded-full bg-surface border border-border flex items-center justify-center text-foreground/30 text-sm">
+                Foto
+              </div>
+            )}
+            <label
+              className="absolute bottom-0 right-0 h-8 w-8 rounded-full text-white flex items-center justify-center text-lg cursor-pointer"
               style={{ background: "var(--accent-gradient)" }}
+              aria-label="Foto auswählen"
             >
               +
-            </button>
+              <input type="file" accept="image/*" className="hidden" onChange={handlePhotoPick} />
+            </label>
           </div>
-          <p className="text-xs text-foreground/50 mt-4">Optional — kann später geändert werden</p>
+          <p className="text-xs text-foreground/50 mt-4">
+            {photoFile ? "Wird beim Anlegen hochgeladen" : "Optional — kann später geändert werden"}
+          </p>
         </div>
       )}
 
@@ -388,31 +424,94 @@ export function NewEmployeeWizard({ onClose }: { onClose: () => void }) {
       )}
 
       {step === 4 && (
-        <div className="space-y-2">
-          {QUALIFICATION_OPTIONS.map((q) => (
-            <div key={q} className="flex items-center gap-3 text-sm">
-              <label className="flex items-center gap-2 flex-1">
-                <input
-                  type="checkbox"
-                  checked={selectedQualifications.includes(q)}
-                  onChange={() => toggleQualification(q)}
-                />
-                {q}
-              </label>
-              {selectedQualifications.includes(q) && (
-                <input
-                  type="date"
-                  min="1990-01-01"
-                  max="2026-12-31"
-                  value={qualificationDates[q] ?? ""}
-                  onChange={(e) =>
-                    setQualificationDates((prev) => ({ ...prev, [q]: e.target.value }))
-                  }
-                  className="rounded-full border border-border bg-surface px-3 py-1 text-xs outline-none"
-                />
-              )}
+        <div>
+          <div className="mb-4">
+            <div className="flex gap-2 mb-2">
+              <input
+                value={customQualification}
+                onChange={(e) => setCustomQualification(e.target.value)}
+                placeholder="Eigene Qualifikation frei eingeben…"
+                className="flex-1 rounded-full border border-border bg-surface px-4 py-2.5 text-sm outline-none focus:border-foreground/30"
+              />
+              <button
+                type="button"
+                onClick={() => {
+                  const name = customQualification.trim();
+                  if (!name || selectedQualifications.includes(name)) return;
+                  setSelectedQualifications((prev) => [...prev, name]);
+                  setCustomQualification("");
+                }}
+                disabled={customQualification.trim() === ""}
+                className="rounded-full px-4 py-2.5 text-sm font-medium text-white disabled:opacity-40 shrink-0"
+                style={{ background: "var(--accent-gradient)" }}
+              >
+                + Hinzufügen
+              </button>
             </div>
-          ))}
+            <p className="text-[11px] text-foreground/40">oder aus 20 gängigen wählen:</p>
+          </div>
+
+          <div className="flex flex-wrap gap-2 max-h-40 overflow-y-auto mb-4 pr-1">
+            {QUALIFICATION_PRESETS.map((preset) => (
+              <button
+                key={preset.name}
+                type="button"
+                onClick={() => toggleQualification(preset.name)}
+                className={`rounded-full px-3 py-1.5 text-xs ${
+                  selectedQualifications.includes(preset.name)
+                    ? "text-white"
+                    : "border border-border text-foreground/70"
+                }`}
+                style={
+                  selectedQualifications.includes(preset.name)
+                    ? { background: "var(--accent-gradient)" }
+                    : undefined
+                }
+              >
+                <span className="text-sm">{preset.icon}</span> {preset.name}
+              </button>
+            ))}
+          </div>
+
+          {selectedQualifications.length > 0 && (
+            <div className="space-y-3 border-t border-border pt-4">
+              {selectedQualifications.map((q) => {
+                const preset = QUALIFICATION_PRESETS.find((p) => p.name === q);
+                return (
+                  <div key={q} className="flex items-center gap-3">
+                    <span className="text-sm flex-1 flex items-center gap-2">
+                      <span className="text-base">{preset?.icon ?? "📋"}</span>
+                      {q}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => toggleQualification(q)}
+                      className="text-xs text-foreground/40 hover:text-red-500"
+                      aria-label={`${q} entfernen`}
+                    >
+                      Entfernen
+                    </button>
+                  </div>
+                );
+              })}
+              <div className="pt-1">
+                <p className="text-xs text-foreground/50 mb-2">Ablaufdatum je Qualifikation (optional)</p>
+                <div className="space-y-2">
+                  {selectedQualifications.map((q) => (
+                    <div key={q} className="flex items-center gap-2">
+                      <span className="text-xs text-foreground/60 w-32 truncate shrink-0">{q}</span>
+                      <DateSelect
+                        value={qualificationDates[q] ?? ""}
+                        onChange={(v) => setQualificationDates((prev) => ({ ...prev, [q]: v }))}
+                        minYear={2024}
+                        maxYear={2045}
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       )}
 

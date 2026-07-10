@@ -366,6 +366,27 @@ export function qualIcon(name: string): string {
   return QUALIFICATION_PRESETS.find((q) => q.name === name)?.icon ?? "📋";
 }
 
+export const PLANS = [
+  {
+    name: "Starter",
+    preis: "19",
+    limit: "bis 5 Mitarbeiter",
+    features: ["Unterweisungen & Fristen", "Ampelsystem & Badges", "E-Mail-Erinnerungen"],
+  },
+  {
+    name: "Team",
+    preis: "29",
+    limit: "bis 15 Mitarbeiter",
+    features: ["Alles aus Starter", "Bundle-Vorlagen", "App-Push-Erinnerungen"],
+  },
+  {
+    name: "Betrieb",
+    preis: "49",
+    limit: "bis 30 Mitarbeiter",
+    features: ["Alles aus Team", "Priorisierter Support", "Erweitertes Archiv"],
+  },
+];
+
 // true wenn unter 18 (dann Unterweisung 2× jährlich)
 export function istMinderjaehrig(geburtsdatum: string | null): boolean {
   if (!geburtsdatum) return false;

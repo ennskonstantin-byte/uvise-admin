@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { initials, CATEGORY_ICON_OPTIONS, istMinderjaehrig as isMinderjaehrig, type Employee } from "@/lib/mockData";
 import { useAppData } from "@/lib/store";
+import { Switch } from "@/components/Switch";
+import { DateSelect } from "@/components/DateSelect";
 
 export function EditEmployeeModal({
   employee,
@@ -161,12 +163,7 @@ export function EditEmployeeModal({
             <span className="text-xs text-foreground/50 mb-1 block">
               Geburtsdatum (für minderjährige Mitarbeiter)
             </span>
-            <input
-              value={geburtsdatum}
-              onChange={(e) => setGeburtsdatum(e.target.value)}
-              type="date"
-              className="w-full rounded-full border border-border bg-surface px-4 py-2.5 text-sm outline-none"
-            />
+            <DateSelect value={geburtsdatum} onChange={setGeburtsdatum} minYear={1940} maxYear={2015} />
             {geburtsdatum && isMinderjaehrig(geburtsdatum) && (
               <p className="text-xs text-amber-600 mt-1">
                 ⚠️ Minderjährig — Unterweisungen 2× jährlich erforderlich.
@@ -243,16 +240,32 @@ export function EditEmployeeModal({
             )}
           </div>
 
-          <label className="flex items-center gap-3 pt-2 cursor-pointer">
-            <input
-              type="checkbox"
+          <div
+            className={`flex items-center justify-between gap-3 mt-2 rounded-2xl border p-4 ${
+              istBeauftragter ? "border-green-400 bg-green-500/10" : "border-border"
+            }`}
+          >
+            <div>
+              <p className="text-sm font-medium">Beauftragte/r</p>
+              <p className="text-xs text-foreground/50 mt-0.5">
+                Darf alle Mitarbeiter der Firma einsehen und verwalten (Chef-Zugriff)
+              </p>
+            </div>
+            <Switch
               checked={istBeauftragter}
-              onChange={(e) => setIstBeauftragter(e.target.checked)}
+              activeColor="#22c55e"
+              label="Beauftragte/r — Chef-Zugriff"
+              onChange={(next) => {
+                if (next) {
+                  const ok = window.confirm(
+                    `${vorname} ${nachname} als Beauftragte/n markieren? Diese Person kann dann ALLE Mitarbeiter der Firma einsehen und verwalten — auch Gehaltssensibles wie Qualifikationen und Kontaktdaten.`
+                  );
+                  if (!ok) return;
+                }
+                setIstBeauftragter(next);
+              }}
             />
-            <span className="text-sm">
-              Beauftragte/r — darf alle Kollegen sehen (schreibgeschützt)
-            </span>
-          </label>
+          </div>
         </div>
 
         <button
