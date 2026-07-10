@@ -198,7 +198,7 @@ export default function MitarbeiterPage() {
                     </div>
                     <Link
                       href={`/mitarbeiter/${e.id}`}
-                      className="text-sm rounded-full border border-border px-3 py-1.5 hover:border-foreground/30"
+                      className="btn-feedback text-sm rounded-full border border-border px-3 py-1.5 hover:border-foreground/30"
                     >
                       Details
                     </Link>

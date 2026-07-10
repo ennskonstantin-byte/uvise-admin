@@ -9,7 +9,7 @@ export function EmployeeCard({ employee }: { employee: Employee }) {
   return (
     <Link
       href={`/mitarbeiter/${id}`}
-      className="text-left rounded-3xl border border-border bg-surface p-5 hover:shadow-md transition-shadow block"
+      className="btn-feedback text-left rounded-3xl border border-border bg-surface p-5 hover:shadow-md transition-shadow block"
     >
       <div className="flex items-start justify-between">
         <div className="relative">

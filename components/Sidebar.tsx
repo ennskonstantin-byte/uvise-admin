@@ -85,7 +85,7 @@ export function Sidebar() {
             <Link
               key={label}
               href={href}
-              className={`w-full flex items-center gap-3 rounded-full px-4 py-2.5 text-sm transition-colors ${
+              className={`btn-feedback w-full flex items-center gap-3 rounded-full px-4 py-2.5 text-sm transition-colors ${
                 active
                   ? "bg-white/10 font-medium text-white"
                   : "text-white/70 hover:bg-white/5 hover:text-white"
