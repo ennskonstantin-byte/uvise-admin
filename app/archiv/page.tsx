@@ -18,16 +18,24 @@ export default function ArchivPage() {
   const [employeeId, setEmployeeId] = useState<string | null>(null);
   const [year, setYear] = useState<string | null>(null);
   const [viewingEntry, setViewingEntry] = useState<EmployeeTraining | null>(null);
+  const [showArchived, setShowArchived] = useState(false);
 
-  const filteredEmployees = useMemo(() => {
-    return employees.filter((e) => {
-      const matchesCategory = !category || e.kategorie === category;
-      const matchesQuery = `${e.vorname} ${e.nachname}`
-        .toLowerCase()
-        .includes(query.toLowerCase());
-      return matchesCategory && matchesQuery;
-    });
-  }, [employees, category, query]);
+  function matchesFilters(e: (typeof employees)[number]) {
+    const matchesCategory = !category || e.kategorie === category;
+    const matchesQuery = `${e.vorname} ${e.nachname}`
+      .toLowerCase()
+      .includes(query.toLowerCase());
+    return matchesCategory && matchesQuery;
+  }
+
+  const filteredEmployees = useMemo(
+    () => employees.filter((e) => !e.archiviert && matchesFilters(e)),
+    [employees, category, query]
+  );
+  const filteredArchived = useMemo(
+    () => employees.filter((e) => e.archiviert && matchesFilters(e)),
+    [employees, category, query]
+  );
 
   const selectedEmployee = employees.find((e) => e.id === employeeId);
   const entries = employeeTrainings.filter(
@@ -192,7 +200,61 @@ export default function ArchivPage() {
               <p className="text-sm text-foreground/60">{e.kategorie}</p>
             </button>
           ))}
+          {filteredEmployees.length === 0 && (
+            <p className="text-foreground/65 text-sm col-span-full text-center py-6">
+              Keine Mitarbeiter gefunden.
+            </p>
+          )}
         </div>
+
+        <div className="flex items-center gap-3 pt-6 mt-6 border-t border-border">
+          <button
+            role="switch"
+            aria-checked={showArchived}
+            aria-label="Archivierte Mitarbeiter anzeigen"
+            onClick={() => setShowArchived((v) => !v)}
+            className={`relative h-6 w-11 rounded-full transition-colors ${
+              showArchived ? "bg-green-500" : "bg-border"
+            }`}
+          >
+            <span
+              className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-all ${
+                showArchived ? "left-[22px]" : "left-0.5"
+              }`}
+            />
+          </button>
+          <div>
+            <p className="text-sm font-medium">Archivierte anzeigen</p>
+            <p className="text-xs text-foreground/65">
+              Gekündigte Mitarbeiter ({filteredArchived.length}) — Nachweise bleiben erhalten
+            </p>
+          </div>
+        </div>
+
+        {showArchived && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-6">
+            {filteredArchived.map((e) => (
+              <button
+                key={e.id}
+                onClick={() => setEmployeeId(e.id)}
+                className="text-left rounded-3xl border border-border bg-surface p-5 hover:shadow-md transition-shadow opacity-60"
+              >
+                <div className="h-12 w-12 rounded-full flex items-center justify-center text-white font-semibold mb-3 bg-foreground/40">
+                  {initials(e.vorname, e.nachname)}
+                </div>
+                <p className="font-medium">
+                  {e.vorname} {e.nachname}
+                </p>
+                <p className="text-sm text-foreground/60">{e.kategorie || "—"}</p>
+              </button>
+            ))}
+            {filteredArchived.length === 0 && (
+              <p className="text-foreground/65 text-sm col-span-full text-center py-6">
+                Keine archivierten Mitarbeiter.
+              </p>
+            )}
+          </div>
+        )}
       </Card>
     </DashboardShell>
   );
