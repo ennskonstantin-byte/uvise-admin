@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Search } from "lucide-react";
 import { useAppData } from "@/lib/store";
 import type { Training } from "@/lib/mockData";
 
@@ -20,7 +21,10 @@ export function AssignTrainingModal({
   );
   const [selected, setSelected] = useState<string[]>([]);
   const [saving, setSaving] = useState(false);
-  const activeEmployees = employees.filter((e) => !e.archiviert);
+  const [query, setQuery] = useState("");
+  const activeEmployees = employees
+    .filter((e) => !e.archiviert)
+    .filter((e) => `${e.vorname} ${e.nachname}`.toLowerCase().includes(query.toLowerCase()));
 
   function toggle(id: string) {
     if (already.has(id)) return;
@@ -48,6 +52,15 @@ export function AssignTrainingModal({
         </div>
 
         <p className="text-xs text-foreground/65 mb-3">An welche Mitarbeiter?</p>
+        <div className="relative mb-3">
+          <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-foreground/65" />
+          <input
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Mitarbeiter suchen…"
+            className="w-full rounded-full border border-border bg-surface pl-9 pr-4 py-2 text-sm outline-none"
+          />
+        </div>
         <div className="space-y-2 max-h-80 overflow-y-auto mb-6">
           {activeEmployees.map((e) => {
             const has = already.has(e.id);
@@ -73,7 +86,9 @@ export function AssignTrainingModal({
             );
           })}
           {activeEmployees.length === 0 && (
-            <p className="text-sm text-foreground/65">Keine Mitarbeiter vorhanden.</p>
+            <p className="text-sm text-foreground/65">
+              {query ? "Keine Mitarbeiter gefunden." : "Keine Mitarbeiter vorhanden."}
+            </p>
           )}
         </div>
 

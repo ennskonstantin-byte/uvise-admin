@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Search } from "lucide-react";
 import { WizardShell } from "@/components/WizardShell";
 import { useAppData } from "@/lib/store";
 import { TRAINING_ICON_OPTIONS, BUNDLE_ICONS, type Training } from "@/lib/mockData";
@@ -21,6 +22,7 @@ function DistributionDialog({
   );
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [sending, setSending] = useState(false);
+  const [memberQuery, setMemberQuery] = useState("");
 
   function toggleEmployee(id: string) {
     setSelectedEmployees((prev) =>
@@ -76,19 +78,35 @@ function DistributionDialog({
           </button>
         </div>
 
+        {tab === "mitarbeiter" && (
+          <div className="relative mb-3">
+            <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-foreground/65" />
+            <input
+              value={memberQuery}
+              onChange={(e) => setMemberQuery(e.target.value)}
+              placeholder="Mitarbeiter suchen…"
+              className="w-full rounded-full border border-border bg-surface pl-9 pr-4 py-2 text-sm outline-none"
+            />
+          </div>
+        )}
+
         <div className="max-h-72 overflow-y-auto space-y-2 mb-6">
           {tab === "mitarbeiter"
-            ? employees.map((e) => (
-                <label key={e.id} className="flex items-center gap-2 text-sm">
-                  <input
-                    type="checkbox"
-                    checked={selectedEmployees.includes(e.id)}
-                    onChange={() => toggleEmployee(e.id)}
-                  />
-                  {e.vorname} {e.nachname}{" "}
-                  <span className="text-foreground/65">({e.kategorie})</span>
-                </label>
-              ))
+            ? employees
+                .filter((e) =>
+                  `${e.vorname} ${e.nachname}`.toLowerCase().includes(memberQuery.toLowerCase())
+                )
+                .map((e) => (
+                  <label key={e.id} className="flex items-center gap-2 text-sm">
+                    <input
+                      type="checkbox"
+                      checked={selectedEmployees.includes(e.id)}
+                      onChange={() => toggleEmployee(e.id)}
+                    />
+                    {e.vorname} {e.nachname}{" "}
+                    <span className="text-foreground/65">({e.kategorie})</span>
+                  </label>
+                ))
             : categories.map((c) => (
                 <label key={c.id} className="flex items-center gap-2 text-sm">
                   <input

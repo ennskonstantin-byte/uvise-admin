@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Search } from "lucide-react";
 import { CATEGORY_ICON_OPTIONS, type Category } from "@/lib/mockData";
 import { useAppData } from "@/lib/store";
 
@@ -16,6 +17,7 @@ export function EditCategoryModal({
   const [icon, setIcon] = useState(category.icon);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [memberQuery, setMemberQuery] = useState("");
 
   async function handleSave() {
     setSaving(true);
@@ -75,28 +77,41 @@ export function EditCategoryModal({
             <p className="text-xs text-foreground/65 mb-2">
               Mitarbeiter in „{category.name}" (an-/abwählen)
             </p>
+            <div className="relative mb-2">
+              <Search size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-foreground/65" />
+              <input
+                value={memberQuery}
+                onChange={(e) => setMemberQuery(e.target.value)}
+                placeholder="Mitarbeiter suchen…"
+                className="w-full rounded-full border border-border bg-surface pl-9 pr-4 py-2 text-sm outline-none"
+              />
+            </div>
             <div className="max-h-40 overflow-y-auto rounded-2xl border border-border divide-y divide-border">
-              {employees.map((e) => {
-                const inCat = e.kategorie === category.name;
-                return (
-                  <button
-                    key={e.id}
-                    type="button"
-                    onClick={() => setEmployeeCategory(e.id, inCat ? "" : category.name)}
-                    className="w-full flex items-center gap-3 px-3 py-2 text-sm text-left hover:bg-surface"
-                  >
-                    <span
-                      className={`h-5 w-5 rounded border flex items-center justify-center text-xs ${
-                        inCat ? "text-white border-transparent" : "border-border"
-                      }`}
-                      style={inCat ? { background: "var(--accent-gradient)" } : undefined}
+              {employees
+                .filter((e) =>
+                  `${e.vorname} ${e.nachname}`.toLowerCase().includes(memberQuery.toLowerCase())
+                )
+                .map((e) => {
+                  const inCat = e.kategorie === category.name;
+                  return (
+                    <button
+                      key={e.id}
+                      type="button"
+                      onClick={() => setEmployeeCategory(e.id, inCat ? "" : category.name)}
+                      className="w-full flex items-center gap-3 px-3 py-2 text-sm text-left hover:bg-surface"
                     >
-                      {inCat ? "✓" : ""}
-                    </span>
-                    {e.vorname} {e.nachname}
-                  </button>
-                );
-              })}
+                      <span
+                        className={`h-5 w-5 rounded border flex items-center justify-center text-xs ${
+                          inCat ? "text-white border-transparent" : "border-border"
+                        }`}
+                        style={inCat ? { background: "var(--accent-gradient)" } : undefined}
+                      >
+                        {inCat ? "✓" : ""}
+                      </span>
+                      {e.vorname} {e.nachname}
+                    </button>
+                  );
+                })}
               {employees.length === 0 && (
                 <p className="px-3 py-2 text-sm text-foreground/65">Noch keine Mitarbeiter.</p>
               )}

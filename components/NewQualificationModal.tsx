@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useAppData } from "@/lib/store";
 import { QUALIFICATION_PRESETS } from "@/lib/mockData";
 import { DateSelect } from "@/components/DateSelect";
+import { EmployeeSearchPicker } from "@/components/EmployeeSearchPicker";
 
 export function NewQualificationModal({ onClose }: { onClose: () => void }) {
   const { employees, addQualification } = useAppData();
@@ -47,18 +48,11 @@ export function NewQualificationModal({ onClose }: { onClose: () => void }) {
         <div className="space-y-3">
           <div>
             <p className="text-xs text-foreground/65 mb-1">Mitarbeiter</p>
-            <select
+            <EmployeeSearchPicker
+              employees={employees.filter((e) => !e.archiviert)}
               value={employeeId}
-              onChange={(e) => setEmployeeId(e.target.value)}
-              className="w-full rounded-full border border-border bg-surface px-4 py-2.5 text-sm outline-none"
-            >
-              <option value="">Bitte wählen…</option>
-              {employees.filter((e) => !e.archiviert).map((e) => (
-                <option key={e.id} value={e.id}>
-                  {e.vorname} {e.nachname}
-                </option>
-              ))}
-            </select>
+              onChange={setEmployeeId}
+            />
           </div>
 
           <div>
