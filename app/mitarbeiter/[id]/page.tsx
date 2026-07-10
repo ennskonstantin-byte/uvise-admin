@@ -3,10 +3,11 @@
 import { useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import { Bell, ArrowLeft, Pencil } from "lucide-react";
+import { Bell, ArrowLeft, Pencil, Send } from "lucide-react";
 import { DashboardShell } from "@/components/DashboardShell";
 import { Card } from "@/components/Card";
 import { EditEmployeeModal } from "@/components/EditEmployeeModal";
+import { AssignTrainingToEmployeeModal } from "@/components/AssignTrainingToEmployeeModal";
 import { useToast } from "@/components/Toast";
 import { trainingName, initials } from "@/lib/mockData";
 import { useAppData } from "@/lib/store";
@@ -31,6 +32,7 @@ export default function EmployeeDetailPage() {
   const { employees, employeeTrainings, qualifications, trainings } = useAppData();
   const { showToast, ToastView } = useToast();
   const [editing, setEditing] = useState(false);
+  const [assigning, setAssigning] = useState(false);
   const employee = employees.find((e) => e.id === params.id);
   const empTrainings = employeeTrainings.filter((et) => et.employeeId === params.id);
   const empQualifications = qualifications.filter((q) => q.employeeId === params.id);
@@ -61,12 +63,21 @@ export default function EmployeeDetailPage() {
 
       <Card>
         <div className="flex flex-wrap items-center gap-4 mb-8">
-          <div
-            className="h-16 w-16 rounded-full flex items-center justify-center text-white text-lg font-semibold"
-            style={{ background: "var(--accent-gradient)" }}
-          >
-            {initials(employee.vorname, employee.nachname)}
-          </div>
+          {employee.fotoUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={employee.fotoUrl}
+              alt=""
+              className="h-16 w-16 rounded-full object-cover"
+            />
+          ) : (
+            <div
+              className="h-16 w-16 rounded-full flex items-center justify-center text-white text-lg font-semibold"
+              style={{ background: "var(--accent-gradient)" }}
+            >
+              {initials(employee.vorname, employee.nachname)}
+            </div>
+          )}
           <div className="flex-1 min-w-0">
             <h1 className="text-2xl font-semibold">
               {employee.vorname} {employee.nachname}
@@ -87,15 +98,24 @@ export default function EmployeeDetailPage() {
 
         <div className="flex items-center justify-between mb-3">
           <h2 className="font-medium">Unterweisungen</h2>
-          {openCount > 0 && (
+          <div className="flex gap-2">
             <button
-              onClick={() => showToast(REMINDER_HINT)}
+              onClick={() => setAssigning(true)}
               className="flex items-center gap-2 text-sm rounded-full px-4 py-2 border border-border hover:border-foreground/30"
             >
-              <Bell size={14} />
-              Alle erinnern
+              <Send size={14} />
+              Zuweisen
             </button>
-          )}
+            {openCount > 0 && (
+              <button
+                onClick={() => showToast(REMINDER_HINT)}
+                className="flex items-center gap-2 text-sm rounded-full px-4 py-2 border border-border hover:border-foreground/30"
+              >
+                <Bell size={14} />
+                Alle erinnern
+              </button>
+            )}
+          </div>
         </div>
 
         <div className="rounded-3xl border border-border divide-y divide-border overflow-hidden mb-8">
@@ -151,6 +171,9 @@ export default function EmployeeDetailPage() {
 
       {editing && (
         <EditEmployeeModal employee={employee} onClose={() => setEditing(false)} />
+      )}
+      {assigning && (
+        <AssignTrainingToEmployeeModal employee={employee} onClose={() => setAssigning(false)} />
       )}
       <ToastView />
     </DashboardShell>

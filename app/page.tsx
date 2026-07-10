@@ -17,8 +17,10 @@ export default function DashboardPage() {
     const e = employees.find((x) => x.id === id);
     return e ? `${e.vorname} ${e.nachname}` : "";
   };
+  const isArchivedEmployee = (id: string) => employees.find((e) => e.id === id)?.archiviert ?? false;
   const reminders = [
     ...qualifications
+      .filter((q) => !isArchivedEmployee(q.employeeId))
       .filter((q) => q.status === "laeuft_ab" || q.status === "abgelaufen")
       .map((q) => ({
         key: "q" + q.id,

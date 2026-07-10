@@ -7,7 +7,7 @@ import { PageHeader } from "@/components/PageHeader";
 import { Card } from "@/components/Card";
 import { NewQualificationModal } from "@/components/NewQualificationModal";
 import { useToast } from "@/components/Toast";
-import { employeeName } from "@/lib/mockData";
+import { employeeName, initials } from "@/lib/mockData";
 import { useAppData } from "@/lib/store";
 
 const STATUS_META: Record<string, { label: string; color: string }> = {
@@ -20,9 +20,13 @@ const REMINDER_HINT =
   "Erinnerung vorgemerkt. Der automatische E-Mail-Versand wird aktiv, sobald Resend eingerichtet ist.";
 
 export default function QualifikationenPage() {
-  const { qualifications, employees } = useAppData();
+  const { qualifications: allQualifications, employees } = useAppData();
   const { showToast, ToastView } = useToast();
   const [showWizard, setShowWizard] = useState(false);
+  // Archivierte (gekündigte) Mitarbeiter tauchen hier nicht mehr auf
+  const qualifications = allQualifications.filter(
+    (q) => !employees.find((e) => e.id === q.employeeId)?.archiviert
+  );
 
   return (
     <DashboardShell>
@@ -45,9 +49,25 @@ export default function QualifikationenPage() {
         <div className="rounded-3xl border border-border divide-y divide-border overflow-hidden">
           {qualifications.map((q) => {
             const meta = STATUS_META[q.status];
+            const emp = employees.find((e) => e.id === q.employeeId);
             return (
               <div key={q.id} className="flex items-center gap-4 px-5 py-4">
-                <span className="text-3xl">{q.icon}</span>
+                <div className="relative shrink-0">
+                  {emp?.fotoUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={emp.fotoUrl} alt="" className="h-11 w-11 rounded-full object-cover" />
+                  ) : (
+                    <div
+                      className="h-11 w-11 rounded-full flex items-center justify-center text-white text-sm font-semibold"
+                      style={{ background: "var(--accent-gradient)" }}
+                    >
+                      {emp ? initials(emp.vorname, emp.nachname) : "?"}
+                    </div>
+                  )}
+                  <span className="absolute -bottom-1 -right-1 h-5 w-5 rounded-full bg-background border border-border flex items-center justify-center text-[11px]">
+                    {q.icon}
+                  </span>
+                </div>
                 <div className="flex-1 min-w-0">
                   <p className="font-medium truncate">{q.name}</p>
                   <p className="text-xs text-foreground/50">

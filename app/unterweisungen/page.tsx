@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { AlertTriangle, Pencil, Trash2 } from "lucide-react";
+import { AlertTriangle, Pencil, Send, Trash2 } from "lucide-react";
 import { DashboardShell } from "@/components/DashboardShell";
 import { PageHeader } from "@/components/PageHeader";
 import { Card } from "@/components/Card";
@@ -9,6 +9,7 @@ import { NewTrainingWizard } from "@/components/NewTrainingWizard";
 import { NewBundleWizard } from "@/components/NewBundleWizard";
 import { EditTrainingModal } from "@/components/EditTrainingModal";
 import { EditBundleModal } from "@/components/EditBundleModal";
+import { AssignTrainingModal } from "@/components/AssignTrainingModal";
 import type { Bundle, Training } from "@/lib/mockData";
 import { useAppData } from "@/lib/store";
 
@@ -19,6 +20,7 @@ export default function UnterweisungenPage() {
   const [showBundleWizard, setShowBundleWizard] = useState(false);
   const [editingTraining, setEditingTraining] = useState<Training | null>(null);
   const [editingBundle, setEditingBundle] = useState<Bundle | null>(null);
+  const [assigningTraining, setAssigningTraining] = useState<Training | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const expiringSoon = trainings.filter((t) => t.status === "laeuft_ab");
 
@@ -112,6 +114,14 @@ export default function UnterweisungenPage() {
                     </span>
                   )}
                   <button
+                    onClick={() => setAssigningTraining(t)}
+                    className="h-8 w-8 rounded-full border border-border flex items-center justify-center hover:border-foreground/30"
+                    aria-label="Verteilen"
+                    title="An Mitarbeiter verteilen"
+                  >
+                    <Send size={14} />
+                  </button>
+                  <button
                     onClick={() => setEditingTraining(t)}
                     className="h-8 w-8 rounded-full border border-border flex items-center justify-center hover:border-foreground/30"
                     aria-label="Bearbeiten"
@@ -178,6 +188,9 @@ export default function UnterweisungenPage() {
       )}
       {editingBundle && (
         <EditBundleModal bundle={editingBundle} onClose={() => setEditingBundle(null)} />
+      )}
+      {assigningTraining && (
+        <AssignTrainingModal training={assigningTraining} onClose={() => setAssigningTraining(null)} />
       )}
     </DashboardShell>
   );

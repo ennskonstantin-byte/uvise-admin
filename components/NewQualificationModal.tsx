@@ -53,7 +53,7 @@ export function NewQualificationModal({ onClose }: { onClose: () => void }) {
               className="w-full rounded-full border border-border bg-surface px-4 py-2.5 text-sm outline-none"
             >
               <option value="">Bitte wählen…</option>
-              {employees.map((e) => (
+              {employees.filter((e) => !e.archiviert).map((e) => (
                 <option key={e.id} value={e.id}>
                   {e.vorname} {e.nachname}
                 </option>
