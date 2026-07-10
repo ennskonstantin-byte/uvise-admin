@@ -240,7 +240,7 @@ function AuthForm() {
             : "Neue Firma? Hier registrieren"}
         </button>
 
-        <nav aria-label="Rechtliches" className="flex justify-center gap-4 mt-6 text-xs text-foreground/40">
+        <nav aria-label="Rechtliches" className="flex justify-center gap-4 mt-6 text-xs text-foreground/65">
           <Link href="/impressum" className="hover:text-foreground">Impressum</Link>
           <Link href="/datenschutz" className="hover:text-foreground">Datenschutz</Link>
           <Link href="/agb" className="hover:text-foreground">AGB</Link>
@@ -277,7 +277,7 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-page-bg text-foreground/50 text-sm">
+      <div className="min-h-screen flex items-center justify-center bg-page-bg text-foreground/65 text-sm">
         Lädt…
       </div>
     );
@@ -289,7 +289,7 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
 
   if (isChef === null) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-page-bg text-foreground/50 text-sm">
+      <div className="min-h-screen flex items-center justify-center bg-page-bg text-foreground/65 text-sm">
         Lädt…
       </div>
     );

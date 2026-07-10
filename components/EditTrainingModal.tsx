@@ -53,7 +53,7 @@ export function EditTrainingModal({
       <div className="w-full max-w-md rounded-3xl bg-background border border-border p-6 sm:p-8">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-xl font-semibold">Unterweisung bearbeiten</h2>
-          <button onClick={onClose} className="text-foreground/50 hover:text-foreground text-sm">
+          <button onClick={onClose} className="text-foreground/65 hover:text-foreground text-sm">
             Abbrechen
           </button>
         </div>
@@ -64,7 +64,7 @@ export function EditTrainingModal({
 
         <div className="space-y-3">
           <div>
-            <p className="text-xs text-foreground/50 mb-2">Symbol</p>
+            <p className="text-xs text-foreground/65 mb-2">Symbol</p>
             <div className="grid grid-cols-6 gap-2 max-h-32 overflow-y-auto pr-1">
               {TRAINING_ICON_OPTIONS.map((opt) => (
                 <button
@@ -97,7 +97,7 @@ export function EditTrainingModal({
           />
 
           <div>
-            <p className="text-xs text-foreground/50 mb-1">Ablaufdatum</p>
+            <p className="text-xs text-foreground/65 mb-1">Ablaufdatum</p>
             <input
               type="date"
               value={ablaufdatum}

@@ -18,31 +18,31 @@ export function ArchiveDocumentModal({
       <div className="w-full max-w-md rounded-3xl bg-background border border-border p-6 sm:p-8">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-xl font-semibold">Unterschrifts-Nachweis</h2>
-          <button onClick={onClose} className="text-foreground/50 hover:text-foreground text-sm">
+          <button onClick={onClose} className="text-foreground/65 hover:text-foreground text-sm">
             Schließen
           </button>
         </div>
 
         <div className="space-y-4 text-sm">
           <div>
-            <p className="text-xs text-foreground/50">Unterweisung</p>
+            <p className="text-xs text-foreground/65">Unterweisung</p>
             <p className="font-medium">{trainingName}</p>
           </div>
           <div>
-            <p className="text-xs text-foreground/50">Mitarbeiter</p>
+            <p className="text-xs text-foreground/65">Mitarbeiter</p>
             <p className="font-medium">{employeeName}</p>
           </div>
           <div>
-            <p className="text-xs text-foreground/50">Signiert am</p>
+            <p className="text-xs text-foreground/65">Signiert am</p>
             <p className="font-medium">{entry.signiertAm ?? "—"}</p>
           </div>
           <div>
-            <p className="text-xs text-foreground/50">Gerät</p>
+            <p className="text-xs text-foreground/65">Gerät</p>
             <p className="font-medium">{entry.geraet ?? "Nicht erfasst"}</p>
           </div>
 
           <div>
-            <p className="text-xs text-foreground/50 mb-1">Unterschrift</p>
+            <p className="text-xs text-foreground/65 mb-1">Unterschrift</p>
             {entry.signaturBildUrl ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img
@@ -51,7 +51,7 @@ export function ArchiveDocumentModal({
                 className="w-full rounded-2xl border border-border bg-white"
               />
             ) : (
-              <div className="rounded-2xl border border-dashed border-border px-4 py-6 text-center text-foreground/50">
+              <div className="rounded-2xl border border-dashed border-border px-4 py-6 text-center text-foreground/65">
                 Kein Unterschriftsbild gespeichert.
               </div>
             )}

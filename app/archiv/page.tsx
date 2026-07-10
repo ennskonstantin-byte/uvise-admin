@@ -64,7 +64,7 @@ export default function ArchivPage() {
               <div key={et.id} className="flex items-center gap-4 px-5 py-4">
                 <div className="flex-1 min-w-0">
                   <p className="font-medium truncate">{trainingName(trainings, et.trainingId)}</p>
-                  <p className="text-xs text-foreground/50">
+                  <p className="text-xs text-foreground/65">
                     Status: {et.status}
                     {et.signiertAm ? ` · signiert am ${et.signiertAm}` : ""}
                   </p>
@@ -81,7 +81,7 @@ export default function ArchivPage() {
               </div>
             ))}
             {entries.length === 0 && (
-              <p className="px-5 py-4 text-sm text-foreground/50">
+              <p className="px-5 py-4 text-sm text-foreground/65">
                 Keine Einträge für dieses Jahr.
               </p>
             )}

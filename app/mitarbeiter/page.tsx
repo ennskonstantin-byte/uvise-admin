@@ -142,7 +142,7 @@ export default function MitarbeiterPage() {
               </div>
             ))}
             {categories.length === 0 && (
-              <p className="text-foreground/50 text-sm text-center py-6">
+              <p className="text-foreground/65 text-sm text-center py-6">
                 Noch keine Kategorien angelegt.
               </p>
             )}
@@ -154,7 +154,7 @@ export default function MitarbeiterPage() {
         <div className="relative w-full max-w-sm mb-8">
           <Search
             size={16}
-            className="absolute left-3.5 top-1/2 -translate-y-1/2 text-foreground/40"
+            className="absolute left-3.5 top-1/2 -translate-y-1/2 text-foreground/65"
           />
           <input
             value={query}
@@ -170,7 +170,7 @@ export default function MitarbeiterPage() {
               <div className="flex items-center gap-2 mb-3">
                 <span>{icon}</span>
                 <h2 className="font-medium">{kategorie}</h2>
-                <span className="text-sm text-foreground/40">({employees.length})</span>
+                <span className="text-sm text-foreground/65">({employees.length})</span>
               </div>
 
               <div className="rounded-3xl border border-border divide-y divide-border overflow-hidden">
@@ -194,7 +194,7 @@ export default function MitarbeiterPage() {
                         </p>
                         <QualiIcons icons={e.qualifikationsIcons} />
                       </div>
-                      <p className="text-xs text-foreground/50">{e.personalnummer}</p>
+                      <p className="text-xs text-foreground/65">{e.personalnummer}</p>
                     </div>
                     <Link
                       href={`/mitarbeiter/${e.id}`}
@@ -224,7 +224,7 @@ export default function MitarbeiterPage() {
           ))}
 
           {grouped.length === 0 && (
-            <p className="text-foreground/50 text-sm text-center mt-10">
+            <p className="text-foreground/65 text-sm text-center mt-10">
               Keine Mitarbeiter gefunden.
             </p>
           )}
@@ -248,7 +248,7 @@ export default function MitarbeiterPage() {
             </button>
             <div>
               <p className="text-sm font-medium">Archivierte anzeigen</p>
-              <p className="text-xs text-foreground/50">
+              <p className="text-xs text-foreground/65">
                 Gekündigte Mitarbeiter ({archived.length}) — Daten bleiben erhalten
               </p>
             </div>
@@ -259,7 +259,7 @@ export default function MitarbeiterPage() {
               <div className="flex items-center gap-2 mb-3 mt-2">
                 <span>🗄️</span>
                 <h2 className="font-medium">Archiviert / Gekündigt</h2>
-                <span className="text-sm text-foreground/40">({archived.length})</span>
+                <span className="text-sm text-foreground/65">({archived.length})</span>
               </div>
               <div className="rounded-3xl border border-border divide-y divide-border overflow-hidden">
                 {archived.map((e) => (
@@ -276,7 +276,7 @@ export default function MitarbeiterPage() {
                       <p className="font-medium truncate">
                         {e.vorname} {e.nachname}
                       </p>
-                      <p className="text-xs text-foreground/50">{e.kategorie || "—"}</p>
+                      <p className="text-xs text-foreground/65">{e.kategorie || "—"}</p>
                     </div>
                     <button
                       onClick={() => setEmployeeArchived(e.id, false)}
@@ -296,7 +296,7 @@ export default function MitarbeiterPage() {
                   </div>
                 ))}
                 {archived.length === 0 && (
-                  <p className="px-5 py-4 text-sm text-foreground/50">
+                  <p className="px-5 py-4 text-sm text-foreground/65">
                     Keine archivierten Mitarbeiter.
                   </p>
                 )}

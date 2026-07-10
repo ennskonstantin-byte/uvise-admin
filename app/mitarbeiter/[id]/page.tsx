@@ -123,7 +123,7 @@ export default function EmployeeDetailPage() {
             <div key={et.id} className="flex items-center gap-4 px-5 py-3">
               <div className="flex-1 min-w-0">
                 <p className="font-medium truncate">{trainingName(trainings, et.trainingId)}</p>
-                <p className="text-xs text-foreground/50">
+                <p className="text-xs text-foreground/65">
                   {STATUS_LABEL[et.status]}
                   {et.signiertAm ? ` · signiert am ${et.signiertAm}` : ""}
                 </p>
@@ -140,7 +140,7 @@ export default function EmployeeDetailPage() {
             </div>
           ))}
           {empTrainings.length === 0 && (
-            <p className="px-5 py-4 text-sm text-foreground/50">
+            <p className="px-5 py-4 text-sm text-foreground/65">
               Keine Unterweisungen zugewiesen.
             </p>
           )}
@@ -153,7 +153,7 @@ export default function EmployeeDetailPage() {
               <span className="text-3xl">{q.icon}</span>
               <div className="flex-1 min-w-0">
                 <p className="font-medium truncate">{q.name}</p>
-                <p className="text-xs text-foreground/50">Läuft ab: {q.ablaufdatum}</p>
+                <p className="text-xs text-foreground/65">Läuft ab: {q.ablaufdatum}</p>
               </div>
               <span
                 className="h-2.5 w-2.5 rounded-full shrink-0"
@@ -162,7 +162,7 @@ export default function EmployeeDetailPage() {
             </div>
           ))}
           {empQualifications.length === 0 && (
-            <p className="px-5 py-4 text-sm text-foreground/50">
+            <p className="px-5 py-4 text-sm text-foreground/65">
               Keine Qualifikationen erfasst.
             </p>
           )}

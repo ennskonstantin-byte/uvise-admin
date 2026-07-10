@@ -92,7 +92,7 @@ export function EditEmployeeModal({
       <div className="w-full max-w-md rounded-3xl bg-background border border-border p-6 sm:p-8">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-xl font-semibold">Mitarbeiter bearbeiten</h2>
-          <button onClick={onClose} className="text-foreground/50 hover:text-foreground text-sm">
+          <button onClick={onClose} className="text-foreground/65 hover:text-foreground text-sm">
             Abbrechen
           </button>
         </div>
@@ -123,7 +123,7 @@ export function EditEmployeeModal({
               <input type="file" accept="image/*" className="hidden" onChange={handlePhoto} />
             </label>
           </div>
-          <p className="text-xs text-foreground/50 mt-2">{uploading ? "Lädt Foto hoch…" : "Foto ändern"}</p>
+          <p className="text-xs text-foreground/65 mt-2">{uploading ? "Lädt Foto hoch…" : "Foto ändern"}</p>
         </div>
 
         <div className="space-y-3">
@@ -160,7 +160,7 @@ export function EditEmployeeModal({
             className="w-full rounded-full border border-border bg-surface px-4 py-2.5 text-sm outline-none"
           />
           <div>
-            <span className="text-xs text-foreground/50 mb-1 block">
+            <span className="text-xs text-foreground/65 mb-1 block">
               Geburtsdatum (für minderjährige Mitarbeiter)
             </span>
             <DateSelect value={geburtsdatum} onChange={setGeburtsdatum} minYear={1940} maxYear={2015} />
@@ -172,7 +172,7 @@ export function EditEmployeeModal({
           </div>
 
           <div>
-            <p className="text-xs text-foreground/50 mb-2">Kategorie</p>
+            <p className="text-xs text-foreground/65 mb-2">Kategorie</p>
             <div className="flex flex-wrap gap-2">
               {categories.map((c) => (
                 <button
@@ -191,7 +191,7 @@ export function EditEmployeeModal({
                 className={`rounded-full px-4 py-2 text-sm border ${
                   showNewCategory
                     ? "border-foreground/50 bg-surface"
-                    : "border-dashed border-border text-foreground/50"
+                    : "border-dashed border-border text-foreground/65"
                 }`}
               >
                 + Neue Kategorie
@@ -247,7 +247,7 @@ export function EditEmployeeModal({
           >
             <div>
               <p className="text-sm font-medium">Beauftragte/r</p>
-              <p className="text-xs text-foreground/50 mt-0.5">
+              <p className="text-xs text-foreground/65 mt-0.5">
                 Darf alle Mitarbeiter der Firma einsehen und verwalten (Chef-Zugriff)
               </p>
             </div>

@@ -86,7 +86,7 @@ function DistributionDialog({
                     onChange={() => toggleEmployee(e.id)}
                   />
                   {e.vorname} {e.nachname}{" "}
-                  <span className="text-foreground/40">({e.kategorie})</span>
+                  <span className="text-foreground/65">({e.kategorie})</span>
                 </label>
               ))
             : categories.map((c) => (
@@ -226,7 +226,7 @@ export function NewTrainingWizard({ onClose }: { onClose: () => void }) {
           {error}
         </p>
       )}
-      <p className="text-xs uppercase tracking-wide text-foreground/40 mb-4">
+      <p className="text-xs uppercase tracking-wide text-foreground/65 mb-4">
         Schritt {step + 1} von {STEP_LABELS.length} · {STEP_LABELS[step]}
       </p>
 
@@ -259,7 +259,7 @@ export function NewTrainingWizard({ onClose }: { onClose: () => void }) {
       {step === 1 && methode === "upload" && (
         <div>
           <p className="mb-2 font-medium">Dokument hochladen</p>
-          <p className="text-xs text-foreground/50 mb-2">PDF oder Foto der Unterweisung</p>
+          <p className="text-xs text-foreground/65 mb-2">PDF oder Foto der Unterweisung</p>
           <label className="flex items-center gap-3 mb-3">
             <span className="rounded-full border border-border px-4 py-2 text-sm cursor-pointer">
               Datei auswählen
@@ -275,7 +275,7 @@ export function NewTrainingWizard({ onClose }: { onClose: () => void }) {
           <p className="text-sm mb-4">Am Handy öffnet sich direkt die Kamera.</p>
           {fileName && (
             <div>
-              <p className="text-xs text-foreground/50 mb-2">Erkannter Text — bitte prüfen</p>
+              <p className="text-xs text-foreground/65 mb-2">Erkannter Text — bitte prüfen</p>
               <textarea
                 value={inhalt}
                 onChange={(e) => setInhalt(e.target.value)}
@@ -350,7 +350,7 @@ export function NewTrainingWizard({ onClose }: { onClose: () => void }) {
             <p className="font-medium">
               {icon ?? (methode === "upload" ? "📄" : "✍️")} {name}
             </p>
-            <p className="text-sm text-foreground/50">
+            <p className="text-sm text-foreground/65">
               Ablauf: {ablaufdatum ? new Date(ablaufdatum).toLocaleDateString("de-DE") : "—"}
             </p>
           </div>
@@ -385,7 +385,7 @@ export function NewTrainingWizard({ onClose }: { onClose: () => void }) {
               className={`rounded-full px-4 py-2 text-sm border ${
                 showNewBundle
                   ? "border-foreground/50 bg-surface"
-                  : "border-dashed border-border text-foreground/50"
+                  : "border-dashed border-border text-foreground/65"
               }`}
             >
               + Neues Bundle

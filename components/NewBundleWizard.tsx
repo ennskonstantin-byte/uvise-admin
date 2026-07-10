@@ -69,7 +69,7 @@ export function NewBundleWizard({ onClose }: { onClose: () => void }) {
           {error}
         </p>
       )}
-      <p className="text-xs uppercase tracking-wide text-foreground/40 mb-4">
+      <p className="text-xs uppercase tracking-wide text-foreground/65 mb-4">
         Schritt {step + 1} von {steps.length} · {steps[step]}
       </p>
       {step === 0 && (

@@ -196,7 +196,7 @@ export function NewEmployeeWizard({ onClose }: { onClose: () => void }) {
           {error}
         </p>
       )}
-      <p className="text-xs uppercase tracking-wide text-foreground/40 mb-4">
+      <p className="text-xs uppercase tracking-wide text-foreground/65 mb-4">
         Schritt {step + 1} von {STEP_LABELS.length} · {STEP_LABELS[step]}
       </p>
 
@@ -215,7 +215,7 @@ export function NewEmployeeWizard({ onClose }: { onClose: () => void }) {
             className="w-full rounded-full border border-border bg-surface px-4 py-2.5 text-sm outline-none focus:border-foreground/30"
           />
           <div>
-            <span className="text-xs text-foreground/50 mb-1 block">
+            <span className="text-xs text-foreground/65 mb-1 block">
               Geburtsdatum (für minderjährige Mitarbeiter)
             </span>
             <DateSelect value={geburtsdatum} onChange={setGeburtsdatum} minYear={1940} maxYear={2015} />
@@ -259,7 +259,7 @@ export function NewEmployeeWizard({ onClose }: { onClose: () => void }) {
                 className="h-28 w-28 rounded-full object-cover border border-border"
               />
             ) : (
-              <div className="h-28 w-28 rounded-full bg-surface border border-border flex items-center justify-center text-foreground/30 text-sm">
+              <div className="h-28 w-28 rounded-full bg-surface border border-border flex items-center justify-center text-foreground/65 text-sm">
                 Foto
               </div>
             )}
@@ -272,7 +272,7 @@ export function NewEmployeeWizard({ onClose }: { onClose: () => void }) {
               <input type="file" accept="image/*" className="hidden" onChange={handlePhotoPick} />
             </label>
           </div>
-          <p className="text-xs text-foreground/50 mt-4">
+          <p className="text-xs text-foreground/65 mt-4">
             {photoFile ? "Wird beim Anlegen hochgeladen" : "Optional — kann später geändert werden"}
           </p>
         </div>
@@ -303,7 +303,7 @@ export function NewEmployeeWizard({ onClose }: { onClose: () => void }) {
               className={`rounded-full px-4 py-2 text-sm border ${
                 showNewCategory
                   ? "border-foreground/50 bg-surface"
-                  : "border-dashed border-border text-foreground/50"
+                  : "border-dashed border-border text-foreground/65"
               }`}
             >
               + Neue Kategorie
@@ -383,7 +383,7 @@ export function NewEmployeeWizard({ onClose }: { onClose: () => void }) {
                 <p className="text-sm text-foreground/60 mb-2">Enthält:</p>
                 <div className="flex flex-wrap gap-2">
                   {matchingBundle.trainingIds.length === 0 && (
-                    <span className="text-sm text-foreground/40">
+                    <span className="text-sm text-foreground/65">
                       Dieses Bundle enthält noch keine Unterweisungen.
                     </span>
                   )}
@@ -448,7 +448,7 @@ export function NewEmployeeWizard({ onClose }: { onClose: () => void }) {
                 + Hinzufügen
               </button>
             </div>
-            <p className="text-[11px] text-foreground/40">oder aus 20 gängigen wählen:</p>
+            <p className="text-[11px] text-foreground/65">oder aus 20 gängigen wählen:</p>
           </div>
 
           <div className="flex flex-wrap gap-2 max-h-40 overflow-y-auto mb-4 pr-1">
@@ -486,7 +486,7 @@ export function NewEmployeeWizard({ onClose }: { onClose: () => void }) {
                     <button
                       type="button"
                       onClick={() => toggleQualification(q)}
-                      className="text-xs text-foreground/40 hover:text-red-500"
+                      className="text-xs text-foreground/65 hover:text-red-500"
                       aria-label={`${q} entfernen`}
                     >
                       Entfernen
@@ -495,7 +495,7 @@ export function NewEmployeeWizard({ onClose }: { onClose: () => void }) {
                 );
               })}
               <div className="pt-1">
-                <p className="text-xs text-foreground/50 mb-2">Ablaufdatum je Qualifikation (optional)</p>
+                <p className="text-xs text-foreground/65 mb-2">Ablaufdatum je Qualifikation (optional)</p>
                 <div className="space-y-2">
                   {selectedQualifications.map((q) => (
                     <div key={q} className="flex items-center gap-2">
@@ -518,26 +518,26 @@ export function NewEmployeeWizard({ onClose }: { onClose: () => void }) {
       {step === 5 && (
         <div className="text-sm space-y-1">
           <p>
-            <span className="text-foreground/50">Name:</span> {vorname} {nachname}
+            <span className="text-foreground/65">Name:</span> {vorname} {nachname}
           </p>
           <p>
-            <span className="text-foreground/50">Mitarbeiternummer:</span>{" "}
+            <span className="text-foreground/65">Mitarbeiternummer:</span>{" "}
             {personalnummer || "—"}
           </p>
           <p>
-            <span className="text-foreground/50">E-Mail:</span> {email || "—"}
+            <span className="text-foreground/65">E-Mail:</span> {email || "—"}
           </p>
           <p>
-            <span className="text-foreground/50">Kategorie:</span> {kategorie ?? "—"}
+            <span className="text-foreground/65">Kategorie:</span> {kategorie ?? "—"}
           </p>
           <p>
-            <span className="text-foreground/50">Unterweisungen:</span>{" "}
+            <span className="text-foreground/65">Unterweisungen:</span>{" "}
             {zuweisungModus === "bundle"
               ? "Bundle der Abteilung"
               : `${selectedTrainings.length} einzeln ausgewählt`}
           </p>
           <p>
-            <span className="text-foreground/50">Qualifikationen:</span>{" "}
+            <span className="text-foreground/65">Qualifikationen:</span>{" "}
             {selectedQualifications.length > 0 ? selectedQualifications.join(", ") : "—"}
           </p>
         </div>

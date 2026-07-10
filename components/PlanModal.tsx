@@ -16,7 +16,7 @@ export function PlanModal({ onClose }: { onClose: () => void }) {
       <div className="w-full max-w-3xl max-h-[90vh] overflow-y-auto rounded-3xl bg-background border border-border p-6 sm:p-8">
         <div className="flex items-center justify-between mb-2">
           <h2 className="text-xl font-semibold">Dein Abo wählen</h2>
-          <button onClick={onClose} className="text-foreground/50 hover:text-foreground text-sm">
+          <button onClick={onClose} className="text-foreground/65 hover:text-foreground text-sm">
             Abbrechen
           </button>
         </div>
@@ -36,16 +36,16 @@ export function PlanModal({ onClose }: { onClose: () => void }) {
               >
                 <p className="font-medium mb-1">{plan.name}</p>
                 <p className="text-2xl font-semibold">
-                  {plan.preis}€<span className="text-sm font-normal text-foreground/50">/Monat</span>
+                  {plan.preis}€<span className="text-sm font-normal text-foreground/65">/Monat</span>
                 </p>
-                <p className="text-sm text-foreground/50 mb-4">
+                <p className="text-sm text-foreground/65 mb-4">
                   {plan.limit}
                   {active ? " · ausgewählt" : ""}
                 </p>
                 <ul className="text-sm space-y-1.5 mb-5">
                   {plan.features.map((f) => (
                     <li key={f} className="flex items-center gap-2 text-foreground/70">
-                      <Check size={14} className="text-foreground/40 shrink-0" />
+                      <Check size={14} className="text-foreground/65 shrink-0" />
                       {f}
                     </li>
                   ))}

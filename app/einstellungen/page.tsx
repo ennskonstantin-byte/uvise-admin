@@ -115,7 +115,7 @@ export default function EinstellungenPage() {
                   <input type="file" accept="image/*" className="hidden" onChange={handleLogo} />
                 </label>
               </div>
-              {uploadingLogo && <p className="text-xs text-foreground/50 mt-2">Lädt Logo hoch…</p>}
+              {uploadingLogo && <p className="text-xs text-foreground/65 mt-2">Lädt Logo hoch…</p>}
 
               {editingName ? (
                 <input
@@ -128,31 +128,31 @@ export default function EinstellungenPage() {
               ) : (
                 <button onClick={() => setEditingName(true)} className="mt-4 text-center">
                   <p className="text-xl font-semibold">{firmenname}</p>
-                  <p className="text-xs text-foreground/40">Firmenname antippen, um ihn zu ändern</p>
+                  <p className="text-xs text-foreground/65">Firmenname antippen, um ihn zu ändern</p>
                 </button>
               )}
             </div>
 
             <div className="space-y-4 text-left">
               <label className="block">
-                <span className="text-xs text-foreground/50 mb-1 block">Admin-Name</span>
+                <span className="text-xs text-foreground/65 mb-1 block">Admin-Name</span>
                 <input
                   value={adminName}
                   onChange={(e) => setAdminName(e.target.value)}
                   className="w-full rounded-full border border-border bg-surface px-4 py-2.5 text-sm outline-none"
                 />
-                <span className="text-xs text-foreground/40 mt-1 block">
+                <span className="text-xs text-foreground/65 mt-1 block">
                   Wird statt „Chef" angezeigt — z.B. bei Rückfragen und Erinnerungen.
                 </span>
               </label>
               <label className="block">
-                <span className="text-xs text-foreground/50 mb-1 block">Firmenadresse</span>
+                <span className="text-xs text-foreground/65 mb-1 block">Firmenadresse</span>
                 <input
                   value={adresse}
                   onChange={(e) => setAdresse(e.target.value)}
                   className="w-full rounded-full border border-border bg-surface px-4 py-2.5 text-sm outline-none"
                 />
-                <span className="text-xs text-foreground/40 mt-1 block">
+                <span className="text-xs text-foreground/65 mt-1 block">
                   Adresse eintippen — Vorschläge erscheinen automatisch. Erscheint z.B. auf
                   exportierten Archiv-PDFs.
                 </span>
@@ -222,16 +222,16 @@ export default function EinstellungenPage() {
                 >
                   <p className="font-medium mb-1">{plan.name}</p>
                   <p className="text-2xl font-semibold">
-                    {plan.preis}€<span className="text-sm font-normal text-foreground/50">/Monat</span>
+                    {plan.preis}€<span className="text-sm font-normal text-foreground/65">/Monat</span>
                   </p>
-                  <p className="text-sm text-foreground/50 mb-4">
+                  <p className="text-sm text-foreground/65 mb-4">
                     {plan.limit}
                     {active ? " · aktuell aktiv" : ""}
                   </p>
                   <ul className="text-sm space-y-1.5 mb-5">
                     {plan.features.map((f) => (
                       <li key={f} className="flex items-center gap-2 text-foreground/70">
-                        <Check size={14} className="text-foreground/40 shrink-0" />
+                        <Check size={14} className="text-foreground/65 shrink-0" />
                         {f}
                       </li>
                     ))}
@@ -255,14 +255,14 @@ export default function EinstellungenPage() {
             <h3 className="font-medium mb-4">Zahlungsmethode</h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-5">
               <label className="block">
-                <span className="text-xs text-foreground/50 mb-1 block">Karteninhaber</span>
+                <span className="text-xs text-foreground/65 mb-1 block">Karteninhaber</span>
                 <input
                   placeholder="Name auf der Karte"
                   className="w-full rounded-full border border-border bg-surface px-4 py-2.5 text-sm outline-none"
                 />
               </label>
               <label className="block">
-                <span className="text-xs text-foreground/50 mb-1 block">Zahlungsart</span>
+                <span className="text-xs text-foreground/65 mb-1 block">Zahlungsart</span>
                 <select className="w-full rounded-full border border-border bg-surface px-4 py-2.5 text-sm outline-none">
                   <option>Visa / Mastercard</option>
                   <option>SEPA-Lastschrift</option>
@@ -286,7 +286,7 @@ export default function EinstellungenPage() {
             </button>
           </Card>
 
-          <p className="text-xs text-foreground/40 mt-4 max-w-xl">
+          <p className="text-xs text-foreground/65 mt-4 max-w-xl">
             Hinweis: Vertrieb erfolgt als Progressive Web App über einen Link auf der Website —
             dadurch entfallen die 15–20 % Store-Gebühren von Apple/Google.
           </p>

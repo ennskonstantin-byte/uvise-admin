@@ -35,7 +35,7 @@ export function NewQualificationModal({ onClose }: { onClose: () => void }) {
       <div className="w-full max-w-md rounded-3xl bg-background border border-border p-6 sm:p-8">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-xl font-semibold">Qualifikation hinzufügen</h2>
-          <button onClick={onClose} className="text-foreground/50 hover:text-foreground text-sm">
+          <button onClick={onClose} className="text-foreground/65 hover:text-foreground text-sm">
             Abbrechen
           </button>
         </div>
@@ -46,7 +46,7 @@ export function NewQualificationModal({ onClose }: { onClose: () => void }) {
 
         <div className="space-y-3">
           <div>
-            <p className="text-xs text-foreground/50 mb-1">Mitarbeiter</p>
+            <p className="text-xs text-foreground/65 mb-1">Mitarbeiter</p>
             <select
               value={employeeId}
               onChange={(e) => setEmployeeId(e.target.value)}
@@ -62,14 +62,14 @@ export function NewQualificationModal({ onClose }: { onClose: () => void }) {
           </div>
 
           <div>
-            <p className="text-xs text-foreground/50 mb-2">Qualifikation</p>
+            <p className="text-xs text-foreground/65 mb-2">Qualifikation</p>
             <input
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="Eigene Qualifikation frei eingeben…"
               className="w-full rounded-full border border-border bg-surface px-4 py-2.5 text-sm outline-none"
             />
-            <p className="text-[11px] text-foreground/40 mt-2 mb-2">oder aus 20 gängigen wählen:</p>
+            <p className="text-[11px] text-foreground/65 mt-2 mb-2">oder aus 20 gängigen wählen:</p>
             <div className="flex flex-wrap gap-2 max-h-40 overflow-y-auto">
               {QUALIFICATION_PRESETS.map((preset) => (
                 <button
@@ -88,7 +88,7 @@ export function NewQualificationModal({ onClose }: { onClose: () => void }) {
           </div>
 
           <div>
-            <p className="text-xs text-foreground/50 mb-1">Ablaufdatum (optional)</p>
+            <p className="text-xs text-foreground/65 mb-1">Ablaufdatum (optional)</p>
             <DateSelect value={ablaufdatum} onChange={setAblaufdatum} minYear={2024} maxYear={2045} />
           </div>
         </div>

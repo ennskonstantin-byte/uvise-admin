@@ -35,7 +35,7 @@ export function EditCategoryModal({
       <div className="w-full max-w-md rounded-3xl bg-background border border-border p-6 sm:p-8">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-xl font-semibold">Kategorie bearbeiten</h2>
-          <button onClick={onClose} className="text-foreground/50 hover:text-foreground text-sm">
+          <button onClick={onClose} className="text-foreground/65 hover:text-foreground text-sm">
             Abbrechen
           </button>
         </div>
@@ -46,7 +46,7 @@ export function EditCategoryModal({
 
         <div className="space-y-3">
           <div>
-            <p className="text-xs text-foreground/50 mb-2">Symbol</p>
+            <p className="text-xs text-foreground/65 mb-2">Symbol</p>
             <div className="grid grid-cols-6 gap-2 max-h-32 overflow-y-auto pr-1">
               {CATEGORY_ICON_OPTIONS.map((opt) => (
                 <button
@@ -72,7 +72,7 @@ export function EditCategoryModal({
           />
 
           <div>
-            <p className="text-xs text-foreground/50 mb-2">
+            <p className="text-xs text-foreground/65 mb-2">
               Mitarbeiter in „{category.name}" (an-/abwählen)
             </p>
             <div className="max-h-40 overflow-y-auto rounded-2xl border border-border divide-y divide-border">
@@ -98,7 +98,7 @@ export function EditCategoryModal({
                 );
               })}
               {employees.length === 0 && (
-                <p className="px-3 py-2 text-sm text-foreground/50">Noch keine Mitarbeiter.</p>
+                <p className="px-3 py-2 text-sm text-foreground/65">Noch keine Mitarbeiter.</p>
               )}
             </div>
           </div>

@@ -42,12 +42,12 @@ export function AssignTrainingModal({
       <div className="w-full max-w-md rounded-3xl bg-background border border-border p-6 sm:p-8">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-xl font-semibold">„{training.name}" verteilen</h2>
-          <button onClick={onClose} className="text-foreground/50 hover:text-foreground text-sm">
+          <button onClick={onClose} className="text-foreground/65 hover:text-foreground text-sm">
             Abbrechen
           </button>
         </div>
 
-        <p className="text-xs text-foreground/50 mb-3">An welche Mitarbeiter?</p>
+        <p className="text-xs text-foreground/65 mb-3">An welche Mitarbeiter?</p>
         <div className="space-y-2 max-h-80 overflow-y-auto mb-6">
           {activeEmployees.map((e) => {
             const has = already.has(e.id);
@@ -67,13 +67,13 @@ export function AssignTrainingModal({
                 />
                 <span className="text-sm">
                   {e.vorname} {e.nachname}
-                  {has && <span className="text-foreground/40"> (bereits zugewiesen)</span>}
+                  {has && <span className="text-foreground/65"> (bereits zugewiesen)</span>}
                 </span>
               </label>
             );
           })}
           {activeEmployees.length === 0 && (
-            <p className="text-sm text-foreground/50">Keine Mitarbeiter vorhanden.</p>
+            <p className="text-sm text-foreground/65">Keine Mitarbeiter vorhanden.</p>
           )}
         </div>
 

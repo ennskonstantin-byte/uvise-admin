@@ -70,7 +70,7 @@ export default function QualifikationenPage() {
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="font-medium truncate">{q.name}</p>
-                  <p className="text-xs text-foreground/50">
+                  <p className="text-xs text-foreground/65">
                     {employeeName(employees, q.employeeId)} · Läuft ab: {q.ablaufdatum}
                   </p>
                 </div>
@@ -91,7 +91,7 @@ export default function QualifikationenPage() {
             );
           })}
           {qualifications.length === 0 && (
-            <p className="px-5 py-4 text-sm text-foreground/50">
+            <p className="px-5 py-4 text-sm text-foreground/65">
               Keine Qualifikationen erfasst.
             </p>
           )}

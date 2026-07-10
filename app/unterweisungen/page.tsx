@@ -104,7 +104,7 @@ export default function UnterweisungenPage() {
                   <span className="text-lg">{t.icon}</span>
                   <div className="flex-1 min-w-0">
                     <p className="font-medium truncate">{t.name}</p>
-                    <p className="text-xs text-foreground/50">
+                    <p className="text-xs text-foreground/65">
                       Erstellt: {t.erstelltAm} · Läuft ab: {t.ablaufdatum}
                     </p>
                   </div>
@@ -165,13 +165,13 @@ export default function UnterweisungenPage() {
                   </div>
                 </div>
                 <p className="font-medium mt-3">{b.name}</p>
-                <p className="text-sm text-foreground/50">
+                <p className="text-sm text-foreground/65">
                   {b.trainingIds.length} Unterweisung(en)
                 </p>
               </div>
             ))}
             {bundles.length === 0 && (
-              <p className="text-foreground/50 text-sm text-center col-span-full mt-6">
+              <p className="text-foreground/65 text-sm text-center col-span-full mt-6">
                 Noch keine Bundles angelegt.
               </p>
             )}

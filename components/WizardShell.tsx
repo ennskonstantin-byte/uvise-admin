@@ -28,7 +28,7 @@ export function WizardShell({
           <h2 className="text-xl font-semibold">{title}</h2>
           <button
             onClick={onCancel}
-            className="text-foreground/50 hover:text-foreground text-sm"
+            className="text-foreground/65 hover:text-foreground text-sm"
           >
             Abbrechen
           </button>

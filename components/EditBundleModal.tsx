@@ -36,7 +36,7 @@ export function EditBundleModal({
       <div className="w-full max-w-md rounded-3xl bg-background border border-border p-6 sm:p-8">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-xl font-semibold">Bundle bearbeiten</h2>
-          <button onClick={onClose} className="text-foreground/50 hover:text-foreground text-sm">
+          <button onClick={onClose} className="text-foreground/65 hover:text-foreground text-sm">
             Abbrechen
           </button>
         </div>
@@ -47,7 +47,7 @@ export function EditBundleModal({
 
         <div className="space-y-3">
           <div>
-            <p className="text-xs text-foreground/50 mb-2">Symbol</p>
+            <p className="text-xs text-foreground/65 mb-2">Symbol</p>
             <div className="flex flex-wrap gap-3">
               {ICONS.map((i) => (
                 <button
@@ -72,7 +72,7 @@ export function EditBundleModal({
           />
 
           <div>
-            <p className="text-xs text-foreground/50 mb-2">Unterweisungen</p>
+            <p className="text-xs text-foreground/65 mb-2">Unterweisungen</p>
             <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
               {trainings.map((t) => (
                 <label key={t.id} className="flex items-center gap-2 text-sm">

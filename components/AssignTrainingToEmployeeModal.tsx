@@ -45,7 +45,7 @@ export function AssignTrainingToEmployeeModal({
           <h2 className="text-xl font-semibold">
             Unterweisung für {employee.vorname} zuweisen
           </h2>
-          <button onClick={onClose} className="text-foreground/50 hover:text-foreground text-sm">
+          <button onClick={onClose} className="text-foreground/65 hover:text-foreground text-sm">
             Abbrechen
           </button>
         </div>
@@ -67,7 +67,7 @@ export function AssignTrainingToEmployeeModal({
             </label>
           ))}
           {available.length === 0 && (
-            <p className="text-sm text-foreground/50">
+            <p className="text-sm text-foreground/65">
               Alle vorhandenen Unterweisungen sind bereits zugewiesen.
             </p>
           )}

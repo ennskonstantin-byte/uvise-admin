@@ -102,7 +102,7 @@ export default function DashboardPage() {
                   <li key={r.key} className="flex items-center gap-2 text-sm text-foreground/80">
                     <span className={`h-2 w-2 rounded-full ${r.overdue ? "bg-red-500" : "bg-amber-500"}`} />
                     <span className="font-medium">{r.text}</span>
-                    <span className="text-foreground/50">· {r.sub}</span>
+                    <span className="text-foreground/65">· {r.sub}</span>
                   </li>
                 ))}
               </ul>
@@ -162,7 +162,7 @@ export default function DashboardPage() {
           <div className="relative ml-auto w-64">
             <Search
               size={16}
-              className="absolute left-3.5 top-1/2 -translate-y-1/2 text-foreground/40"
+              className="absolute left-3.5 top-1/2 -translate-y-1/2 text-foreground/65"
             />
             <input
               value={query}
@@ -180,7 +180,7 @@ export default function DashboardPage() {
         </div>
 
         {filtered.length === 0 && (
-          <p className="text-foreground/50 text-sm mt-10 text-center">
+          <p className="text-foreground/65 text-sm mt-10 text-center">
             Keine Mitarbeiter gefunden.
           </p>
         )}

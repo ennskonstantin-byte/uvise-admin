@@ -22,7 +22,7 @@ export default function RueckfragenPage() {
         <div className="space-y-4">
           {questions.map((q) => (
             <div key={q.id} className="rounded-3xl border border-border p-5">
-              <p className="text-xs text-foreground/50 mb-2">
+              <p className="text-xs text-foreground/65 mb-2">
                 {employeeName(employees, q.employeeId)} ·{" "}
                 {trainingName(trainings, q.trainingId)} · {q.gestelltAm}
               </p>
@@ -66,7 +66,7 @@ export default function RueckfragenPage() {
           ))}
 
           {questions.length === 0 && (
-            <p className="text-sm text-foreground/50 text-center py-6">
+            <p className="text-sm text-foreground/65 text-center py-6">
               Noch keine Rückfragen vorhanden.
             </p>
           )}
