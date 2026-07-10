@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { TRAINING_ICON_OPTIONS, type Training } from "@/lib/mockData";
 import { useAppData } from "@/lib/store";
+import { DateSelect } from "@/components/DateSelect";
 
 // Wandelt ein angezeigtes Datum (dd.mm.yyyy oder "—") in ein <input type=date>-Wert (yyyy-mm-dd)
 function toInputDate(display: string): string {
@@ -98,12 +99,7 @@ export function EditTrainingModal({
 
           <div>
             <p className="text-xs text-foreground/65 mb-1">Ablaufdatum</p>
-            <input
-              type="date"
-              value={ablaufdatum}
-              onChange={(e) => setAblaufdatum(e.target.value)}
-              className="w-full rounded-full border border-border bg-surface px-4 py-2.5 text-sm outline-none"
-            />
+            <DateSelect value={ablaufdatum} onChange={setAblaufdatum} minYear={2024} maxYear={2045} />
           </div>
         </div>
 

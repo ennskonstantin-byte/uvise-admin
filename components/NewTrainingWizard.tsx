@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Search } from "lucide-react";
 import { WizardShell } from "@/components/WizardShell";
+import { DateSelect } from "@/components/DateSelect";
 import { useAppData } from "@/lib/store";
 import { TRAINING_ICON_OPTIONS, BUNDLE_ICONS, type Training } from "@/lib/mockData";
 
@@ -349,12 +350,7 @@ export function NewTrainingWizard({ onClose }: { onClose: () => void }) {
       {step === 3 && (
         <div>
           <p className="mb-2 text-sm text-foreground/60">Ablaufdatum / Erneuerung</p>
-          <input
-            type="date"
-            value={ablaufdatum}
-            onChange={(e) => setAblaufdatum(e.target.value)}
-            className="w-full rounded-full border border-border bg-surface px-4 py-2.5 text-sm outline-none"
-          />
+          <DateSelect value={ablaufdatum} onChange={setAblaufdatum} minYear={2024} maxYear={2045} />
           <p className="text-sm mt-3">
             Automatische Vorwarnung 2 Wochen vor Ablauf wird danach aktiv.
           </p>
