@@ -1,8 +1,8 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import Link from "next/link";
-import { Search, Pencil, Trash2, Settings2 } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { Search, Pencil, Trash2, Settings2, ChevronRight } from "lucide-react";
 import { DashboardShell } from "@/components/DashboardShell";
 import { PageHeader } from "@/components/PageHeader";
 import { Card } from "@/components/Card";
@@ -15,6 +15,7 @@ import { type Category, type Employee } from "@/lib/mockData";
 import { useAppData } from "@/lib/store";
 
 export default function MitarbeiterPage() {
+  const router = useRouter();
   const { employees, categories, deleteEmployee, setEmployeeArchived, deleteCategory } =
     useAppData();
   const [query, setQuery] = useState("");
@@ -179,7 +180,19 @@ export default function MitarbeiterPage() {
 
               <div className="rounded-3xl border border-border divide-y divide-border overflow-hidden">
                 {employees.map((e) => (
-                  <div key={e.id} className="flex items-center gap-4 px-5 py-3">
+                  <div
+                    key={e.id}
+                    role="button"
+                    tabIndex={0}
+                    onClick={() => router.push(`/mitarbeiter/${e.id}`)}
+                    onKeyDown={(ev) => {
+                      if (ev.key === "Enter" || ev.key === " ") {
+                        ev.preventDefault();
+                        router.push(`/mitarbeiter/${e.id}`);
+                      }
+                    }}
+                    className="btn-feedback flex items-center gap-4 px-5 py-3 cursor-pointer hover:bg-surface"
+                  >
                     <div
                       className="relative shrink-0"
                       title={
@@ -209,27 +222,28 @@ export default function MitarbeiterPage() {
                       </div>
                       <p className="text-xs text-foreground/65">{e.personalnummer}</p>
                     </div>
-                    <Link
-                      href={`/mitarbeiter/${e.id}`}
-                      className="btn-feedback text-sm rounded-full border border-border px-3 py-1.5 hover:border-foreground/30"
-                    >
-                      Details
-                    </Link>
                     <button
-                      onClick={() => setEditing(e)}
-                      className="h-8 w-8 rounded-full border border-border flex items-center justify-center hover:border-foreground/30"
+                      onClick={(ev) => {
+                        ev.stopPropagation();
+                        setEditing(e);
+                      }}
+                      className="h-8 w-8 rounded-full border border-border flex items-center justify-center hover:border-foreground/30 shrink-0"
                       aria-label="Bearbeiten"
                     >
                       <Pencil size={14} />
                     </button>
                     <button
-                      onClick={() => handleDelete(e.id, `${e.vorname} ${e.nachname}`)}
+                      onClick={(ev) => {
+                        ev.stopPropagation();
+                        handleDelete(e.id, `${e.vorname} ${e.nachname}`);
+                      }}
                       disabled={deletingId === e.id}
-                      className="h-8 w-8 rounded-full border border-border flex items-center justify-center text-red-500 hover:border-red-300 disabled:opacity-40"
+                      className="h-8 w-8 rounded-full border border-border flex items-center justify-center text-red-600 hover:border-red-300 disabled:opacity-40 shrink-0"
                       aria-label="Löschen"
                     >
                       <Trash2 size={14} />
                     </button>
+                    <ChevronRight size={16} className="text-foreground/40 shrink-0" />
                   </div>
                 ))}
               </div>
