@@ -1,6 +1,7 @@
 import Link from "next/link";
-import { initials, type Employee } from "@/lib/mockData";
+import { type Employee } from "@/lib/mockData";
 import { QualiIcons } from "@/components/QualiIcons";
+import { EmployeeAvatar } from "@/components/EmployeeAvatar";
 
 export function EmployeeCard({ employee }: { employee: Employee }) {
   const { id, vorname, nachname, kategorie, ampel, offenePunkte, qualifikationsIcons, fotoUrl } =
@@ -13,17 +14,7 @@ export function EmployeeCard({ employee }: { employee: Employee }) {
     >
       <div className="flex items-start justify-between">
         <div className="relative">
-          {fotoUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={fotoUrl} alt="" className="h-14 w-14 rounded-full object-cover" />
-          ) : (
-            <div
-              className="h-14 w-14 rounded-full flex items-center justify-center text-white font-semibold"
-              style={{ background: "var(--accent-gradient)" }}
-            >
-              {initials(vorname, nachname)}
-            </div>
-          )}
+          <EmployeeAvatar vorname={vorname} nachname={nachname} fotoUrl={fotoUrl} size={56} />
           {offenePunkte > 0 && (
             <div className="absolute -top-1 -right-1 h-5 min-w-5 px-1 rounded-full bg-red-600 text-white text-[11px] font-semibold flex items-center justify-center">
               {offenePunkte}

@@ -10,7 +10,8 @@ import { EditEmployeeModal } from "@/components/EditEmployeeModal";
 import { AssignTrainingToEmployeeModal } from "@/components/AssignTrainingToEmployeeModal";
 import { NewQualificationModal } from "@/components/NewQualificationModal";
 import { useToast } from "@/components/Toast";
-import { trainingName, initials } from "@/lib/mockData";
+import { EmployeeAvatar } from "@/components/EmployeeAvatar";
+import { trainingName } from "@/lib/mockData";
 import { useAppData } from "@/lib/store";
 
 const REMINDER_HINT =
@@ -65,21 +66,12 @@ export default function EmployeeDetailPage() {
 
       <Card>
         <div className="flex flex-wrap items-center gap-4 mb-8">
-          {employee.fotoUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={employee.fotoUrl}
-              alt=""
-              className="h-16 w-16 rounded-full object-cover"
-            />
-          ) : (
-            <div
-              className="h-16 w-16 rounded-full flex items-center justify-center text-white text-lg font-semibold"
-              style={{ background: "var(--accent-gradient)" }}
-            >
-              {initials(employee.vorname, employee.nachname)}
-            </div>
-          )}
+          <EmployeeAvatar
+            vorname={employee.vorname}
+            nachname={employee.nachname}
+            fotoUrl={employee.fotoUrl}
+            size={64}
+          />
           <div className="flex-1 min-w-0">
             <h1 className="text-2xl font-semibold">
               {employee.vorname} {employee.nachname}

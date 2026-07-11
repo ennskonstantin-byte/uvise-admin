@@ -1,10 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { initials, CATEGORY_ICON_OPTIONS, istMinderjaehrig as isMinderjaehrig, type Employee } from "@/lib/mockData";
+import { CATEGORY_ICON_OPTIONS, istMinderjaehrig as isMinderjaehrig, type Employee } from "@/lib/mockData";
 import { useAppData } from "@/lib/store";
 import { Switch } from "@/components/Switch";
 import { DateSelect } from "@/components/DateSelect";
+import { EmployeeAvatar } from "@/components/EmployeeAvatar";
 import { useEscapeClose } from "@/lib/useEscapeClose";
 
 export function EditEmployeeModal({
@@ -105,21 +106,7 @@ export function EditEmployeeModal({
 
         <div className="flex flex-col items-center mb-5">
           <div className="relative">
-            {live.fotoUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={live.fotoUrl}
-                alt="Foto"
-                className="h-20 w-20 rounded-full object-cover border border-border"
-              />
-            ) : (
-              <div
-                className="h-20 w-20 rounded-full flex items-center justify-center text-white text-lg font-semibold"
-                style={{ background: "var(--accent-gradient)" }}
-              >
-                {initials(vorname, nachname)}
-              </div>
-            )}
+            <EmployeeAvatar vorname={vorname} nachname={nachname} fotoUrl={live.fotoUrl} size={80} />
             <label className="absolute bottom-0 right-0 h-7 w-7 rounded-full text-white flex items-center justify-center text-sm cursor-pointer" style={{ background: "var(--accent-gradient)" }}>
               +
               <input type="file" accept="image/*" className="hidden" onChange={handlePhoto} />

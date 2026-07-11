@@ -6,7 +6,8 @@ import { DashboardShell } from "@/components/DashboardShell";
 import { PageHeader } from "@/components/PageHeader";
 import { Card } from "@/components/Card";
 import { ArchiveDocumentModal } from "@/components/ArchiveDocumentModal";
-import { initials, trainingName, type EmployeeTraining } from "@/lib/mockData";
+import { trainingName, type EmployeeTraining } from "@/lib/mockData";
+import { EmployeeAvatar } from "@/components/EmployeeAvatar";
 import { useAppData } from "@/lib/store";
 
 const YEARS = ["2026", "2025", "2024"];
@@ -188,11 +189,8 @@ export default function ArchivPage() {
               onClick={() => setEmployeeId(e.id)}
               className="text-left rounded-3xl border border-border bg-surface p-5 hover:shadow-md transition-shadow"
             >
-              <div
-                className="h-12 w-12 rounded-full flex items-center justify-center text-white font-semibold mb-3"
-                style={{ background: "var(--accent-gradient)" }}
-              >
-                {initials(e.vorname, e.nachname)}
+              <div className="mb-3">
+                <EmployeeAvatar vorname={e.vorname} nachname={e.nachname} fotoUrl={e.fotoUrl} size={48} />
               </div>
               <p className="font-medium">
                 {e.vorname} {e.nachname}
@@ -239,8 +237,8 @@ export default function ArchivPage() {
                 onClick={() => setEmployeeId(e.id)}
                 className="text-left rounded-3xl border border-border bg-surface p-5 hover:shadow-md transition-shadow opacity-60"
               >
-                <div className="h-12 w-12 rounded-full flex items-center justify-center text-white font-semibold mb-3 bg-foreground/40">
-                  {initials(e.vorname, e.nachname)}
+                <div className="mb-3">
+                  <EmployeeAvatar vorname={e.vorname} nachname={e.nachname} fotoUrl={e.fotoUrl} size={48} grayscale />
                 </div>
                 <p className="font-medium">
                   {e.vorname} {e.nachname}

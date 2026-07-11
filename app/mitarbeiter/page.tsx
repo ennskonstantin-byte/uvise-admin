@@ -10,7 +10,8 @@ import { NewEmployeeWizard } from "@/components/NewEmployeeWizard";
 import { EditEmployeeModal } from "@/components/EditEmployeeModal";
 import { EditCategoryModal } from "@/components/EditCategoryModal";
 import { QualiIcons } from "@/components/QualiIcons";
-import { initials, type Category, type Employee } from "@/lib/mockData";
+import { EmployeeAvatar } from "@/components/EmployeeAvatar";
+import { type Category, type Employee } from "@/lib/mockData";
 import { useAppData } from "@/lib/store";
 
 export default function MitarbeiterPage() {
@@ -176,17 +177,7 @@ export default function MitarbeiterPage() {
               <div className="rounded-3xl border border-border divide-y divide-border overflow-hidden">
                 {employees.map((e) => (
                   <div key={e.id} className="flex items-center gap-4 px-5 py-3">
-                    {e.fotoUrl ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img src={e.fotoUrl} alt="" className="h-10 w-10 rounded-full object-cover shrink-0" />
-                    ) : (
-                      <div
-                        className="h-10 w-10 rounded-full flex items-center justify-center text-white text-sm font-semibold shrink-0"
-                        style={{ background: "var(--accent-gradient)" }}
-                      >
-                        {initials(e.vorname, e.nachname)}
-                      </div>
-                    )}
+                    <EmployeeAvatar vorname={e.vorname} nachname={e.nachname} fotoUrl={e.fotoUrl} size={40} />
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
                         <p className="font-medium truncate">
@@ -284,14 +275,7 @@ export default function MitarbeiterPage() {
               <div className="rounded-3xl border border-border divide-y divide-border overflow-hidden">
                 {archived.map((e) => (
                   <div key={e.id} className="flex items-center gap-4 px-5 py-3 opacity-60">
-                    {e.fotoUrl ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img src={e.fotoUrl} alt="" className="h-10 w-10 rounded-full object-cover grayscale" />
-                    ) : (
-                      <div className="h-10 w-10 rounded-full flex items-center justify-center text-white text-sm font-semibold shrink-0 bg-foreground/40">
-                        {initials(e.vorname, e.nachname)}
-                      </div>
-                    )}
+                    <EmployeeAvatar vorname={e.vorname} nachname={e.nachname} fotoUrl={e.fotoUrl} size={40} grayscale />
                     <div className="flex-1 min-w-0">
                       <p className="font-medium truncate">
                         {e.vorname} {e.nachname}

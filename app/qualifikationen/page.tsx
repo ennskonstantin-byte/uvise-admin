@@ -7,7 +7,8 @@ import { PageHeader } from "@/components/PageHeader";
 import { Card } from "@/components/Card";
 import { NewQualificationModal } from "@/components/NewQualificationModal";
 import { useToast } from "@/components/Toast";
-import { employeeName, initials } from "@/lib/mockData";
+import { employeeName } from "@/lib/mockData";
+import { EmployeeAvatar } from "@/components/EmployeeAvatar";
 import { useAppData } from "@/lib/store";
 
 const STATUS_META: Record<string, { label: string; color: string }> = {
@@ -53,17 +54,12 @@ export default function QualifikationenPage() {
             return (
               <div key={q.id} className="flex items-center gap-4 px-5 py-4">
                 <div className="relative shrink-0">
-                  {emp?.fotoUrl ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={emp.fotoUrl} alt="" className="h-11 w-11 rounded-full object-cover" />
-                  ) : (
-                    <div
-                      className="h-11 w-11 rounded-full flex items-center justify-center text-white text-sm font-semibold"
-                      style={{ background: "var(--accent-gradient)" }}
-                    >
-                      {emp ? initials(emp.vorname, emp.nachname) : "?"}
-                    </div>
-                  )}
+                  <EmployeeAvatar
+                    vorname={emp?.vorname ?? "?"}
+                    nachname={emp?.nachname ?? ""}
+                    fotoUrl={emp?.fotoUrl}
+                    size={44}
+                  />
                   <span className="absolute -bottom-1 -right-1 h-5 w-5 rounded-full bg-background border border-border flex items-center justify-center text-[11px]">
                     {q.icon}
                   </span>
