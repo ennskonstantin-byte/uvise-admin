@@ -1,8 +1,9 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState, useCallback } from "react";
+import { createContext, useContext, useEffect, useRef, useState, useCallback } from "react";
 import type { Session } from "@supabase/supabase-js";
 import { supabase } from "@/lib/supabase";
+import { useToast } from "@/components/Toast";
 import {
   type Employee,
   type Training,
@@ -260,6 +261,69 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
 
     return () => listener.subscription.unsubscribe();
   }, [loadData]);
+
+  const { showToast, ToastView } = useToast();
+  // Immer aktuelle Listen für den Realtime-Handler unten (ohne dass die
+  // Subscription bei jeder Datenänderung neu aufgebaut werden muss).
+  const employeesRef = useRef(employees);
+  useEffect(() => {
+    employeesRef.current = employees;
+  }, [employees]);
+  const trainingsRef = useRef(trainings);
+  useEffect(() => {
+    trainingsRef.current = trainings;
+  }, [trainings]);
+
+  // Live-Meldung, sobald ein Mitarbeiter eine neue Rückfrage stellt (nicht
+  // nur der Zähler im Menü, sondern eine sichtbare Kurzmeldung).
+  useEffect(() => {
+    if (!session) return;
+    const channel = supabase
+      .channel("questions-inserts")
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "questions" },
+        (payload) => {
+          const row = payload.new as {
+            id: string;
+            employee_id: string;
+            training_id: string;
+            frage: string;
+            antwort: string | null;
+            status: "offen" | "beantwortet";
+            created_at: string;
+          };
+          setQuestions((prev) =>
+            prev.some((q) => q.id === row.id)
+              ? prev
+              : [
+                  ...prev,
+                  {
+                    id: row.id,
+                    employeeId: row.employee_id,
+                    trainingId: row.training_id,
+                    frage: row.frage,
+                    antwort: row.antwort,
+                    status: row.status,
+                    gestelltAm: formatDate(row.created_at),
+                  },
+                ]
+          );
+          const emp = employeesRef.current.find((e) => e.id === row.employee_id);
+          const training = trainingsRef.current.find((t) => t.id === row.training_id);
+          showToast(
+            `💬 Neue Rückfrage${emp ? ` von ${emp.vorname} ${emp.nachname}` : ""}${
+              training ? ` zu „${training.name}"` : ""
+            }`
+          );
+        }
+      )
+      .subscribe();
+    return () => {
+      supabase.removeChannel(channel);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [session?.user.id]);
 
   async function addEmployee(input: NewEmployeeInput): Promise<Employee> {
     if (!company) throw new Error("Keine Firma geladen");
@@ -603,6 +667,7 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
       }}
     >
       {children}
+      <ToastView />
     </AppDataContext.Provider>
   );
 }
