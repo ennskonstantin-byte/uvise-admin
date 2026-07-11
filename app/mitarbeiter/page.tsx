@@ -87,7 +87,10 @@ export default function MitarbeiterPage() {
         icon: cat.icon,
         employees: filtered.filter((e) => e.kategorie === cat.name),
       }))
-      .filter((g) => g.employees.length > 0);
+      .filter((g) => g.employees.length > 0)
+      // Größte Gruppen zuerst — sonst verschwinden gut gefüllte Kategorien
+      // zwischen vielen kleinen 1-Personen-Gruppen.
+      .sort((a, b) => b.employees.length - a.employees.length);
   }, [employees, categories, query]);
 
   return (
@@ -177,7 +180,26 @@ export default function MitarbeiterPage() {
               <div className="rounded-3xl border border-border divide-y divide-border overflow-hidden">
                 {employees.map((e) => (
                   <div key={e.id} className="flex items-center gap-4 px-5 py-3">
-                    <EmployeeAvatar vorname={e.vorname} nachname={e.nachname} fotoUrl={e.fotoUrl} size={40} />
+                    <div
+                      className="relative shrink-0"
+                      title={
+                        e.offenePunkte > 0
+                          ? `${e.offenePunkte} offene Unterweisung(en)`
+                          : "Alles unterschrieben"
+                      }
+                    >
+                      <EmployeeAvatar vorname={e.vorname} nachname={e.nachname} fotoUrl={e.fotoUrl} size={40} />
+                      {e.offenePunkte > 0 ? (
+                        <span className="absolute -top-1 -right-1 h-4 min-w-4 px-0.5 rounded-full bg-red-600 text-white text-[9px] font-bold flex items-center justify-center border-2 border-background">
+                          {e.offenePunkte}
+                        </span>
+                      ) : (
+                        <span
+                          className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border-2 border-background"
+                          style={{ background: "var(--ampel-green)" }}
+                        />
+                      )}
+                    </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
                         <p className="font-medium truncate">
@@ -186,26 +208,6 @@ export default function MitarbeiterPage() {
                         <QualiIcons icons={e.qualifikationsIcons} />
                       </div>
                       <p className="text-xs text-foreground/65">{e.personalnummer}</p>
-                    </div>
-                    <div
-                      className="flex items-center gap-1.5 shrink-0"
-                      title={
-                        e.offenePunkte > 0
-                          ? `${e.offenePunkte} offene Unterweisung(en)`
-                          : "Alles unterschrieben"
-                      }
-                    >
-                      {e.offenePunkte > 0 && (
-                        <span className="rounded-full bg-red-600 text-white text-[11px] font-semibold min-w-5 h-5 px-1 flex items-center justify-center">
-                          {e.offenePunkte}
-                        </span>
-                      )}
-                      <span
-                        className="h-3 w-3 rounded-full"
-                        style={{
-                          background: e.ampel === "rot" ? "var(--ampel-red)" : "var(--ampel-green)",
-                        }}
-                      />
                     </div>
                     <Link
                       href={`/mitarbeiter/${e.id}`}
