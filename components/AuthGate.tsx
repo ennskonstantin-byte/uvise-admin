@@ -266,12 +266,32 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
       setIsChef(null);
       return;
     }
-    supabase
-      .from("employees")
-      .select("ist_beauftragter")
-      .eq("auth_user_id", session.user.id)
-      .maybeSingle()
-      .then(({ data }) => setIsChef(data ? !!data.ist_beauftragter : false));
+    let cancelled = false;
+    // Direkt nach einer Registrierung ist der session-Wechsel oft schneller
+    // als die create_company_and_owner-RPC, die den employees-Datensatz erst
+    // anlegt — ohne Wiederholung würde das fälschlich als "Mitarbeiter-Konto"
+    // erkannt. Bis zu 5x mit kurzer Pause erneut versuchen, bevor wir final
+    // "kein Beauftragter" annehmen.
+    async function checkRole() {
+      for (let attempt = 0; attempt < 5; attempt++) {
+        const { data } = await supabase
+          .from("employees")
+          .select("ist_beauftragter")
+          .eq("auth_user_id", session!.user.id)
+          .maybeSingle();
+        if (cancelled) return;
+        if (data) {
+          setIsChef(!!data.ist_beauftragter);
+          return;
+        }
+        await new Promise((resolve) => setTimeout(resolve, 600));
+      }
+      if (!cancelled) setIsChef(false);
+    }
+    checkRole();
+    return () => {
+      cancelled = true;
+    };
   }, [session]);
 
   if (PUBLIC_PATHS.includes(pathname)) {
