@@ -7,10 +7,16 @@ import { DateSelect } from "@/components/DateSelect";
 import { EmployeeSearchPicker } from "@/components/EmployeeSearchPicker";
 import { useEscapeClose } from "@/lib/useEscapeClose";
 
-export function NewQualificationModal({ onClose }: { onClose: () => void }) {
+export function NewQualificationModal({
+  onClose,
+  defaultEmployeeId,
+}: {
+  onClose: () => void;
+  defaultEmployeeId?: string;
+}) {
   useEscapeClose(onClose);
   const { employees, addQualification } = useAppData();
-  const [employeeId, setEmployeeId] = useState("");
+  const [employeeId, setEmployeeId] = useState(defaultEmployeeId ?? "");
   const [name, setName] = useState("");
   const [ablaufdatum, setAblaufdatum] = useState("");
   const [saving, setSaving] = useState(false);

@@ -25,7 +25,7 @@ export function EmployeeCard({ employee }: { employee: Employee }) {
             </div>
           )}
           {offenePunkte > 0 && (
-            <div className="absolute -top-1 -right-1 h-5 min-w-5 px-1 rounded-full bg-red-500 text-[#171717] text-[11px] font-semibold flex items-center justify-center">
+            <div className="absolute -top-1 -right-1 h-5 min-w-5 px-1 rounded-full bg-red-600 text-white text-[11px] font-semibold flex items-center justify-center">
               {offenePunkte}
             </div>
           )}

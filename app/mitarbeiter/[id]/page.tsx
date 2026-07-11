@@ -3,11 +3,12 @@
 import { useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import { Bell, ArrowLeft, Pencil, Send } from "lucide-react";
+import { Bell, ArrowLeft, Pencil, Send, Plus } from "lucide-react";
 import { DashboardShell } from "@/components/DashboardShell";
 import { Card } from "@/components/Card";
 import { EditEmployeeModal } from "@/components/EditEmployeeModal";
 import { AssignTrainingToEmployeeModal } from "@/components/AssignTrainingToEmployeeModal";
+import { NewQualificationModal } from "@/components/NewQualificationModal";
 import { useToast } from "@/components/Toast";
 import { trainingName, initials } from "@/lib/mockData";
 import { useAppData } from "@/lib/store";
@@ -33,6 +34,7 @@ export default function EmployeeDetailPage() {
   const { showToast, ToastView } = useToast();
   const [editing, setEditing] = useState(false);
   const [assigning, setAssigning] = useState(false);
+  const [addingQualification, setAddingQualification] = useState(false);
   const employee = employees.find((e) => e.id === params.id);
   const empTrainings = employeeTrainings.filter((et) => et.employeeId === params.id);
   const empQualifications = qualifications.filter((q) => q.employeeId === params.id);
@@ -146,7 +148,16 @@ export default function EmployeeDetailPage() {
           )}
         </div>
 
-        <h2 className="font-medium mb-3">Qualifikationen</h2>
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="font-medium">Qualifikationen</h2>
+          <button
+            onClick={() => setAddingQualification(true)}
+            className="flex items-center gap-2 text-sm rounded-full px-4 py-2 border border-border hover:border-foreground/30"
+          >
+            <Plus size={14} />
+            Hinzufügen
+          </button>
+        </div>
         <div className="rounded-3xl border border-border divide-y divide-border overflow-hidden">
           {empQualifications.map((q) => (
             <div key={q.id} className="flex items-center gap-4 px-5 py-3">
@@ -174,6 +185,12 @@ export default function EmployeeDetailPage() {
       )}
       {assigning && (
         <AssignTrainingToEmployeeModal employee={employee} onClose={() => setAssigning(false)} />
+      )}
+      {addingQualification && (
+        <NewQualificationModal
+          defaultEmployeeId={employee.id}
+          onClose={() => setAddingQualification(false)}
+        />
       )}
       <ToastView />
     </DashboardShell>

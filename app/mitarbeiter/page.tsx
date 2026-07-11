@@ -196,6 +196,26 @@ export default function MitarbeiterPage() {
                       </div>
                       <p className="text-xs text-foreground/65">{e.personalnummer}</p>
                     </div>
+                    <div
+                      className="flex items-center gap-1.5 shrink-0"
+                      title={
+                        e.offenePunkte > 0
+                          ? `${e.offenePunkte} offene Unterweisung(en)`
+                          : "Alles unterschrieben"
+                      }
+                    >
+                      {e.offenePunkte > 0 && (
+                        <span className="rounded-full bg-red-600 text-white text-[11px] font-semibold min-w-5 h-5 px-1 flex items-center justify-center">
+                          {e.offenePunkte}
+                        </span>
+                      )}
+                      <span
+                        className="h-3 w-3 rounded-full"
+                        style={{
+                          background: e.ampel === "rot" ? "var(--ampel-red)" : "var(--ampel-green)",
+                        }}
+                      />
+                    </div>
                     <Link
                       href={`/mitarbeiter/${e.id}`}
                       className="btn-feedback text-sm rounded-full border border-border px-3 py-1.5 hover:border-foreground/30"

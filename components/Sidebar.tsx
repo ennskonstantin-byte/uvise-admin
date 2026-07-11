@@ -94,7 +94,7 @@ export function Sidebar() {
               <Icon size={18} />
               <span className="flex-1 text-left">{label}</span>
               {!!badge && (
-                <span className="rounded-full bg-white/15 px-2 py-0.5 text-xs font-semibold">
+                <span className="rounded-full bg-red-600 text-white px-2 py-0.5 text-xs font-bold min-w-[20px] text-center">
                   {badge}
                 </span>
               )}
