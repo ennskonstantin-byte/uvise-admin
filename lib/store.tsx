@@ -44,7 +44,7 @@ type AppDataContextValue = {
   employeeTrainings: EmployeeTraining[];
   addEmployee: (input: NewEmployeeInput) => Promise<Employee>;
   addTraining: (input: NewTrainingInput) => Promise<Training>;
-  addBundle: (input: NewBundleInput) => Promise<void>;
+  addBundle: (input: NewBundleInput) => Promise<{ id: string }>;
   addCategory: (input: { name: string; icon: string }) => Promise<void>;
   updateCategory: (id: string, input: { name: string; icon: string }) => Promise<void>;
   setEmployeeCategory: (employeeId: string, kategorie: string) => Promise<void>;
@@ -460,7 +460,7 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
   }
 
   async function addBundle(input: NewBundleInput) {
-    if (!company) return;
+    if (!company) throw new Error("Keine Firma geladen");
     const { data, error } = await supabase
       .from("bundles")
       .insert({ company_id: company.id, name: input.name, icon: input.icon })
@@ -473,6 +473,7 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
         .insert(input.trainingIds.map((trainingId) => ({ bundle_id: data.id, training_id: trainingId })));
     }
     await loadData();
+    return { id: data.id as string };
   }
 
   async function deleteEmployee(id: string) {

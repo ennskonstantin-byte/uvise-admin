@@ -154,11 +154,17 @@ function AuthForm() {
           <LogoMark size={52} />
         </div>
         <h1 className="text-xl font-semibold text-center mb-1">uVise Admin</h1>
-        <p className="text-sm text-foreground/60 text-center mb-6">
+        <p className="text-sm text-foreground/60 text-center mb-1">
           {isRegister
             ? "Neue Firma anlegen und Chef-Konto erstellen"
             : "Login für Beauftragte/Admin deiner Firma"}
         </p>
+        {!isRegister && (
+          <p className="text-xs text-foreground/65 text-center mb-6">
+            Bist du Mitarbeiter*in? Nutze stattdessen die uVise-App.
+          </p>
+        )}
+        {isRegister && <div className="mb-6" />}
 
         {error && (
           <p className="text-sm text-red-600 mb-4 rounded-2xl bg-red-500/10 px-4 py-2">{error}</p>

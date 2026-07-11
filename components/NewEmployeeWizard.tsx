@@ -1,21 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { WizardShell } from "@/components/WizardShell";
 import { CATEGORY_ICON_OPTIONS, QUALIFICATION_PRESETS, istMinderjaehrig as isMinderjaehrig } from "@/lib/mockData";
 import { useAppData } from "@/lib/store";
+import { useEscapeClose } from "@/lib/useEscapeClose";
 import { DateSelect } from "@/components/DateSelect";
 
-const STEP_LABELS = [
-  "Persönliche Daten",
-  "Profilbild",
-  "Kategorie",
-  "Unterweisungen",
-  "Qualifikationen",
-  "Zusammenfassung",
-];
-
 export function NewEmployeeWizard({ onClose }: { onClose: () => void }) {
+  useEscapeClose(onClose);
   const {
     trainings,
     bundles,
@@ -26,7 +18,6 @@ export function NewEmployeeWizard({ onClose }: { onClose: () => void }) {
     addQualification,
     uploadEmployeePhoto,
   } = useAppData();
-  const [step, setStep] = useState(0);
   const [vorname, setVorname] = useState("");
   const [nachname, setNachname] = useState("");
   const [personalnummer, setPersonalnummer] = useState("");
@@ -48,6 +39,8 @@ export function NewEmployeeWizard({ onClose }: { onClose: () => void }) {
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const [done, setDone] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
 
   function handlePhotoPick(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -56,10 +49,8 @@ export function NewEmployeeWizard({ onClose }: { onClose: () => void }) {
     setPhotoPreview(URL.createObjectURL(file));
   }
 
-  const canProceedStep0 = vorname.trim() !== "" && nachname.trim() !== "";
-  const canProceedStep2 = kategorie !== null;
-
   const matchingBundle = bundles.find((b) => b.name === kategorie);
+  const canSave = vorname.trim() !== "" && nachname.trim() !== "" && kategorie !== null;
 
   function toggleTraining(id: string) {
     setSelectedTrainings((prev) =>
@@ -88,9 +79,6 @@ export function NewEmployeeWizard({ onClose }: { onClose: () => void }) {
       setCreatingCategory(false);
     }
   }
-
-  const [error, setError] = useState<string | null>(null);
-  const [saving, setSaving] = useState(false);
 
   async function handleFinish() {
     setSaving(true);
@@ -140,91 +128,87 @@ export function NewEmployeeWizard({ onClose }: { onClose: () => void }) {
 
   if (done) {
     return (
-      <WizardShell
-        title="Mitarbeiter angelegt"
-        stepCount={STEP_LABELS.length}
-        currentStep={STEP_LABELS.length - 1}
-        onBack={() => {}}
-        onNext={onClose}
-        onCancel={onClose}
-        nextLabel="Schließen"
-      >
-        <div className="text-center py-8">
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
+        <div className="w-full max-w-md rounded-3xl bg-background border border-border p-6 sm:p-8 text-center">
           <p className="text-4xl mb-4">✅</p>
           <p className="font-medium">
             {vorname} {nachname} wurde angelegt.
           </p>
-          <p className="text-sm text-foreground/60 mt-2">
+          <p className="text-sm text-foreground/60 mt-2 mb-6">
             Erscheint jetzt in der Mitarbeiter-Liste, dem Dashboard und im Archiv. Ein
             Einladungslink zur Passwortvergabe wurde simuliert an{" "}
             {email || "die angegebene E-Mail"} versendet.
           </p>
+          <button
+            onClick={onClose}
+            className="w-full rounded-full px-5 py-2.5 text-sm font-medium text-white"
+            style={{ background: "var(--accent-gradient)" }}
+          >
+            Schließen
+          </button>
         </div>
-      </WizardShell>
+      </div>
     );
   }
 
   return (
-    <WizardShell
-      title="Neuer Mitarbeiter"
-      stepCount={STEP_LABELS.length}
-      currentStep={step}
-      onBack={() => setStep((s) => Math.max(0, s - 1))}
-      onNext={() => {
-        if (step >= STEP_LABELS.length - 1) {
-          handleFinish();
-        } else {
-          setStep((s) => Math.min(s + 1, STEP_LABELS.length - 1));
-        }
-      }}
-      onCancel={onClose}
-      nextLabel={
-        step === STEP_LABELS.length - 1
-          ? saving
-            ? "Speichert…"
-            : "Mitarbeiter anlegen"
-          : "Weiter"
-      }
-      nextDisabled={
-        saving ||
-        (step === 0 && !canProceedStep0) ||
-        (step === 2 && !canProceedStep2)
-      }
-    >
-      {error && (
-        <p className="text-sm text-red-600 mb-4 rounded-2xl bg-red-500/10 px-4 py-2">
-          {error}
-        </p>
-      )}
-      <p className="text-xs uppercase tracking-wide text-foreground/65 mb-4">
-        Schritt {step + 1} von {STEP_LABELS.length} · {STEP_LABELS[step]}
-      </p>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4 py-8 overflow-y-auto">
+      <div className="w-full max-w-md rounded-3xl bg-background border border-border p-6 sm:p-8 my-auto">
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-xl font-semibold">Neuer Mitarbeiter</h2>
+          <button onClick={onClose} className="text-foreground/65 hover:text-foreground text-sm">
+            Abbrechen
+          </button>
+        </div>
 
-      {step === 0 && (
-        <div className="space-y-3">
-          <input
-            value={vorname}
-            onChange={(e) => setVorname(e.target.value)}
-            placeholder="Vorname"
-            className="w-full rounded-full border border-border bg-surface px-4 py-2.5 text-sm outline-none focus:border-foreground/30"
-          />
-          <input
-            value={nachname}
-            onChange={(e) => setNachname(e.target.value)}
-            placeholder="Nachname"
-            className="w-full rounded-full border border-border bg-surface px-4 py-2.5 text-sm outline-none focus:border-foreground/30"
-          />
-          <div>
-            <span className="text-xs text-foreground/65 mb-1 block">
-              Geburtsdatum (für minderjährige Mitarbeiter)
-            </span>
-            <DateSelect value={geburtsdatum} onChange={setGeburtsdatum} minYear={1940} maxYear={2015} />
+        {error && (
+          <p className="text-sm text-red-600 mb-4 rounded-2xl bg-red-500/10 px-4 py-2">{error}</p>
+        )}
+
+        <div className="flex flex-col items-center mb-4">
+          <div className="relative">
+            {photoPreview ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={photoPreview}
+                alt="Vorschau"
+                className="h-24 w-24 rounded-full object-cover border border-border"
+              />
+            ) : (
+              <div className="h-24 w-24 rounded-full bg-surface border border-border flex items-center justify-center text-foreground/65 text-sm">
+                Foto
+              </div>
+            )}
+            <label
+              className="absolute bottom-0 right-0 h-8 w-8 rounded-full text-white flex items-center justify-center text-lg cursor-pointer"
+              style={{ background: "var(--accent-gradient)" }}
+              aria-label="Foto auswählen"
+            >
+              +
+              <input type="file" accept="image/*" className="hidden" onChange={handlePhotoPick} />
+            </label>
           </div>
-          {geburtsdatum && isMinderjaehrig(geburtsdatum) && (
-            <p className="text-xs text-amber-700">
-              ⚠️ Minderjährig — Unterweisungen 2× jährlich (halbjährlich) erforderlich.
-            </p>
-          )}
+          <p className="text-xs text-foreground/65 mt-2">
+            {photoFile ? "Wird beim Anlegen hochgeladen" : "Foto optional"}
+          </p>
+        </div>
+
+        <div className="space-y-3">
+          <div className="flex gap-3">
+            <input
+              value={vorname}
+              onChange={(e) => setVorname(e.target.value)}
+              placeholder="Vorname"
+              className="w-full rounded-full border border-border bg-surface px-4 py-2.5 text-sm outline-none focus:border-foreground/30"
+            />
+            <input
+              value={nachname}
+              onChange={(e) => setNachname(e.target.value)}
+              placeholder="Nachname"
+              className="w-full rounded-full border border-border bg-surface px-4 py-2.5 text-sm outline-none focus:border-foreground/30"
+            />
+          </div>
+
           <input
             value={personalnummer}
             onChange={(e) => setPersonalnummer(e.target.value)}
@@ -245,142 +229,121 @@ export function NewEmployeeWizard({ onClose }: { onClose: () => void }) {
             placeholder="Telefon (Alternative/Kontakt, optional)"
             className="w-full rounded-full border border-border bg-surface px-4 py-2.5 text-sm outline-none focus:border-foreground/30"
           />
-        </div>
-      )}
 
-      {step === 1 && (
-        <div className="flex flex-col items-center py-6">
-          <div className="relative">
-            {photoPreview ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={photoPreview}
-                alt="Vorschau"
-                className="h-28 w-28 rounded-full object-cover border border-border"
-              />
-            ) : (
-              <div className="h-28 w-28 rounded-full bg-surface border border-border flex items-center justify-center text-foreground/65 text-sm">
-                Foto
-              </div>
+          <div>
+            <span className="text-xs text-foreground/65 mb-1 block">
+              Geburtsdatum — für minderjährige Mitarbeiter (optional)
+            </span>
+            <DateSelect value={geburtsdatum} onChange={setGeburtsdatum} minYear={1940} maxYear={2015} />
+            {geburtsdatum && isMinderjaehrig(geburtsdatum) && (
+              <p className="text-xs text-amber-700 mt-2">
+                ⚠️ Minderjährig — Unterweisungen 2× jährlich (halbjährlich) erforderlich.
+              </p>
             )}
-            <label
-              className="absolute bottom-0 right-0 h-8 w-8 rounded-full text-white flex items-center justify-center text-lg cursor-pointer"
-              style={{ background: "var(--accent-gradient)" }}
-              aria-label="Foto auswählen"
-            >
-              +
-              <input type="file" accept="image/*" className="hidden" onChange={handlePhotoPick} />
-            </label>
           </div>
-          <p className="text-xs text-foreground/65 mt-4">
-            {photoFile ? "Wird beim Anlegen hochgeladen" : "Optional — kann später geändert werden"}
-          </p>
-        </div>
-      )}
 
-      {step === 2 && (
-        <div>
-          <div className="flex flex-wrap gap-2 mb-4">
-            {categories.map((c) => (
+          <div>
+            <p className="text-xs text-foreground/65 mb-2">Kategorie</p>
+            <div className="flex flex-wrap gap-2">
+              {categories.map((c) => (
+                <button
+                  key={c.id}
+                  type="button"
+                  onClick={() => {
+                    setKategorie(c.name);
+                    setShowNewCategory(false);
+                  }}
+                  className={`rounded-full px-4 py-2 text-sm transition-colors ${
+                    kategorie === c.name ? "text-white" : "border border-border text-foreground/70"
+                  }`}
+                  style={kategorie === c.name ? { background: "var(--accent-gradient)" } : undefined}
+                >
+                  {c.icon} {c.name}
+                </button>
+              ))}
               <button
-                key={c.id}
-                onClick={() => {
-                  setKategorie(c.name);
-                  setShowNewCategory(false);
-                }}
-                className={`rounded-full px-4 py-2 text-sm transition-colors ${
-                  kategorie === c.name
-                    ? "text-white"
-                    : "border border-border text-foreground/70"
+                type="button"
+                onClick={() => setShowNewCategory((v) => !v)}
+                className={`rounded-full px-4 py-2 text-sm border ${
+                  showNewCategory
+                    ? "border-foreground/50 bg-surface"
+                    : "border-dashed border-border text-foreground/65"
                 }`}
-                style={kategorie === c.name ? { background: "var(--accent-gradient)" } : undefined}
               >
-                {c.icon} {c.name}
-              </button>
-            ))}
-            <button
-              onClick={() => setShowNewCategory((v) => !v)}
-              className={`rounded-full px-4 py-2 text-sm border ${
-                showNewCategory
-                  ? "border-foreground/50 bg-surface"
-                  : "border-dashed border-border text-foreground/65"
-              }`}
-            >
-              + Neue Kategorie
-            </button>
-          </div>
-
-          {showNewCategory && (
-            <div>
-              <div className="grid grid-cols-4 gap-2 mb-4 max-h-56 overflow-y-auto pr-1">
-                {CATEGORY_ICON_OPTIONS.map((opt) => (
-                  <button
-                    key={opt.name}
-                    onClick={() => {
-                      setNewCategoryIcon(opt.icon);
-                      // Vorschlagsnamen übernehmen (außer den generischen „Sonstiges"-Platzhaltern),
-                      // damit der Name nicht leer bleibt und „Anlegen" freigeschaltet wird.
-                      if (newCategoryName.trim() === "" && !opt.name.startsWith("Sonstiges")) {
-                        setNewCategoryName(opt.name);
-                      }
-                    }}
-                    className={`flex flex-col items-center gap-1 rounded-2xl border p-2 text-center ${
-                      newCategoryIcon === opt.icon
-                        ? "border-foreground/50 bg-surface"
-                        : "border-border"
-                    }`}
-                  >
-                    <span className="text-lg">{opt.icon}</span>
-                    <span className="text-[10px] leading-tight text-foreground/60">
-                      {opt.name}
-                    </span>
-                  </button>
-                ))}
-              </div>
-              <input
-                value={newCategoryName}
-                onChange={(e) => setNewCategoryName(e.target.value)}
-                placeholder="z.B. Staplerfahrer"
-                className="w-full rounded-full border border-border bg-surface px-4 py-2.5 text-sm outline-none mb-3"
-              />
-              <button
-                onClick={handleCreateCategory}
-                disabled={creatingCategory || !newCategoryIcon || newCategoryName.trim() === ""}
-                className="rounded-full px-5 py-2 text-sm font-medium text-white disabled:opacity-40"
-                style={{ background: "var(--accent-gradient)" }}
-              >
-                {creatingCategory ? "Legt an…" : "Kategorie anlegen"}
+                + Neue Kategorie
               </button>
             </div>
-          )}
-        </div>
-      )}
 
-      {step === 3 && (
-        <div>
-          <div className="flex gap-2 mb-4">
-            <button
-              onClick={() => setZuweisungModus("bundle")}
-              className={`rounded-full px-4 py-2 text-sm ${
-                zuweisungModus === "bundle" ? "bg-surface font-medium" : "text-foreground/60"
-              }`}
-            >
-              Bundle der Abteilung
-            </button>
-            <button
-              onClick={() => setZuweisungModus("einzeln")}
-              className={`rounded-full px-4 py-2 text-sm ${
-                zuweisungModus === "einzeln" ? "bg-surface font-medium" : "text-foreground/60"
-              }`}
-            >
-              Einzeln auswählen
-            </button>
+            {showNewCategory && (
+              <div className="mt-3">
+                <div className="grid grid-cols-4 gap-2 mb-3 max-h-40 overflow-y-auto pr-1">
+                  {CATEGORY_ICON_OPTIONS.map((opt) => (
+                    <button
+                      key={opt.name}
+                      type="button"
+                      onClick={() => {
+                        setNewCategoryIcon(opt.icon);
+                        if (newCategoryName.trim() === "" && !opt.name.startsWith("Sonstiges")) {
+                          setNewCategoryName(opt.name);
+                        }
+                      }}
+                      className={`flex flex-col items-center gap-1 rounded-2xl border p-2 text-center ${
+                        newCategoryIcon === opt.icon
+                          ? "border-foreground/50 bg-surface"
+                          : "border-border"
+                      }`}
+                    >
+                      <span className="text-lg">{opt.icon}</span>
+                      <span className="text-[10px] leading-tight text-foreground/60">
+                        {opt.name}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+                <input
+                  value={newCategoryName}
+                  onChange={(e) => setNewCategoryName(e.target.value)}
+                  placeholder="z.B. Staplerfahrer"
+                  className="w-full rounded-full border border-border bg-surface px-4 py-2.5 text-sm outline-none mb-3"
+                />
+                <button
+                  type="button"
+                  onClick={handleCreateCategory}
+                  disabled={creatingCategory || !newCategoryIcon || newCategoryName.trim() === ""}
+                  className="rounded-full px-5 py-2 text-sm font-medium text-white disabled:opacity-40"
+                  style={{ background: "var(--accent-gradient)" }}
+                >
+                  {creatingCategory ? "Legt an…" : "Kategorie anlegen"}
+                </button>
+              </div>
+            )}
           </div>
 
-          {zuweisungModus === "bundle" ? (
-            matchingBundle ? (
-              <div>
-                <p className="text-sm text-foreground/60 mb-2">Enthält:</p>
+          <div>
+            <p className="text-xs text-foreground/65 mb-2">Unterweisungen zuweisen (optional)</p>
+            <div className="flex gap-2 mb-3">
+              <button
+                type="button"
+                onClick={() => setZuweisungModus("bundle")}
+                className={`rounded-full px-4 py-2 text-xs ${
+                  zuweisungModus === "bundle" ? "bg-surface font-medium" : "text-foreground/60"
+                }`}
+              >
+                Bundle der Abteilung
+              </button>
+              <button
+                type="button"
+                onClick={() => setZuweisungModus("einzeln")}
+                className={`rounded-full px-4 py-2 text-xs ${
+                  zuweisungModus === "einzeln" ? "bg-surface font-medium" : "text-foreground/60"
+                }`}
+              >
+                Einzeln auswählen
+              </button>
+            </div>
+
+            {zuweisungModus === "bundle" ? (
+              matchingBundle ? (
                 <div className="flex flex-wrap gap-2">
                   {matchingBundle.trainingIds.length === 0 && (
                     <span className="text-sm text-foreground/65">
@@ -399,33 +362,34 @@ export function NewEmployeeWizard({ onClose }: { onClose: () => void }) {
                     ) : null;
                   })}
                 </div>
-              </div>
+              ) : (
+                <p className="text-sm text-foreground/60">
+                  {kategorie
+                    ? `Für „${kategorie}" existiert noch kein Bundle — leg eins unter Unterweisungen → Bundles an, oder wähle „Einzeln auswählen".`
+                    : "Erst Kategorie wählen, um das passende Bundle zu sehen."}
+                </p>
+              )
             ) : (
-              <p className="text-sm text-foreground/60">
-                Für „{kategorie ?? "—"}" existiert noch kein Bundle — leg eins unter
-                Unterweisungen → Bundles an, oder wähle „Einzeln auswählen".
-              </p>
-            )
-          ) : (
-            <div className="space-y-2">
-              {trainings.map((t) => (
-                <label key={t.id} className="flex items-center gap-2 text-sm">
-                  <input
-                    type="checkbox"
-                    checked={selectedTrainings.includes(t.id)}
-                    onChange={() => toggleTraining(t.id)}
-                  />
-                  {t.name}
-                </label>
-              ))}
-            </div>
-          )}
-        </div>
-      )}
+              <div className="space-y-2 max-h-40 overflow-y-auto pr-1">
+                {trainings.map((t) => (
+                  <label key={t.id} className="flex items-center gap-2 text-sm">
+                    <input
+                      type="checkbox"
+                      checked={selectedTrainings.includes(t.id)}
+                      onChange={() => toggleTraining(t.id)}
+                    />
+                    {t.name}
+                  </label>
+                ))}
+                {trainings.length === 0 && (
+                  <p className="text-sm text-foreground/65">Noch keine Unterweisungen vorhanden.</p>
+                )}
+              </div>
+            )}
+          </div>
 
-      {step === 4 && (
-        <div>
-          <div className="mb-4">
+          <div>
+            <p className="text-xs text-foreground/65 mb-2">Qualifikationen (optional)</p>
             <div className="flex gap-2 mb-2">
               <input
                 value={customQualification}
@@ -448,100 +412,81 @@ export function NewEmployeeWizard({ onClose }: { onClose: () => void }) {
                 + Hinzufügen
               </button>
             </div>
-            <p className="text-[11px] text-foreground/65">oder aus 20 gängigen wählen:</p>
-          </div>
+            <p className="text-[11px] text-foreground/65 mb-2">oder aus 20 gängigen wählen:</p>
 
-          <div className="flex flex-wrap gap-2 max-h-40 overflow-y-auto mb-4 pr-1">
-            {QUALIFICATION_PRESETS.map((preset) => (
-              <button
-                key={preset.name}
-                type="button"
-                onClick={() => toggleQualification(preset.name)}
-                className={`rounded-full px-3 py-1.5 text-xs ${
-                  selectedQualifications.includes(preset.name)
-                    ? "text-white"
-                    : "border border-border text-foreground/70"
-                }`}
-                style={
-                  selectedQualifications.includes(preset.name)
-                    ? { background: "var(--accent-gradient)" }
-                    : undefined
-                }
-              >
-                <span className="text-sm">{preset.icon}</span> {preset.name}
-              </button>
-            ))}
-          </div>
+            <div className="flex flex-wrap gap-2 max-h-32 overflow-y-auto pr-1">
+              {QUALIFICATION_PRESETS.map((preset) => (
+                <button
+                  key={preset.name}
+                  type="button"
+                  onClick={() => toggleQualification(preset.name)}
+                  className={`rounded-full px-3 py-1.5 text-xs ${
+                    selectedQualifications.includes(preset.name)
+                      ? "text-white"
+                      : "border border-border text-foreground/70"
+                  }`}
+                  style={
+                    selectedQualifications.includes(preset.name)
+                      ? { background: "var(--accent-gradient)" }
+                      : undefined
+                  }
+                >
+                  <span className="text-sm">{preset.icon}</span> {preset.name}
+                </button>
+              ))}
+            </div>
 
-          {selectedQualifications.length > 0 && (
-            <div className="space-y-3 border-t border-border pt-4">
-              {selectedQualifications.map((q) => {
-                const preset = QUALIFICATION_PRESETS.find((p) => p.name === q);
-                return (
-                  <div key={q} className="flex items-center gap-3">
-                    <span className="text-sm flex-1 flex items-center gap-2">
-                      <span className="text-base">{preset?.icon ?? "📋"}</span>
-                      {q}
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() => toggleQualification(q)}
-                      className="text-xs text-foreground/65 hover:text-red-500"
-                      aria-label={`${q} entfernen`}
-                    >
-                      Entfernen
-                    </button>
-                  </div>
-                );
-              })}
-              <div className="pt-1">
-                <p className="text-xs text-foreground/65 mb-2">Ablaufdatum je Qualifikation (optional)</p>
-                <div className="space-y-2">
-                  {selectedQualifications.map((q) => (
-                    <div key={q} className="flex items-center gap-2">
-                      <span className="text-xs text-foreground/60 w-32 truncate shrink-0">{q}</span>
-                      <DateSelect
-                        value={qualificationDates[q] ?? ""}
-                        onChange={(v) => setQualificationDates((prev) => ({ ...prev, [q]: v }))}
-                        minYear={2024}
-                        maxYear={2045}
-                      />
+            {selectedQualifications.length > 0 && (
+              <div className="space-y-3 border-t border-border pt-3 mt-3">
+                {selectedQualifications.map((q) => {
+                  const preset = QUALIFICATION_PRESETS.find((p) => p.name === q);
+                  return (
+                    <div key={q} className="flex items-center gap-3">
+                      <span className="text-sm flex-1 flex items-center gap-2">
+                        <span className="text-base">{preset?.icon ?? "📋"}</span>
+                        {q}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => toggleQualification(q)}
+                        className="text-xs text-foreground/65 hover:text-red-600"
+                        aria-label={`${q} entfernen`}
+                      >
+                        Entfernen
+                      </button>
                     </div>
-                  ))}
+                  );
+                })}
+                <div className="pt-1">
+                  <p className="text-xs text-foreground/65 mb-2">Ablaufdatum je Qualifikation (optional)</p>
+                  <div className="space-y-2">
+                    {selectedQualifications.map((q) => (
+                      <div key={q} className="flex items-center gap-2">
+                        <span className="text-xs text-foreground/60 w-24 truncate shrink-0">{q}</span>
+                        <DateSelect
+                          value={qualificationDates[q] ?? ""}
+                          onChange={(v) => setQualificationDates((prev) => ({ ...prev, [q]: v }))}
+                          minYear={2024}
+                          maxYear={2045}
+                        />
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
-            </div>
-          )}
+            )}
+          </div>
         </div>
-      )}
 
-      {step === 5 && (
-        <div className="text-sm space-y-1">
-          <p>
-            <span className="text-foreground/65">Name:</span> {vorname} {nachname}
-          </p>
-          <p>
-            <span className="text-foreground/65">Mitarbeiternummer:</span>{" "}
-            {personalnummer || "—"}
-          </p>
-          <p>
-            <span className="text-foreground/65">E-Mail:</span> {email || "—"}
-          </p>
-          <p>
-            <span className="text-foreground/65">Kategorie:</span> {kategorie ?? "—"}
-          </p>
-          <p>
-            <span className="text-foreground/65">Unterweisungen:</span>{" "}
-            {zuweisungModus === "bundle"
-              ? "Bundle der Abteilung"
-              : `${selectedTrainings.length} einzeln ausgewählt`}
-          </p>
-          <p>
-            <span className="text-foreground/65">Qualifikationen:</span>{" "}
-            {selectedQualifications.length > 0 ? selectedQualifications.join(", ") : "—"}
-          </p>
-        </div>
-      )}
-    </WizardShell>
+        <button
+          onClick={handleFinish}
+          disabled={saving || !canSave}
+          className="mt-6 w-full rounded-full px-5 py-2.5 text-sm font-medium text-white disabled:opacity-40"
+          style={{ background: "var(--accent-gradient)" }}
+        >
+          {saving ? "Legt an…" : "Mitarbeiter anlegen"}
+        </button>
+      </div>
+    </div>
   );
 }
