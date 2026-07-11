@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { BUNDLE_ICONS as ICONS, type Bundle } from "@/lib/mockData";
 import { useAppData } from "@/lib/store";
+import { useEscapeClose } from "@/lib/useEscapeClose";
 
 export function EditBundleModal({
   bundle,
@@ -11,6 +12,7 @@ export function EditBundleModal({
   bundle: Bundle;
   onClose: () => void;
 }) {
+  useEscapeClose(onClose);
   const { trainings, updateBundle } = useAppData();
   const [name, setName] = useState(bundle.name);
   const [icon, setIcon] = useState(bundle.icon);
@@ -42,7 +44,7 @@ export function EditBundleModal({
         </div>
 
         {error && (
-          <p className="text-sm text-red-500 mb-4 rounded-2xl bg-red-500/10 px-4 py-2">{error}</p>
+          <p className="text-sm text-red-600 mb-4 rounded-2xl bg-red-500/10 px-4 py-2">{error}</p>
         )}
 
         <div className="space-y-3">

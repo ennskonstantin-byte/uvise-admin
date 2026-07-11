@@ -65,7 +65,7 @@ export function NewBundleWizard({ onClose }: { onClose: () => void }) {
       nextDisabled={saving || (step === 0 && name.trim() === "") || (step === 1 && !icon)}
     >
       {error && (
-        <p className="text-sm text-red-500 mb-4 rounded-2xl bg-red-500/10 px-4 py-2">
+        <p className="text-sm text-red-600 mb-4 rounded-2xl bg-red-500/10 px-4 py-2">
           {error}
         </p>
       )}

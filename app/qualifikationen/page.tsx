@@ -75,8 +75,8 @@ export default function QualifikationenPage() {
                   </p>
                 </div>
                 <span
-                  className="text-xs rounded-full px-3 py-1 text-white"
-                  style={{ background: meta.color }}
+                  className="text-xs font-semibold rounded-full px-3 py-1"
+                  style={{ background: meta.color, color: "#171717" }}
                 >
                   {meta.label}
                 </span>

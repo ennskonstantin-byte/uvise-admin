@@ -1,5 +1,7 @@
 "use client";
 
+import { useEscapeClose } from "@/lib/useEscapeClose";
+
 export function WizardShell({
   title,
   stepCount,
@@ -21,6 +23,7 @@ export function WizardShell({
   nextDisabled?: boolean;
   children: React.ReactNode;
 }) {
+  useEscapeClose(onCancel);
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
       <div className="w-full max-w-lg rounded-3xl bg-background border border-border p-6 sm:p-8">

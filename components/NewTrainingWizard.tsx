@@ -5,6 +5,7 @@ import { Search } from "lucide-react";
 import { WizardShell } from "@/components/WizardShell";
 import { DateSelect } from "@/components/DateSelect";
 import { useAppData } from "@/lib/store";
+import { useEscapeClose } from "@/lib/useEscapeClose";
 import { TRAINING_ICON_OPTIONS, BUNDLE_ICONS, type Training } from "@/lib/mockData";
 
 const STEP_LABELS = ["Methode", "Inhalt", "Beschriftung", "Ablauf", "Speichern"];
@@ -16,6 +17,7 @@ function DistributionDialog({
   training: Training;
   onClose: () => void;
 }) {
+  useEscapeClose(onClose);
   const { employees, categories, assignTraining } = useAppData();
   const [tab, setTab] = useState<"mitarbeiter" | "abteilungen">("mitarbeiter");
   const [selectedEmployees, setSelectedEmployees] = useState<string[]>(
@@ -241,7 +243,7 @@ export function NewTrainingWizard({ onClose }: { onClose: () => void }) {
       }
     >
       {error && (
-        <p className="text-sm text-red-500 mb-4 rounded-2xl bg-red-500/10 px-4 py-2">
+        <p className="text-sm text-red-600 mb-4 rounded-2xl bg-red-500/10 px-4 py-2">
           {error}
         </p>
       )}

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useAppData } from "@/lib/store";
+import { useEscapeClose } from "@/lib/useEscapeClose";
 import type { Employee } from "@/lib/mockData";
 
 // Umgekehrte Blickrichtung zu AssignTrainingModal: hier startet man beim
@@ -14,6 +15,7 @@ export function AssignTrainingToEmployeeModal({
   employee: Employee;
   onClose: () => void;
 }) {
+  useEscapeClose(onClose);
   const { trainings, employeeTrainings, assignTraining } = useAppData();
   const alreadyIds = new Set(
     employeeTrainings.filter((et) => et.employeeId === employee.id).map((et) => et.trainingId)

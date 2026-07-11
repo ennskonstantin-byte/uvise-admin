@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Search } from "lucide-react";
 import { CATEGORY_ICON_OPTIONS, type Category } from "@/lib/mockData";
 import { useAppData } from "@/lib/store";
+import { useEscapeClose } from "@/lib/useEscapeClose";
 
 export function EditCategoryModal({
   category,
@@ -12,6 +13,7 @@ export function EditCategoryModal({
   category: Category;
   onClose: () => void;
 }) {
+  useEscapeClose(onClose);
   const { updateCategory, employees, setEmployeeCategory } = useAppData();
   const [name, setName] = useState(category.name);
   const [icon, setIcon] = useState(category.icon);
@@ -43,7 +45,7 @@ export function EditCategoryModal({
         </div>
 
         {error && (
-          <p className="text-sm text-red-500 mb-4 rounded-2xl bg-red-500/10 px-4 py-2">{error}</p>
+          <p className="text-sm text-red-600 mb-4 rounded-2xl bg-red-500/10 px-4 py-2">{error}</p>
         )}
 
         <div className="space-y-3">

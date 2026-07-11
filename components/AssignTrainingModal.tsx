@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Search } from "lucide-react";
 import { useAppData } from "@/lib/store";
+import { useEscapeClose } from "@/lib/useEscapeClose";
 import type { Training } from "@/lib/mockData";
 
 // Spiegelt die "Verteilen"-Funktion aus der Chef-App — bisher gab es auf der
@@ -15,6 +16,7 @@ export function AssignTrainingModal({
   training: Training;
   onClose: () => void;
 }) {
+  useEscapeClose(onClose);
   const { employees, employeeTrainings, assignTraining } = useAppData();
   const already = new Set(
     employeeTrainings.filter((et) => et.trainingId === training.id).map((et) => et.employeeId)

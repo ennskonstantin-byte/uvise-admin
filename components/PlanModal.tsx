@@ -4,10 +4,12 @@ import { useState } from "react";
 import { Check } from "lucide-react";
 import { PLANS } from "@/lib/mockData";
 import { useToast } from "@/components/Toast";
+import { useEscapeClose } from "@/lib/useEscapeClose";
 
 // Große Kachel-Auswahl fürs Abo — direkt vom Dashboard aus erreichbar,
 // ohne erst zu den Einstellungen navigieren und suchen zu müssen.
 export function PlanModal({ onClose }: { onClose: () => void }) {
+  useEscapeClose(onClose);
   const { showToast, ToastView } = useToast();
   const [selectedPlan, setSelectedPlan] = useState("Team");
 

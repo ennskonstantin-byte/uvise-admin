@@ -192,7 +192,7 @@ export function NewEmployeeWizard({ onClose }: { onClose: () => void }) {
       }
     >
       {error && (
-        <p className="text-sm text-red-500 mb-4 rounded-2xl bg-red-500/10 px-4 py-2">
+        <p className="text-sm text-red-600 mb-4 rounded-2xl bg-red-500/10 px-4 py-2">
           {error}
         </p>
       )}
@@ -221,7 +221,7 @@ export function NewEmployeeWizard({ onClose }: { onClose: () => void }) {
             <DateSelect value={geburtsdatum} onChange={setGeburtsdatum} minYear={1940} maxYear={2015} />
           </div>
           {geburtsdatum && isMinderjaehrig(geburtsdatum) && (
-            <p className="text-xs text-amber-600">
+            <p className="text-xs text-amber-700">
               ⚠️ Minderjährig — Unterweisungen 2× jährlich (halbjährlich) erforderlich.
             </p>
           )}

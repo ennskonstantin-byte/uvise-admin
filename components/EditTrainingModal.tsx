@@ -4,6 +4,7 @@ import { useState } from "react";
 import { TRAINING_ICON_OPTIONS, type Training } from "@/lib/mockData";
 import { useAppData } from "@/lib/store";
 import { DateSelect } from "@/components/DateSelect";
+import { useEscapeClose } from "@/lib/useEscapeClose";
 
 // Wandelt ein angezeigtes Datum (dd.mm.yyyy oder "—") in ein <input type=date>-Wert (yyyy-mm-dd)
 function toInputDate(display: string): string {
@@ -23,6 +24,7 @@ export function EditTrainingModal({
   training: Training;
   onClose: () => void;
 }) {
+  useEscapeClose(onClose);
   const { updateTraining } = useAppData();
   const [name, setName] = useState(training.name);
   const [icon, setIcon] = useState(training.icon);
@@ -60,7 +62,7 @@ export function EditTrainingModal({
         </div>
 
         {error && (
-          <p className="text-sm text-red-500 mb-4 rounded-2xl bg-red-500/10 px-4 py-2">{error}</p>
+          <p className="text-sm text-red-600 mb-4 rounded-2xl bg-red-500/10 px-4 py-2">{error}</p>
         )}
 
         <div className="space-y-3">

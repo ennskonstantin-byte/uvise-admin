@@ -5,8 +5,10 @@ import { useAppData } from "@/lib/store";
 import { QUALIFICATION_PRESETS } from "@/lib/mockData";
 import { DateSelect } from "@/components/DateSelect";
 import { EmployeeSearchPicker } from "@/components/EmployeeSearchPicker";
+import { useEscapeClose } from "@/lib/useEscapeClose";
 
 export function NewQualificationModal({ onClose }: { onClose: () => void }) {
+  useEscapeClose(onClose);
   const { employees, addQualification } = useAppData();
   const [employeeId, setEmployeeId] = useState("");
   const [name, setName] = useState("");
@@ -42,7 +44,7 @@ export function NewQualificationModal({ onClose }: { onClose: () => void }) {
         </div>
 
         {error && (
-          <p className="text-sm text-red-500 mb-4 rounded-2xl bg-red-500/10 px-4 py-2">{error}</p>
+          <p className="text-sm text-red-600 mb-4 rounded-2xl bg-red-500/10 px-4 py-2">{error}</p>
         )}
 
         <div className="space-y-3">

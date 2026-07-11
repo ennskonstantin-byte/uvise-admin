@@ -1,6 +1,7 @@
 "use client";
 
 import type { EmployeeTraining } from "@/lib/mockData";
+import { useEscapeClose } from "@/lib/useEscapeClose";
 
 export function ArchiveDocumentModal({
   entry,
@@ -13,6 +14,7 @@ export function ArchiveDocumentModal({
   employeeName: string;
   onClose: () => void;
 }) {
+  useEscapeClose(onClose);
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
       <div className="w-full max-w-md rounded-3xl bg-background border border-border p-6 sm:p-8">

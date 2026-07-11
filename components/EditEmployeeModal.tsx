@@ -5,6 +5,7 @@ import { initials, CATEGORY_ICON_OPTIONS, istMinderjaehrig as isMinderjaehrig, t
 import { useAppData } from "@/lib/store";
 import { Switch } from "@/components/Switch";
 import { DateSelect } from "@/components/DateSelect";
+import { useEscapeClose } from "@/lib/useEscapeClose";
 
 export function EditEmployeeModal({
   employee,
@@ -13,6 +14,7 @@ export function EditEmployeeModal({
   employee: Employee;
   onClose: () => void;
 }) {
+  useEscapeClose(onClose);
   const { categories, employees, updateEmployee, uploadEmployeePhoto, addCategory } = useAppData();
   // Immer den LIVE-Stand aus dem Store lesen (sonst zeigt das Fenster nach
   // dem Foto-Upload wieder den alten Stand ohne Foto).
@@ -98,7 +100,7 @@ export function EditEmployeeModal({
         </div>
 
         {error && (
-          <p className="text-sm text-red-500 mb-4 rounded-2xl bg-red-500/10 px-4 py-2">{error}</p>
+          <p className="text-sm text-red-600 mb-4 rounded-2xl bg-red-500/10 px-4 py-2">{error}</p>
         )}
 
         <div className="flex flex-col items-center mb-5">
@@ -165,7 +167,7 @@ export function EditEmployeeModal({
             </span>
             <DateSelect value={geburtsdatum} onChange={setGeburtsdatum} minYear={1940} maxYear={2015} />
             {geburtsdatum && isMinderjaehrig(geburtsdatum) && (
-              <p className="text-xs text-amber-600 mt-1">
+              <p className="text-xs text-amber-700 mt-1">
                 ⚠️ Minderjährig — Unterweisungen 2× jährlich erforderlich.
               </p>
             )}

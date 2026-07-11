@@ -109,7 +109,7 @@ export default function UnterweisungenPage() {
                     </p>
                   </div>
                   {t.status === "laeuft_ab" && (
-                    <span className="text-xs rounded-full bg-amber-500/15 text-amber-600 px-3 py-1">
+                    <span className="text-xs rounded-full bg-amber-500/15 text-amber-700 px-3 py-1">
                       Läuft bald ab
                     </span>
                   )}

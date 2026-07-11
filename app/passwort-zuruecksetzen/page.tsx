@@ -56,7 +56,7 @@ export default function PasswortZuruecksetzenPage() {
               Wähle ein neues Passwort für dein Konto.
             </p>
             {error && (
-              <p className="text-sm text-red-500 mb-4 rounded-2xl bg-red-500/10 px-4 py-2">{error}</p>
+              <p className="text-sm text-red-600 mb-4 rounded-2xl bg-red-500/10 px-4 py-2">{error}</p>
             )}
             <input
               value={password}
