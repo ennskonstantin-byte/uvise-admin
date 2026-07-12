@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { motion, useReducedMotion } from "framer-motion";
@@ -21,7 +22,6 @@ import { LogoMark } from "@/components/Logo";
 import { useAppData } from "@/lib/store";
 import { PLANS } from "@/lib/mockData";
 import { Reveal } from "@/components/marketing/Reveal";
-import { PersonAvatar } from "@/components/marketing/PersonAvatar";
 import { VorlesenDemo } from "@/components/marketing/VorlesenDemo";
 
 const FEATURES = [
@@ -81,9 +81,9 @@ const PRODUCTS = [
 ];
 
 const TEAM_ROWS = [
-  { name: "Lena Bauer", meta: "Küche · 2 offen", dot: "var(--ampel-red)", seed: 0 },
-  { name: "Tom Krüger", meta: "Lager · alles ok", dot: "var(--ampel-green)", seed: 1 },
-  { name: "Aylin Sarı", meta: "Büro · alles ok", dot: "var(--ampel-green)", seed: 2 },
+  { name: "Lena Bauer", meta: "Küche · 2 offen", dot: "var(--ampel-red)", photo: "/marketing/mitarbeiter-kueche.jpg" },
+  { name: "Tom Krüger", meta: "Lager · alles ok", dot: "var(--ampel-green)", photo: "/marketing/mitarbeiter-lager.jpg" },
+  { name: "Aylin Sarı", meta: "Büro · alles ok", dot: "var(--ampel-green)", photo: "/marketing/mitarbeiter-buero.jpg" },
 ];
 
 export function MarketingHome() {
@@ -252,7 +252,13 @@ export function MarketingHome() {
                   </div>
                   {TEAM_ROWS.map((row) => (
                     <div key={row.name} className="flex items-center gap-3 rounded-2xl border border-border/60 px-3.5 py-2.5">
-                      <PersonAvatar seed={row.seed} size={36} />
+                      <Image
+                        src={row.photo}
+                        alt=""
+                        width={36}
+                        height={36}
+                        className="rounded-full object-cover shrink-0"
+                      />
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium truncate">{row.name}</p>
                         <p className="text-xs text-foreground/55">{row.meta}</p>
