@@ -53,7 +53,7 @@ function DistributionDialog({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
       <div className="w-full max-w-lg rounded-3xl bg-background border border-border p-6 sm:p-8">
-        <h2 className="text-xl font-semibold mb-1">„{training.name}" weiterleiten</h2>
+        <h2 className="text-xl font-semibold mb-1">„{training.name}&quot; weiterleiten</h2>
         <p className="text-sm text-foreground/60 mb-5">
           An einzelne Mitarbeiter oder ganze Abteilungen senden — kann auch später über die
           Mitarbeiter-Seite nachgeholt werden.

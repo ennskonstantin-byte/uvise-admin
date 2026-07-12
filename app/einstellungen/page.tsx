@@ -154,7 +154,7 @@ export default function EinstellungenPage() {
                   className="w-full rounded-full border border-border bg-surface px-4 py-2.5 text-sm outline-none"
                 />
                 <span className="text-xs text-foreground/65 mt-1 block">
-                  Wird statt „Chef" angezeigt — z.B. bei Rückfragen und Erinnerungen.
+                  Wird statt „Chef&quot; angezeigt — z.B. bei Rückfragen und Erinnerungen.
                 </span>
               </label>
               <label className="block">
@@ -246,9 +246,9 @@ export default function EinstellungenPage() {
               </button>
             </div>
             <p className="text-xs text-foreground/65 mt-3">
-              „Gesamt-Backup" bündelt beide CSV-Dateien in einer ZIP-Datei. Tipp: Für ein
+              „Gesamt-Backup&quot; bündelt beide CSV-Dateien in einer ZIP-Datei. Tipp: Für ein
               druckbares PDF einzelner Jahre gibt es im Archiv den Knopf
-              „Gesamtes Jahr als PDF drucken".
+              „Gesamtes Jahr als PDF drucken&quot;.
             </p>
           </Card>
         </section>

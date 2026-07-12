@@ -78,7 +78,7 @@ export function EditCategoryModal({
 
           <div>
             <p className="text-xs text-foreground/65 mb-2">
-              Mitarbeiter in „{category.name}" (an-/abwählen)
+              Mitarbeiter in „{category.name}&quot; (an-/abwählen)
             </p>
             <div className="relative mb-2">
               <Search size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-foreground/65" />
