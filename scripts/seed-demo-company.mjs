@@ -74,6 +74,15 @@ async function main() {
   });
   if (rpcErr) throw rpcErr;
 
+  console.log("2b/8 Foto für Chefin Nina hochladen …");
+  const { data: nina } = await chefClient
+    .from("employees")
+    .select("id")
+    .eq("auth_user_id", signUpData.session.user.id)
+    .single();
+  const ninaPhotoUrl = await uploadPhoto(chefClient, `demo-${nina.id}.jpg`, "marketing/mitarbeiter-leitung.jpg");
+  await chefClient.from("employees").update({ foto_url: ninaPhotoUrl }).eq("id", nina.id);
+
   console.log("3/8 Zusätzliche Kategorie 'Küche' anlegen …");
   const { data: kueche, error: catErr } = await chefClient
     .from("categories")

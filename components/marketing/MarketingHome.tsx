@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { motion, useReducedMotion } from "framer-motion";
@@ -79,12 +78,6 @@ const PRODUCTS = [
     title: "Mitarbeiter-App",
     text: "Unterweisungen ansehen, vorlesen lassen, unterschreiben, Rückfragen stellen — komplett von unterwegs, ohne Papier.",
   },
-];
-
-const TEAM_ROWS = [
-  { name: "Lena Bauer", meta: "Küche · 2 offen", dot: "var(--ampel-red)", photo: "/marketing/mitarbeiter-kueche.jpg" },
-  { name: "Tom Krüger", meta: "Lager · alles ok", dot: "var(--ampel-green)", photo: "/marketing/mitarbeiter-lager.jpg" },
-  { name: "Aylin Sarı", meta: "Büro · alles ok", dot: "var(--ampel-green)", photo: "/marketing/mitarbeiter-buero.jpg" },
 ];
 
 export function MarketingHome() {
@@ -178,8 +171,8 @@ export function MarketingHome() {
       </header>
 
       <main id="top">
-        {/* Hero */}
-        <section className="relative">
+        {/* Hero — startet direkt mit der klickbaren Live-Vorschau statt einem Fake-Mockup */}
+        <section id="ausprobieren" className="scroll-mt-16 relative">
           <div className="pointer-events-none absolute inset-0 overflow-hidden">
             <motion.div
               className="absolute -top-32 -left-24 h-96 w-96 rounded-full opacity-25 blur-3xl"
@@ -233,66 +226,14 @@ export function MarketingHome() {
               </p>
             </motion.div>
 
-            {/* Dashboard-Mockup mit illustrierten Mitarbeiter-Avataren */}
+            {/* Echte, klickbare App-Vorschau statt eines Fake-Mockups */}
             <motion.div
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.15 }}
-              className="relative"
             >
-              <motion.div
-                animate={reduceMotion ? {} : { y: [0, -8, 0] }}
-                transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
-                className="relative rounded-3xl border border-border/60 bg-background shadow-xl overflow-hidden"
-              >
-                <div className="flex items-center gap-1.5 px-4 py-3 border-b border-border/60">
-                  <span className="h-2.5 w-2.5 rounded-full bg-red-400" />
-                  <span className="h-2.5 w-2.5 rounded-full bg-amber-400" />
-                  <span className="h-2.5 w-2.5 rounded-full bg-green-400" />
-                </div>
-                <div className="p-5 space-y-3">
-                  <div className="rounded-2xl p-4 text-white" style={{ background: "var(--accent-gradient)" }}>
-                    <p className="text-3xl font-bold">12</p>
-                    <p className="text-xs opacity-85">Mitarbeiter</p>
-                  </div>
-                  {TEAM_ROWS.map((row) => (
-                    <div key={row.name} className="flex items-center gap-3 rounded-2xl border border-border/60 px-3.5 py-2.5">
-                      <Image
-                        src={row.photo}
-                        alt=""
-                        width={36}
-                        height={36}
-                        className="rounded-full object-cover shrink-0"
-                      />
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium truncate">{row.name}</p>
-                        <p className="text-xs text-foreground/55">{row.meta}</p>
-                      </div>
-                      <span className="h-2.5 w-2.5 rounded-full shrink-0" style={{ background: row.dot }} />
-                    </div>
-                  ))}
-                </div>
-              </motion.div>
-            </motion.div>
-          </div>
-        </section>
-
-        {/* Live-Vorschau: echte App-Instanzen zum Durchklicken (Demo-Firma, Fake-Daten) */}
-        <section id="ausprobieren" className="scroll-mt-16 border-t border-border/60 py-20">
-          <div className="mx-auto max-w-6xl px-5 sm:px-8">
-            <Reveal className="max-w-xl mb-12 text-center mx-auto">
-              <span className="inline-flex items-center gap-2 rounded-full border border-border bg-surface px-3.5 py-1.5 text-xs font-medium text-foreground/70 mb-5">
-                📱 Läuft direkt hier im Browser
-              </span>
-              <h2 className="font-display text-3xl sm:text-4xl font-semibold mb-3">Probier&apos;s direkt aus</h2>
-              <p className="text-foreground/65">
-                Keine Anmeldung nötig — das sind die echten Apps mit einer Beispiel-Firma. Klick dich
-                durch, signiere eine Unterweisung, lass sie dir vorlesen.
-              </p>
-            </Reveal>
-            <Reveal delay={0.1}>
               <AppPreview />
-            </Reveal>
+            </motion.div>
           </div>
         </section>
 
