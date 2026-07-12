@@ -91,22 +91,29 @@ async function main() {
   // K-1: Selbst-Beförderung zum Beauftragten
   // ---------------------------------------------------------------------
   {
-    const { error } = await supabase
+    const { data, error } = await supabase
       .from("employees")
       .update({ ist_beauftragter: true })
-      .eq("id", me.id);
-    report("K-1: Selbst-Beförderung zum Beauftragten blockiert", !!error, error ? undefined : "Update ist durchgegangen!");
+      .eq("id", me.id)
+      .select();
+    // Wichtig: Ein von RLS blockiertes Update wirft KEINEN Fehler, es ändert
+    // nur 0 Zeilen — deshalb zusätzlich zu "error" prüfen, ob wirklich eine
+    // Zeile zurückkam.
+    const blocked = !!error || !data || data.length === 0;
+    report("K-1: Selbst-Beförderung zum Beauftragten blockiert", blocked, blocked ? undefined : "Update ist durchgegangen!");
   }
 
   // ---------------------------------------------------------------------
   // K-1: Firmenwechsel (Mandantensprung) über company_id
   // ---------------------------------------------------------------------
   {
-    const { error } = await supabase
+    const { data, error } = await supabase
       .from("employees")
       .update({ company_id: "00000000-0000-0000-0000-000000000000" })
-      .eq("id", me.id);
-    report("K-1: Firmenwechsel über company_id blockiert", !!error, error ? undefined : "Update ist durchgegangen!");
+      .eq("id", me.id)
+      .select();
+    const blocked = !!error || !data || data.length === 0;
+    report("K-1: Firmenwechsel über company_id blockiert", blocked, blocked ? undefined : "Update ist durchgegangen!");
   }
 
   // ---------------------------------------------------------------------
@@ -119,11 +126,13 @@ async function main() {
       .neq("id", me.id)
       .limit(1);
     if (others && others.length > 0) {
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from("employees")
         .update({ ist_beauftragter: true })
-        .eq("id", others[0].id);
-      report("K-4: Rolle eines Kollegen direkt setzen blockiert", !!error, error ? undefined : "Update ist durchgegangen!");
+        .eq("id", others[0].id)
+        .select();
+      const blocked = !!error || !data || data.length === 0;
+      report("K-4: Rolle eines Kollegen direkt setzen blockiert", blocked, blocked ? undefined : "Update ist durchgegangen!");
     } else {
       console.log("⚠️  K-4: kein zweiter Mitarbeiter zum Testen gefunden, übersprungen");
     }
@@ -140,33 +149,42 @@ async function main() {
       .eq("status", "offen")
       .limit(1);
     if (ownTraining && ownTraining.length > 0) {
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from("employee_trainings")
         .update({ status: "signiert", signiert_am: "2020-01-01T00:00:00Z" })
-        .eq("id", ownTraining[0].id);
-      report("H-2: Direktes Signieren ohne RPC blockiert", !!error, error ? undefined : "Update ist durchgegangen!");
+        .eq("id", ownTraining[0].id)
+        .select();
+      const blocked = !!error || !data || data.length === 0;
+      report("H-2: Direktes Signieren ohne RPC blockiert", blocked, blocked ? undefined : "Update ist durchgegangen!");
     } else {
       console.log("⚠️  H-2: keine offene Unterweisung zum Testen gefunden, übersprungen");
     }
   }
 
   // ---------------------------------------------------------------------
-  // M-1: Eigene Rückfrage-Antwort selbst schreiben
+  // M-1: Eigene Rückfrage-Antwort selbst schreiben. Legt bewusst eine EIGENE
+  // frische Test-Frage an, statt eine bestehende zu benutzen — so ist die
+  // Prüfung eindeutig, unabhängig von alten Test-Daten aus früheren Läufen.
   // ---------------------------------------------------------------------
   {
-    const { data: ownQuestion } = await supabase
-      .from("questions")
-      .select("id")
-      .eq("employee_id", me.id)
-      .limit(1);
-    if (ownQuestion && ownQuestion.length > 0) {
-      const { error } = await supabase
+    const { data: training } = await supabase.from("trainings").select("id").limit(1);
+    if (training && training.length > 0) {
+      const { data: freshQuestion, error: insertErr } = await supabase
         .from("questions")
-        .update({ antwort: "von mir selbst beantwortet", status: "beantwortet" })
-        .eq("id", ownQuestion[0].id);
-      report("M-1: Eigene Antwort selbst schreiben blockiert", !!error, error ? undefined : "Update ist durchgegangen!");
-    } else {
-      console.log("⚠️  M-1: keine eigene Rückfrage zum Testen gefunden (harmlos, keine vorhanden), übersprungen");
+        .insert({ employee_id: me.id, training_id: training[0].id, frage: "RLS-Test — bitte ignorieren", status: "offen" })
+        .select()
+        .single();
+      if (insertErr) {
+        console.log("⚠️  M-1: konnte keine Test-Frage anlegen, übersprungen:", insertErr.message);
+      } else {
+        const { data, error } = await supabase
+          .from("questions")
+          .update({ antwort: "von mir selbst beantwortet", status: "beantwortet" })
+          .eq("id", freshQuestion.id)
+          .select();
+        const blocked = !!error || !data || data.length === 0;
+        report("M-1: Eigene Antwort selbst schreiben blockiert", blocked, blocked ? undefined : "Update ist durchgegangen!");
+      }
     }
   }
 
