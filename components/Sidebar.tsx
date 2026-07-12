@@ -18,7 +18,7 @@ import { LogoMark } from "@/components/Logo";
 import { Switch } from "@/components/Switch";
 
 const NAV_ITEMS = [
-  { label: "Dashboard", href: "/", icon: LayoutDashboard },
+  { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
   { label: "Mitarbeiter", href: "/mitarbeiter", icon: Users },
   { label: "Unterweisungen", href: "/unterweisungen", icon: FileText },
   { label: "Qualifikationen", href: "/qualifikationen", icon: Clock },
@@ -54,7 +54,7 @@ export function Sidebar() {
           "linear-gradient(180deg, var(--sidebar-from), var(--sidebar-to))",
       }}
     >
-      <Link href="/" className="px-6 py-6 flex items-center gap-3">
+      <Link href="/dashboard" className="px-6 py-6 flex items-center gap-3">
         <div className="shrink-0">
           {company?.logoUrl ? (
             // eslint-disable-next-line @next/next/no-img-element
@@ -79,7 +79,7 @@ export function Sidebar() {
 
       <nav className="flex-1 px-3 space-y-1">
         {NAV_ITEMS.map(({ label, href, icon: Icon }) => {
-          const active = href === "/" ? pathname === "/" : pathname.startsWith(href);
+          const active = href === "/dashboard" ? pathname === "/dashboard" : pathname.startsWith(href);
           const badge = label === "Rückfragen" ? openQuestions : undefined;
           return (
             <Link

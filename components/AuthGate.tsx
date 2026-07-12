@@ -2,19 +2,25 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { useAppData } from "@/lib/store";
 import { LogoMark } from "@/components/Logo";
 
 // Diese Seiten sind gesetzlich ohne Login erreichbar (Impressumspflicht)
-// + die Passwort-zurücksetzen-Seite, die per E-Mail-Link ohne Login geöffnet wird.
-const PUBLIC_PATHS = ["/impressum", "/datenschutz", "/agb", "/passwort-zuruecksetzen"];
+// + die Passwort-zurücksetzen-Seite (E-Mail-Link) + die öffentliche
+// Marketing-Startseite, von der aus man sich anmelden/registrieren kann.
+const PUBLIC_PATHS = ["/", "/impressum", "/datenschutz", "/agb", "/passwort-zuruecksetzen"];
 
 function AuthForm() {
   const { reload } = useAppData();
   const router = useRouter();
-  const [mode, setMode] = useState<"login" | "register" | "reset">("login");
+  const searchParams = useSearchParams();
+  // Die Marketing-Seite verlinkt auf /login?mode=register für den
+  // "Kostenlos testen"-Knopf — startet dann direkt im Registrieren-Modus.
+  const [mode, setMode] = useState<"login" | "register" | "reset">(
+    searchParams.get("mode") === "register" ? "register" : "login"
+  );
   const [firma, setFirma] = useState("");
   const [vorname, setVorname] = useState("");
   const [nachname, setNachname] = useState("");
@@ -30,7 +36,7 @@ function AuthForm() {
     setError(null);
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) setError(error.message);
-    else router.push("/");
+    else router.push("/dashboard");
     setLoading(false);
   }
 
@@ -80,7 +86,7 @@ function AuthForm() {
     }
 
     await reload();
-    router.push("/");
+    router.push("/dashboard");
     setLoading(false);
   }
 
