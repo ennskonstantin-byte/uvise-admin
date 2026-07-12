@@ -276,12 +276,12 @@ export default function MarketingPage() {
               </h2>
               <p className="text-foreground/65 mb-6 max-w-md">
                 Nicht jeder liest gern lange Texte, nicht jeder spricht perfekt Deutsch. Mitarbeiter
-                können sich jede Unterweisung in über 30 Sprachen vorlesen lassen — verständlich,
+                können sich jede Unterweisung in 41 Sprachen vorlesen lassen — verständlich,
                 bevor unterschrieben wird.
               </p>
               <ul className="space-y-3">
                 {[
-                  "Über 30 Sprachen zur Auswahl, inkl. Türkisch, Ukrainisch, Arabisch, Polnisch",
+                  "41 Sprachen zur Auswahl, inkl. Türkisch, Ukrainisch, Arabisch, Polnisch",
                   "Text wird laut vorgelesen — mit natürlicher Systemstimme",
                   "Erst nach vollständigem Lesen oder Vorlesen wird die Unterschrift freigeschaltet",
                 ].map((t) => (

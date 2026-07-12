@@ -4,13 +4,16 @@ import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Volume2 } from "lucide-react";
 
+// Entspricht der echten Sprachliste der Mitarbeiter-App (lib/languages.ts,
+// dort 41 Einträge) — hier nur eine kleine, repräsentative Auswahl fürs
+// automatische Durchwechseln.
 const LANGS = [
   { flag: "🇩🇪", name: "Deutsch" },
   { flag: "🇹🇷", name: "Türkçe" },
   { flag: "🇺🇦", name: "Українська" },
   { flag: "🇵🇱", name: "Polski" },
   { flag: "🇬🇧", name: "English" },
-  { flag: "🇸🇾", name: "العربية" },
+  { flag: "🇸🇦", name: "العربية" },
 ];
 
 // Kleine, sich selbst abspielende Demo für die Marketing-Seite: zeigt,
@@ -47,7 +50,7 @@ export function VorlesenDemo() {
           </motion.div>
         </AnimatePresence>
         <span className="text-xs rounded-full bg-surface px-3 py-1.5 text-foreground/60 font-medium">
-          38 Sprachen
+          41 Sprachen
         </span>
       </div>
 
