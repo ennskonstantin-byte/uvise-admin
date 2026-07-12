@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
+import { Apple, PlayCircle } from "lucide-react";
 
 const APPS = [
   {
@@ -44,7 +45,7 @@ export function AppPreview() {
         ))}
       </div>
 
-      <div className="relative w-[300px] sm:w-[320px] rounded-[2.5rem] border-[10px] border-neutral-900 bg-neutral-900 shadow-2xl overflow-hidden" style={{ aspectRatio: "375 / 812" }}>
+      <div className="relative w-[330px] sm:w-[360px] rounded-[2.5rem] border-[10px] border-neutral-900 bg-neutral-900 shadow-2xl overflow-hidden" style={{ aspectRatio: "375 / 812" }}>
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-28 h-5 bg-neutral-900 rounded-b-2xl z-10" />
         {!loaded[active] && (
           <div className="absolute inset-0 flex items-center justify-center bg-page-bg text-xs text-foreground/50">
@@ -71,6 +72,25 @@ export function AppPreview() {
       >
         {current.hint}
       </motion.p>
+
+      <div className="flex items-center gap-3 mt-5">
+        {[
+          { Icon: Apple, label: "App Store" },
+          { Icon: PlayCircle, label: "Google Play" },
+        ].map(({ Icon, label }) => (
+          <div
+            key={label}
+            className="flex items-center gap-2 rounded-xl border border-border bg-surface px-3.5 py-2 opacity-70"
+            title={`${label} — bald verfügbar`}
+          >
+            <Icon size={18} className="text-foreground/70" />
+            <div className="leading-tight">
+              <p className="text-[9px] text-foreground/50">Bald verfügbar</p>
+              <p className="text-xs font-medium text-foreground/80">{label}</p>
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
