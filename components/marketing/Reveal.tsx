@@ -1,10 +1,12 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
 import type { ReactNode } from "react";
 
 // Kleiner Wiederverwendungs-Baustein: blendet Inhalte beim Scrollen sanft
-// ein, statt dass die ganze Marketing-Seite starr/statisch wirkt.
+// ein, statt dass die ganze Marketing-Seite starr/statisch wirkt. Wer in
+// den Systemeinstellungen Animationen reduziert hat, bekommt nur ein
+// reines Einblenden ohne Bewegung (Barrierefreiheit).
 export function Reveal({
   children,
   delay = 0,
@@ -14,12 +16,13 @@ export function Reveal({
   delay?: number;
   className?: string;
 }) {
+  const reduceMotion = useReducedMotion();
   return (
     <motion.div
-      initial={{ opacity: 0, y: 24 }}
+      initial={{ opacity: 0, y: reduceMotion ? 0 : 24 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-60px" }}
-      transition={{ duration: 0.5, delay, ease: "easeOut" }}
+      transition={{ duration: reduceMotion ? 0.2 : 0.5, delay: reduceMotion ? 0 : delay, ease: "easeOut" }}
       className={className}
     >
       {children}
