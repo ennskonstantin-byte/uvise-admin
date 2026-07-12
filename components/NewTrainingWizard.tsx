@@ -237,6 +237,7 @@ export function NewTrainingWizard({ onClose }: { onClose: () => void }) {
                   key={opt.name}
                   type="button"
                   title={opt.name}
+                  aria-label={opt.name}
                   onClick={() => setIcon(opt.icon)}
                   className={`h-10 rounded-xl border text-lg flex items-center justify-center ${
                     icon === opt.icon ? "border-foreground/50 bg-surface" : "border-border"
@@ -367,7 +368,9 @@ export function NewTrainingWizard({ onClose }: { onClose: () => void }) {
                   {BUNDLE_ICONS.map((i) => (
                     <button
                       key={i}
+                      type="button"
                       onClick={() => setNewBundleIcon(i)}
+                      aria-label={`Symbol ${i}`}
                       className={`h-10 w-10 rounded-full border text-lg flex items-center justify-center ${
                         newBundleIcon === i ? "border-foreground/50 bg-surface" : "border-border"
                       }`}

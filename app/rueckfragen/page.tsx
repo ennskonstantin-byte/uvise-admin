@@ -70,6 +70,8 @@ export default function RueckfragenPage() {
               <div key={t.key} className="rounded-3xl border border-border overflow-hidden">
                 <button
                   onClick={() => toggle(t.key)}
+                  aria-expanded={isOpen}
+                  aria-label={`Chat mit ${t.employee ? `${t.employee.vorname} ${t.employee.nachname}` : "Unbekannt"} ${isOpen ? "einklappen" : "aufklappen"}`}
                   className="btn-feedback w-full flex items-center gap-3 px-5 py-4 text-left hover:bg-surface"
                 >
                   <EmployeeAvatar

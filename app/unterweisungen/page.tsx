@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { AlertTriangle, Pencil, Send, Trash2 } from "lucide-react";
+import { AlertTriangle, Pencil, Printer, Send, Trash2 } from "lucide-react";
 import { DashboardShell } from "@/components/DashboardShell";
 import { PageHeader } from "@/components/PageHeader";
 import { Card } from "@/components/Card";
@@ -12,6 +12,7 @@ import { EditBundleModal } from "@/components/EditBundleModal";
 import { AssignTrainingModal } from "@/components/AssignTrainingModal";
 import type { Bundle, Training } from "@/lib/mockData";
 import { useAppData } from "@/lib/store";
+import { printTraining } from "@/lib/printTraining";
 
 export default function UnterweisungenPage() {
   const { trainings, bundles, deleteTraining, deleteBundle } = useAppData();
@@ -113,6 +114,14 @@ export default function UnterweisungenPage() {
                       Läuft bald ab
                     </span>
                   )}
+                  <button
+                    onClick={() => printTraining(t)}
+                    className="h-8 w-8 rounded-full border border-border flex items-center justify-center text-blue-500 hover:border-foreground/30"
+                    aria-label="Drucken oder teilen"
+                    title="Als PDF drucken oder teilen"
+                  >
+                    <Printer size={14} />
+                  </button>
                   <button
                     onClick={() => setAssigningTraining(t)}
                     className="h-8 w-8 rounded-full border border-border flex items-center justify-center hover:border-foreground/30"

@@ -23,16 +23,15 @@ function download(filename: string, csv: string) {
   URL.revokeObjectURL(url);
 }
 
-function heute(): string {
+export function heute(): string {
   return new Date().toISOString().slice(0, 10);
 }
 
-// Prüfungs-Export: eine Zeile pro zugewiesener Unterweisung mit Signatur-Status.
-export function exportNachweiseCsv(
+function nachweiseRows(
   employees: Employee[],
   trainings: Training[],
   employeeTrainings: EmployeeTraining[]
-) {
+): string[][] {
   const rows: string[][] = [
     ["Nachname", "Vorname", "Mitarbeiternummer", "Kategorie", "Unterweisung", "Status", "Signiert am", "Gerät", "Archiviert"],
   ];
@@ -51,12 +50,10 @@ export function exportNachweiseCsv(
       e?.archiviert ? "ja" : "nein",
     ]);
   }
-  download(`uvise-nachweise-${heute()}.csv`, toCsv(rows));
-  return rows.length - 1;
+  return rows;
 }
 
-// Qualifikationen-Export: eine Zeile pro Qualifikation mit Ablauf/Status.
-export function exportQualifikationenCsv(employees: Employee[], qualifications: Qualification[]) {
+function qualifikationenRows(employees: Employee[], qualifications: Qualification[]): string[][] {
   const rows: string[][] = [
     ["Nachname", "Vorname", "Mitarbeiternummer", "Kategorie", "Qualifikation", "Läuft ab", "Status", "Archiviert"],
   ];
@@ -73,6 +70,36 @@ export function exportQualifikationenCsv(employees: Employee[], qualifications: 
       e?.archiviert ? "ja" : "nein",
     ]);
   }
+  return rows;
+}
+
+// Für den ZIP-Gesamt-Export (lib/exportZip.ts) — liefert nur den CSV-Text,
+// ohne selbst einen Download auszulösen.
+export function nachweiseCsvString(
+  employees: Employee[],
+  trainings: Training[],
+  employeeTrainings: EmployeeTraining[]
+): string {
+  return toCsv(nachweiseRows(employees, trainings, employeeTrainings));
+}
+export function qualifikationenCsvString(employees: Employee[], qualifications: Qualification[]): string {
+  return toCsv(qualifikationenRows(employees, qualifications));
+}
+
+// Prüfungs-Export: eine Zeile pro zugewiesener Unterweisung mit Signatur-Status.
+export function exportNachweiseCsv(
+  employees: Employee[],
+  trainings: Training[],
+  employeeTrainings: EmployeeTraining[]
+) {
+  const rows = nachweiseRows(employees, trainings, employeeTrainings);
+  download(`uvise-nachweise-${heute()}.csv`, toCsv(rows));
+  return rows.length - 1;
+}
+
+// Qualifikationen-Export: eine Zeile pro Qualifikation mit Ablauf/Status.
+export function exportQualifikationenCsv(employees: Employee[], qualifications: Qualification[]) {
+  const rows = qualifikationenRows(employees, qualifications);
   download(`uvise-qualifikationen-${heute()}.csv`, toCsv(rows));
   return rows.length - 1;
 }

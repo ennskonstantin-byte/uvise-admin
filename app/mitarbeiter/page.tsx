@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Search, Pencil, Trash2, Settings2, ChevronRight } from "lucide-react";
+import { Search, Pencil, Trash2, Settings2, ChevronRight, Crown, RotateCcw } from "lucide-react";
 import { DashboardShell } from "@/components/DashboardShell";
 import { PageHeader } from "@/components/PageHeader";
 import { Card } from "@/components/Card";
@@ -235,119 +235,162 @@ export default function MitarbeiterPage() {
           </div>
         )}
 
-        <div className="rounded-3xl border border-border divide-y divide-border overflow-hidden">
-          {filtered.map((e) => (
-            <div
-              key={e.id}
-              role="button"
-              tabIndex={0}
-              onClick={() => router.push(`/mitarbeiter/${e.id}`)}
-              onKeyDown={(ev) => {
-                if (ev.key === "Enter" || ev.key === " ") {
-                  ev.preventDefault();
-                  router.push(`/mitarbeiter/${e.id}`);
-                }
-              }}
-              className={`btn-feedback flex items-center gap-4 px-5 py-3 cursor-pointer hover:bg-surface ${
-                tab === "archiviert" ? "opacity-60" : ""
-              }`}
-            >
+        <div className="flex flex-col gap-2.5">
+          {filtered.map((e) => {
+            const catIcon = categories.find((c) => c.name === e.kategorie)?.icon;
+            const attention = tab === "aktiv" && e.offenePunkte > 0;
+            return (
               <div
-                className="relative shrink-0"
-                title={
-                  tab === "archiviert"
-                    ? "Archiviert"
-                    : e.offenePunkte > 0
-                      ? `${e.offenePunkte} offene Unterweisung(en)`
-                      : "Alles unterschrieben"
-                }
+                key={e.id}
+                role="button"
+                tabIndex={0}
+                onClick={() => router.push(`/mitarbeiter/${e.id}`)}
+                onKeyDown={(ev) => {
+                  if (ev.key === "Enter" || ev.key === " ") {
+                    ev.preventDefault();
+                    router.push(`/mitarbeiter/${e.id}`);
+                  }
+                }}
+                style={{
+                  borderLeftColor:
+                    tab === "archiviert"
+                      ? "var(--border)"
+                      : attention
+                        ? "#dc2626"
+                        : "var(--ampel-green)",
+                }}
+                className={`btn-feedback rounded-2xl border border-border border-l-4 bg-background shadow-sm cursor-pointer hover:bg-surface px-5 py-3.5 ${
+                  tab === "archiviert" ? "opacity-60" : ""
+                }`}
               >
-                <EmployeeAvatar
-                  vorname={e.vorname}
-                  nachname={e.nachname}
-                  fotoUrl={e.fotoUrl}
-                  size={40}
-                  grayscale={tab === "archiviert"}
-                />
-                {tab === "aktiv" &&
-                  (e.offenePunkte > 0 ? (
-                    <span className="absolute -top-1 -right-1 h-4 min-w-4 px-0.5 rounded-full bg-red-600 text-white text-[9px] font-bold flex items-center justify-center border-2 border-background">
-                      {e.offenePunkte}
-                    </span>
+                <div className="flex items-center gap-4">
+                  <div
+                    className="relative shrink-0"
+                    title={
+                      tab === "archiviert"
+                        ? "Archiviert"
+                        : e.offenePunkte > 0
+                          ? `${e.offenePunkte} offene Unterweisung(en)`
+                          : "Alles unterschrieben"
+                    }
+                  >
+                    {e.istBeauftragter ? (
+                      <div
+                        className="rounded-full p-[2px]"
+                        style={{ background: "var(--accent-gradient)" }}
+                      >
+                        <div className="rounded-full bg-background p-[2px]">
+                          <EmployeeAvatar
+                            vorname={e.vorname}
+                            nachname={e.nachname}
+                            fotoUrl={e.fotoUrl}
+                            size={40}
+                            grayscale={tab === "archiviert"}
+                          />
+                        </div>
+                      </div>
+                    ) : (
+                      <EmployeeAvatar
+                        vorname={e.vorname}
+                        nachname={e.nachname}
+                        fotoUrl={e.fotoUrl}
+                        size={44}
+                        grayscale={tab === "archiviert"}
+                      />
+                    )}
+                    {tab === "aktiv" &&
+                      (e.offenePunkte > 0 ? (
+                        <span className="absolute -top-1 -right-1 h-4 min-w-4 px-0.5 rounded-full bg-red-600 text-white text-[9px] font-bold flex items-center justify-center border-2 border-background">
+                          {e.offenePunkte}
+                        </span>
+                      ) : (
+                        <span
+                          className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border-2 border-background"
+                          style={{ background: "var(--ampel-green)" }}
+                        />
+                      ))}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <p className="font-medium truncate">
+                        {e.vorname} {e.nachname}
+                      </p>
+                      {e.istBeauftragter && (
+                        <span className="inline-flex items-center gap-1 rounded-full border border-border bg-surface px-2 py-0.5 text-[10px] font-bold text-violet-500">
+                          <Crown size={10} /> Leitung
+                        </span>
+                      )}
+                      {tab === "aktiv" && <QualiIcons icons={e.qualifikationsIcons} />}
+                    </div>
+                    <div className="flex items-center gap-2 flex-wrap mt-0.5">
+                      {e.kategorie && (
+                        <span className="inline-flex items-center gap-1 rounded-full bg-surface px-2 py-0.5 text-[11px] font-semibold text-foreground/65">
+                          {catIcon && <span>{catIcon}</span>}
+                          {e.kategorie}
+                        </span>
+                      )}
+                      {e.personalnummer && (
+                        <span className="text-xs text-foreground/65">{e.personalnummer}</span>
+                      )}
+                    </div>
+                  </div>
+                  {tab === "aktiv" ? (
+                    <>
+                      <button
+                        onClick={(ev) => {
+                          ev.stopPropagation();
+                          setEditing(e);
+                        }}
+                        className="h-8 w-8 rounded-full border border-border flex items-center justify-center hover:border-foreground/30 shrink-0"
+                        aria-label="Bearbeiten"
+                      >
+                        <Pencil size={14} className="text-blue-500" />
+                      </button>
+                      <button
+                        onClick={(ev) => {
+                          ev.stopPropagation();
+                          handleDelete(e.id, `${e.vorname} ${e.nachname}`);
+                        }}
+                        disabled={deletingId === e.id}
+                        className="h-8 w-8 rounded-full border border-border flex items-center justify-center text-red-600 hover:border-red-300 disabled:opacity-40 shrink-0"
+                        aria-label="Löschen"
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    </>
                   ) : (
-                    <span
-                      className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border-2 border-background"
-                      style={{ background: "var(--ampel-green)" }}
-                    />
-                  ))}
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <p className="font-medium truncate">
-                    {e.vorname} {e.nachname}
-                  </p>
-                  {tab === "aktiv" && <QualiIcons icons={e.qualifikationsIcons} />}
+                    <>
+                      <button
+                        onClick={(ev) => {
+                          ev.stopPropagation();
+                          setEmployeeArchived(e.id, false);
+                        }}
+                        className="h-8 w-8 rounded-full border border-border flex items-center justify-center hover:border-foreground/30 shrink-0"
+                        aria-label="Wiederherstellen"
+                        title="Wiederherstellen"
+                      >
+                        <RotateCcw size={14} className="text-violet-500" />
+                      </button>
+                      <button
+                        onClick={(ev) => {
+                          ev.stopPropagation();
+                          handleDeleteForever(e.id, `${e.vorname} ${e.nachname}`);
+                        }}
+                        disabled={deletingId === e.id}
+                        className="h-8 w-8 rounded-full border border-border flex items-center justify-center text-red-600 hover:border-red-300 disabled:opacity-40 shrink-0"
+                        aria-label="Endgültig löschen"
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    </>
+                  )}
+                  <ChevronRight size={16} className="text-foreground/40 shrink-0" />
                 </div>
-                <p className="text-xs text-foreground/65">
-                  {e.kategorie || "—"}
-                  {e.personalnummer ? ` · ${e.personalnummer}` : ""}
-                </p>
               </div>
-              {tab === "aktiv" ? (
-                <>
-                  <button
-                    onClick={(ev) => {
-                      ev.stopPropagation();
-                      setEditing(e);
-                    }}
-                    className="h-8 w-8 rounded-full border border-border flex items-center justify-center hover:border-foreground/30 shrink-0"
-                    aria-label="Bearbeiten"
-                  >
-                    <Pencil size={14} />
-                  </button>
-                  <button
-                    onClick={(ev) => {
-                      ev.stopPropagation();
-                      handleDelete(e.id, `${e.vorname} ${e.nachname}`);
-                    }}
-                    disabled={deletingId === e.id}
-                    className="h-8 w-8 rounded-full border border-border flex items-center justify-center text-red-600 hover:border-red-300 disabled:opacity-40 shrink-0"
-                    aria-label="Löschen"
-                  >
-                    <Trash2 size={14} />
-                  </button>
-                </>
-              ) : (
-                <>
-                  <button
-                    onClick={(ev) => {
-                      ev.stopPropagation();
-                      setEmployeeArchived(e.id, false);
-                    }}
-                    className="h-8 w-8 rounded-full border border-border flex items-center justify-center hover:border-foreground/30 shrink-0"
-                    aria-label="Wiederherstellen"
-                    title="Wiederherstellen"
-                  >
-                    ♻️
-                  </button>
-                  <button
-                    onClick={(ev) => {
-                      ev.stopPropagation();
-                      handleDeleteForever(e.id, `${e.vorname} ${e.nachname}`);
-                    }}
-                    disabled={deletingId === e.id}
-                    className="h-8 w-8 rounded-full border border-border flex items-center justify-center text-red-600 hover:border-red-300 disabled:opacity-40 shrink-0"
-                    aria-label="Endgültig löschen"
-                  >
-                    <Trash2 size={14} />
-                  </button>
-                </>
-              )}
-              <ChevronRight size={16} className="text-foreground/40 shrink-0" />
-            </div>
-          ))}
+            );
+          })}
           {filtered.length === 0 && (
-            <p className="px-5 py-6 text-sm text-foreground/65 text-center">
+            <p className="px-5 py-6 text-sm text-foreground/65 text-center rounded-2xl border border-border">
               {tab === "aktiv" ? "Keine Mitarbeiter gefunden." : "Keine archivierten Mitarbeiter."}
             </p>
           )}

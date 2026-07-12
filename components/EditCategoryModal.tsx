@@ -57,6 +57,7 @@ export function EditCategoryModal({
                   key={opt.name}
                   type="button"
                   title={opt.name}
+                  aria-label={opt.name}
                   onClick={() => setIcon(opt.icon)}
                   className={`h-10 rounded-xl border text-lg flex items-center justify-center ${
                     icon === opt.icon ? "border-foreground/50 bg-surface" : "border-border"

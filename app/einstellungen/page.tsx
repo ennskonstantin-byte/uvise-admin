@@ -8,6 +8,7 @@ import { Card } from "@/components/Card";
 import { useToast } from "@/components/Toast";
 import { useAppData } from "@/lib/store";
 import { exportNachweiseCsv, exportQualifikationenCsv } from "@/lib/exportCsv";
+import { exportGesamtBackupZip } from "@/lib/exportZip";
 import { SUPPORT_EMAIL } from "@/lib/legal";
 import { PLANS } from "@/lib/mockData";
 
@@ -31,6 +32,7 @@ export default function EinstellungenPage() {
   const [saving, setSaving] = useState(false);
   const [uploadingLogo, setUploadingLogo] = useState(false);
   const [sendingTestMail, setSendingTestMail] = useState(false);
+  const [zippingBackup, setZippingBackup] = useState(false);
 
   async function sendTestMail() {
     if (!session?.user.email) return;
@@ -227,9 +229,25 @@ export default function EinstellungenPage() {
               >
                 🎖️ Qualifikationen als CSV
               </button>
+              <button
+                onClick={async () => {
+                  setZippingBackup(true);
+                  try {
+                    await exportGesamtBackupZip(company, employees, trainings, employeeTrainings, qualifications);
+                    showToast("Gesamt-Backup als ZIP heruntergeladen.");
+                  } finally {
+                    setZippingBackup(false);
+                  }
+                }}
+                disabled={zippingBackup}
+                className="inline-flex items-center gap-2 rounded-full border border-border px-5 py-2.5 text-sm font-medium hover:border-foreground/30 disabled:opacity-50"
+              >
+                🗜️ {zippingBackup ? "Erstellt ZIP…" : "Gesamt-Backup als ZIP"}
+              </button>
             </div>
             <p className="text-xs text-foreground/65 mt-3">
-              Tipp: Für ein druckbares PDF einzelner Jahre gibt es im Archiv den Knopf
+              „Gesamt-Backup" bündelt beide CSV-Dateien in einer ZIP-Datei. Tipp: Für ein
+              druckbares PDF einzelner Jahre gibt es im Archiv den Knopf
               „Gesamtes Jahr als PDF drucken".
             </p>
           </Card>
