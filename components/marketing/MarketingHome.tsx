@@ -105,23 +105,23 @@ export function MarketingHome() {
             <span className="font-display text-lg font-semibold tracking-tight">uVise</span>
           </a>
 
-          <nav className="hidden md:flex items-center gap-8 text-sm text-foreground/70">
-            <a href="#ausprobieren" className="hover:text-foreground">Live ausprobieren</a>
-            <a href="#vorlesen" className="hover:text-foreground">Vorlesen & Übersetzen</a>
-            <a href="#funktionen" className="hover:text-foreground">Funktionen</a>
-            <a href="#preise" className="hover:text-foreground">Preise</a>
+          <nav className="hidden lg:flex items-center gap-8 text-sm text-foreground/70">
+            <a href="#ausprobieren" className="whitespace-nowrap hover:text-foreground">Live ausprobieren</a>
+            <a href="#vorlesen" className="whitespace-nowrap hover:text-foreground">Vorlesen & Übersetzen</a>
+            <a href="#funktionen" className="whitespace-nowrap hover:text-foreground">Funktionen</a>
+            <a href="#preise" className="whitespace-nowrap hover:text-foreground">Preise</a>
           </nav>
 
-          <div className="hidden md:flex items-center gap-3">
+          <div className="hidden lg:flex items-center gap-3">
             <Link
               href="/login"
-              className="btn-feedback rounded-full px-4 py-2 text-sm font-medium text-foreground/80 hover:text-foreground border border-border"
+              className="btn-feedback whitespace-nowrap rounded-full px-4 py-2 text-sm font-medium text-foreground/80 hover:text-foreground border border-border"
             >
               Anmelden
             </Link>
             <Link
               href="/login?mode=register"
-              className="btn-feedback rounded-full px-4 py-2 text-sm font-medium text-white"
+              className="btn-feedback whitespace-nowrap rounded-full px-4 py-2 text-sm font-medium text-white"
               style={{ background: "var(--accent-gradient)" }}
             >
               Kostenlos testen
@@ -130,7 +130,7 @@ export function MarketingHome() {
 
           <button
             onClick={() => setMenuOpen((v) => !v)}
-            className="md:hidden h-10 w-10 flex items-center justify-center rounded-full border border-border"
+            className="lg:hidden h-10 w-10 flex items-center justify-center rounded-full border border-border"
             aria-label={menuOpen ? "Menü schließen" : "Menü öffnen"}
           >
             {menuOpen ? <X size={18} /> : <Menu size={18} />}
@@ -138,7 +138,7 @@ export function MarketingHome() {
         </div>
 
         {menuOpen && (
-          <div className="md:hidden border-t border-border/60 bg-background px-5 py-4 space-y-3">
+          <div className="lg:hidden border-t border-border/60 bg-background px-5 py-4 space-y-3">
             <a href="#ausprobieren" onClick={() => setMenuOpen(false)} className="block text-sm text-foreground/70">
               Live ausprobieren
             </a>
