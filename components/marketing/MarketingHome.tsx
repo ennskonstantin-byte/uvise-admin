@@ -23,6 +23,7 @@ import { useAppData } from "@/lib/store";
 import { PLANS } from "@/lib/mockData";
 import { Reveal } from "@/components/marketing/Reveal";
 import { VorlesenDemo } from "@/components/marketing/VorlesenDemo";
+import { AppPreview } from "@/components/marketing/AppPreview";
 
 const FEATURES = [
   {
@@ -112,6 +113,7 @@ export function MarketingHome() {
           </a>
 
           <nav className="hidden md:flex items-center gap-8 text-sm text-foreground/70">
+            <a href="#ausprobieren" className="hover:text-foreground">Live ausprobieren</a>
             <a href="#vorlesen" className="hover:text-foreground">Vorlesen & Übersetzen</a>
             <a href="#funktionen" className="hover:text-foreground">Funktionen</a>
             <a href="#preise" className="hover:text-foreground">Preise</a>
@@ -144,6 +146,9 @@ export function MarketingHome() {
 
         {menuOpen && (
           <div className="md:hidden border-t border-border/60 bg-background px-5 py-4 space-y-3">
+            <a href="#ausprobieren" onClick={() => setMenuOpen(false)} className="block text-sm text-foreground/70">
+              Live ausprobieren
+            </a>
             <a href="#vorlesen" onClick={() => setMenuOpen(false)} className="block text-sm text-foreground/70">
               Vorlesen & Übersetzen
             </a>
@@ -269,6 +274,25 @@ export function MarketingHome() {
                 </div>
               </motion.div>
             </motion.div>
+          </div>
+        </section>
+
+        {/* Live-Vorschau: echte App-Instanzen zum Durchklicken (Demo-Firma, Fake-Daten) */}
+        <section id="ausprobieren" className="scroll-mt-16 border-t border-border/60 py-20">
+          <div className="mx-auto max-w-6xl px-5 sm:px-8">
+            <Reveal className="max-w-xl mb-12 text-center mx-auto">
+              <span className="inline-flex items-center gap-2 rounded-full border border-border bg-surface px-3.5 py-1.5 text-xs font-medium text-foreground/70 mb-5">
+                📱 Läuft direkt hier im Browser
+              </span>
+              <h2 className="font-display text-3xl sm:text-4xl font-semibold mb-3">Probier&apos;s direkt aus</h2>
+              <p className="text-foreground/65">
+                Keine Anmeldung nötig — das sind die echten Apps mit einer Beispiel-Firma. Klick dich
+                durch, signiere eine Unterweisung, lass sie dir vorlesen.
+              </p>
+            </Reveal>
+            <Reveal delay={0.1}>
+              <AppPreview />
+            </Reveal>
           </div>
         </section>
 
