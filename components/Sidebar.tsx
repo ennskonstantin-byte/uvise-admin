@@ -57,22 +57,21 @@ export function Sidebar() {
     >
       <Link href="/dashboard" className="px-6 py-6 flex items-center gap-3">
         <div className="shrink-0">
-          {company?.logoUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={company.logoUrl}
-              alt="Firmenlogo"
-              className="h-10 w-10 rounded-xl object-cover bg-white/10"
-            />
-          ) : (
-            <LogoMark size={40} />
-          )}
+          <LogoMark size={40} />
         </div>
         <div className="min-w-0">
           <p className="font-display text-base font-semibold tracking-tight truncate">
             {companyName}
           </p>
-          <p className="text-[10px] uppercase tracking-widest text-white/50">
+          <p className="flex items-center gap-1 text-[10px] uppercase tracking-widest text-white/50">
+            {company?.logoUrl && (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={company.logoUrl}
+                alt="Firmenlogo"
+                className="h-3.5 w-3.5 rounded object-cover bg-white/10"
+              />
+            )}
             uVise
           </p>
         </div>
