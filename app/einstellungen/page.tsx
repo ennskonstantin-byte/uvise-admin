@@ -7,11 +7,21 @@ import { PageHeader } from "@/components/PageHeader";
 import { Card } from "@/components/Card";
 import { useToast } from "@/components/Toast";
 import { useAppData } from "@/lib/store";
+import { exportNachweiseCsv, exportQualifikationenCsv } from "@/lib/exportCsv";
 import { SUPPORT_EMAIL } from "@/lib/legal";
 import { PLANS } from "@/lib/mockData";
 
 export default function EinstellungenPage() {
-  const { company, session, updateCompany, uploadCompanyLogo } = useAppData();
+  const {
+    company,
+    session,
+    updateCompany,
+    uploadCompanyLogo,
+    employees,
+    trainings,
+    qualifications,
+    employeeTrainings,
+  } = useAppData();
   const { showToast, ToastView } = useToast();
   const [firmenname, setFirmenname] = useState("");
   const [editingName, setEditingName] = useState(false);
@@ -186,6 +196,42 @@ export default function EinstellungenPage() {
             >
               {sendingTestMail ? "Sendet…" : `✉️ Test-E-Mail an ${session?.user.email ?? "dich"} senden`}
             </button>
+          </Card>
+        </section>
+
+        <section>
+          <h2 className="font-medium">Backup & Export</h2>
+          <p className="text-foreground/60 text-sm mb-4 max-w-xl">
+            Alle Nachweise und Qualifikationen als CSV-Datei herunterladen — z.B. für
+            Prüfungen durch die Berufsgenossenschaft oder als eigene Sicherung. Die Dateien
+            lassen sich direkt in Excel öffnen.
+          </p>
+          <Card className="max-w-lg">
+            <div className="flex flex-wrap gap-3">
+              <button
+                onClick={() => {
+                  const n = exportNachweiseCsv(employees, trainings, employeeTrainings);
+                  showToast(`${n} Nachweis-Zeile(n) exportiert.`);
+                }}
+                className="inline-flex items-center gap-2 rounded-full px-5 py-2.5 text-sm font-medium text-white"
+                style={{ background: "var(--accent-gradient)" }}
+              >
+                📄 Nachweise als CSV
+              </button>
+              <button
+                onClick={() => {
+                  const n = exportQualifikationenCsv(employees, qualifications);
+                  showToast(`${n} Qualifikation(en) exportiert.`);
+                }}
+                className="inline-flex items-center gap-2 rounded-full border border-border px-5 py-2.5 text-sm font-medium hover:border-foreground/30"
+              >
+                🎖️ Qualifikationen als CSV
+              </button>
+            </div>
+            <p className="text-xs text-foreground/65 mt-3">
+              Tipp: Für ein druckbares PDF einzelner Jahre gibt es im Archiv den Knopf
+              „Gesamtes Jahr als PDF drucken".
+            </p>
           </Card>
         </section>
 
