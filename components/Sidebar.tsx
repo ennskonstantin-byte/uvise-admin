@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {
   LayoutDashboard,
   Users,
@@ -29,6 +29,7 @@ const NAV_ITEMS = [
 
 export function Sidebar() {
   const pathname = usePathname();
+  const router = useRouter();
   const { questions, company, signOut } = useAppData();
   const openQuestions = questions.filter((q) => q.status === "offen").length;
   const companyName = company?.name ?? "SicherAkte";
@@ -111,7 +112,10 @@ export function Sidebar() {
       </div>
 
       <button
-        onClick={() => signOut()}
+        onClick={async () => {
+          await signOut();
+          router.push("/");
+        }}
         className="flex items-center gap-3 mx-3 mb-2 rounded-full px-4 py-2.5 text-sm text-white/70 hover:bg-white/5 hover:text-white"
       >
         <LogOut size={18} />

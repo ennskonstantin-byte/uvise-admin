@@ -42,15 +42,6 @@ function heute(plusTage) {
   return d.toISOString().slice(0, 10);
 }
 
-async function uploadPhoto(supabase, path, publicPath) {
-  const bytes = readFileSync(new URL(`../public/${publicPath}`, import.meta.url));
-  const { error } = await supabase.storage
-    .from("employee-photos")
-    .upload(path, bytes, { upsert: true, contentType: "image/jpeg" });
-  if (error) throw error;
-  return supabase.storage.from("employee-photos").getPublicUrl(path).data.publicUrl;
-}
-
 async function main() {
   const chefClient = createClient(URL_, ANON);
 
@@ -74,15 +65,6 @@ async function main() {
   });
   if (rpcErr) throw rpcErr;
 
-  console.log("2b/8 Foto für Chefin Nina hochladen …");
-  const { data: nina } = await chefClient
-    .from("employees")
-    .select("id")
-    .eq("auth_user_id", signUpData.session.user.id)
-    .single();
-  const ninaPhotoUrl = await uploadPhoto(chefClient, `demo-${nina.id}.jpg`, "marketing/mitarbeiter-leitung.jpg");
-  await chefClient.from("employees").update({ foto_url: ninaPhotoUrl }).eq("id", nina.id);
-
   console.log("3/8 Zusätzliche Kategorie 'Küche' anlegen …");
   const { data: kueche, error: catErr } = await chefClient
     .from("categories")
@@ -93,9 +75,9 @@ async function main() {
 
   console.log("4/8 Mitarbeiter anlegen …");
   const employeesInput = [
-    { vorname: "Lena", nachname: "Bauer", personalnummer: "P-101", kategorie: "Küche", email: MA_EMAIL, photo: "marketing/mitarbeiter-kueche.jpg" },
-    { vorname: "Tom", nachname: "Krüger", personalnummer: "P-102", kategorie: "Lager", email: null, photo: "marketing/mitarbeiter-lager.jpg" },
-    { vorname: "Aylin", nachname: "Sarı", personalnummer: "P-103", kategorie: "Büro", email: null, photo: "marketing/mitarbeiter-buero.jpg" },
+    { vorname: "Lena", nachname: "Bauer", personalnummer: "P-101", kategorie: "Küche", email: MA_EMAIL },
+    { vorname: "Tom", nachname: "Krüger", personalnummer: "P-102", kategorie: "Lager", email: null },
+    { vorname: "Aylin", nachname: "Sarı", personalnummer: "P-103", kategorie: "Büro", email: null },
   ];
   const employees = {};
   for (const e of employeesInput) {
@@ -114,8 +96,6 @@ async function main() {
       .single();
     if (error) throw error;
     employees[e.vorname] = data;
-    const publicUrl = await uploadPhoto(chefClient, `demo-${data.id}.jpg`, e.photo);
-    await chefClient.from("employees").update({ foto_url: publicUrl }).eq("id", data.id);
   }
 
   console.log("5/8 Unterweisungen anlegen …");
