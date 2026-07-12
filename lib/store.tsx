@@ -516,6 +516,17 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
   }
 
   async function deleteEmployee(id: string) {
+    // Löschkonzept (DSGVO Art. 17): "Endgültig löschen" soll wirklich alles
+    // entfernen. Der Datenbank-Eintrag verschwindet zwar über die Foreign-Key-
+    // Kaskaden (Unterweisungen, Qualifikationen, Fragen), das Foto im Storage
+    // war davon aber nie erfasst und blieb bisher für immer liegen.
+    if (company) {
+      const { data: files } = await supabase.storage.from("employee-photos").list(company.id);
+      const ownFiles = (files ?? []).filter((f) => f.name.startsWith(`${id}-`)).map((f) => `${company.id}/${f.name}`);
+      if (ownFiles.length > 0) {
+        await supabase.storage.from("employee-photos").remove(ownFiles);
+      }
+    }
     const { error } = await supabase.from("employees").delete().eq("id", id);
     if (error) throw error;
     await loadData();
