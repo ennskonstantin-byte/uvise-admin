@@ -117,6 +117,24 @@ function trainingStatus(ablaufdatum: string | null): "aktuell" | "laeuft_ab" {
   return daysLeft < 30 ? "laeuft_ab" : "aktuell";
 }
 
+// Der Storage-Bucket "employee-photos" ist privat (Migration 0020) — foto_url/
+// logo_url speichern nur noch den PFAD, nicht mehr die fertige URL. Hier wird
+// beim Laden für alle Fotos auf einmal eine zeitlich begrenzte signierte URL
+// erzeugt (günstiger als N Einzelaufrufe).
+const PHOTO_URL_TTL_SECONDS = 3600;
+
+async function resolveSignedUrls(pathsOrUrls: (string | null | undefined)[]): Promise<Record<string, string>> {
+  const paths = [...new Set(pathsOrUrls.filter((p): p is string => !!p && !p.startsWith("http")))];
+  if (paths.length === 0) return {};
+  const { data, error } = await supabase.storage.from("employee-photos").createSignedUrls(paths, PHOTO_URL_TTL_SECONDS);
+  if (error || !data) return {};
+  const map: Record<string, string> = {};
+  data.forEach((item, i) => {
+    if (item.signedUrl) map[paths[i]] = item.signedUrl;
+  });
+  return map;
+}
+
 export function AppDataProvider({ children }: { children: React.ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [sessionLoading, setSessionLoading] = useState(true);
@@ -156,6 +174,16 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
       supabase.from("employee_trainings").select("*"),
     ]);
 
+    const signedUrlMap = await resolveSignedUrls([
+      companies?.[0]?.logo_url,
+      ...(employeeRows ?? []).map((e) => e.foto_url),
+    ]);
+    function resolvePhoto(pathOrUrl: string | null | undefined): string | null {
+      if (!pathOrUrl) return null;
+      if (pathOrUrl.startsWith("http")) return pathOrUrl; // Rückfall für nicht migrierte Altdaten
+      return signedUrlMap[pathOrUrl] ?? null;
+    }
+
     const empTrainings = (employeeTrainingRows ?? []).map((et) => ({
       id: et.id,
       employeeId: et.employee_id,
@@ -189,7 +217,7 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
         email: e.email,
         telefon: e.telefon ?? null,
         geburtsdatum: e.geburtsdatum ?? null,
-        fotoUrl: e.foto_url ?? null,
+        fotoUrl: resolvePhoto(e.foto_url),
         kategorie: e.kategorie ?? "Sonstiges",
         archiviert: e.archiviert ?? false,
         minderjaehrig: istMinderjaehrig(e.geburtsdatum ?? null),
@@ -244,7 +272,7 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
         name: companies[0].name,
         address: companies[0].address,
         chefName: companies[0].chef_name,
-        logoUrl: companies[0].logo_url ?? null,
+        logoUrl: resolvePhoto(companies[0].logo_url),
       });
     }
     setEmployees(mappedEmployees);
@@ -472,10 +500,11 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
       .from("employee-photos")
       .upload(path, file, { upsert: true, contentType: file.type || "image/jpeg" });
     if (upErr) throw upErr;
-    const { data } = supabase.storage.from("employee-photos").getPublicUrl(path);
+    // Bucket ist privat (Migration 0020) — nur den Pfad speichern, die
+    // Anzeige erzeugt beim Laden eine zeitlich begrenzte signierte URL.
     const { error } = await supabase
       .from("employees")
-      .update({ foto_url: data.publicUrl })
+      .update({ foto_url: path })
       .eq("id", employeeId);
     if (error) throw error;
     await loadData();
@@ -645,8 +674,8 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
       .from("employee-photos")
       .upload(path, file, { upsert: true, contentType: file.type || "image/png" });
     if (upErr) throw upErr;
-    const { data } = supabase.storage.from("employee-photos").getPublicUrl(path);
-    const { error } = await supabase.from("companies").update({ logo_url: data.publicUrl }).eq("id", company.id);
+    // Bucket ist privat (Migration 0020) — nur den Pfad speichern.
+    const { error } = await supabase.from("companies").update({ logo_url: path }).eq("id", company.id);
     if (error) throw error;
     await loadData();
   }
