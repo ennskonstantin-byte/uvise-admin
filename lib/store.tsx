@@ -26,7 +26,15 @@ type Company = {
 
 type NewEmployeeInput = Omit<
   Employee,
-  "id" | "ampel" | "offenePunkte" | "qualifikationsIcons" | "fotoUrl" | "archiviert" | "minderjaehrig"
+  | "id"
+  | "ampel"
+  | "offenePunkte"
+  | "qualifikationsIcons"
+  | "fotoUrl"
+  | "archiviert"
+  | "minderjaehrig"
+  | "inviteToken"
+  | "registriert"
 >;
 type NewTrainingInput = Omit<Training, "id"> & { bundleId?: string | null };
 type NewBundleInput = Omit<Bundle, "id">;
@@ -189,6 +197,8 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
         offenePunkte,
         qualifikationsIcons: ownQualIcons,
         istBeauftragter: e.ist_beauftragter,
+        inviteToken: e.invite_token ?? null,
+        registriert: !!e.auth_user_id,
       };
     });
 
@@ -327,6 +337,10 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
 
   async function addEmployee(input: NewEmployeeInput): Promise<Employee> {
     if (!company) throw new Error("Keine Firma geladen");
+    // ist_beauftragter wird bewusst NICHT mit angelegt — ein Datenbank-Trigger
+    // erzwingt ohnehin "false" bei jedem normalen Insert (siehe Migration
+    // 0014_employee_role_protection.sql). Die Rolle wird danach separat über
+    // die abgesicherte set_beauftragter()-RPC gesetzt, nie direkt vom Client.
     const { data, error } = await supabase
       .from("employees")
       .insert({
@@ -338,11 +352,17 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
         telefon: input.telefon,
         geburtsdatum: input.geburtsdatum,
         kategorie: input.kategorie,
-        ist_beauftragter: input.istBeauftragter,
       })
       .select()
       .single();
     if (error) throw error;
+    if (input.istBeauftragter) {
+      const { error: roleError } = await supabase.rpc("set_beauftragter", {
+        p_employee_id: data.id,
+        p_value: true,
+      });
+      if (roleError) throw roleError;
+    }
     await loadData();
     return {
       id: data.id,
@@ -359,7 +379,12 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
       ampel: "gruen",
       offenePunkte: 0,
       qualifikationsIcons: [],
-      istBeauftragter: data.ist_beauftragter,
+      // data.ist_beauftragter ist direkt nach dem Insert immer false (Trigger).
+      // Der tatsächliche Endzustand ist input.istBeauftragter, weil die
+      // set_beauftragter()-RPC oben bereits gelaufen ist, bevor wir hier ankommen.
+      istBeauftragter: input.istBeauftragter,
+      inviteToken: data.invite_token ?? null,
+      registriert: false,
     };
   }
 
@@ -409,6 +434,9 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
       istBeauftragter: boolean;
     }
   ) {
+    // ist_beauftragter bewusst getrennt von den übrigen Feldern: der
+    // Schutz-Trigger blockt Rollenänderungen über ein normales UPDATE (siehe
+    // Migration 0014), Rollenwechsel läuft ausschließlich über set_beauftragter().
     const { error } = await supabase
       .from("employees")
       .update({
@@ -419,16 +447,27 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
         telefon: input.telefon,
         geburtsdatum: input.geburtsdatum,
         kategorie: input.kategorie,
-        ist_beauftragter: input.istBeauftragter,
       })
       .eq("id", id);
     if (error) throw error;
+
+    const current = employees.find((e) => e.id === id);
+    if (current && current.istBeauftragter !== input.istBeauftragter) {
+      const { error: roleError } = await supabase.rpc("set_beauftragter", {
+        p_employee_id: id,
+        p_value: input.istBeauftragter,
+      });
+      if (roleError) throw roleError;
+    }
     await loadData();
   }
 
   async function uploadEmployeePhoto(employeeId: string, file: File) {
+    if (!company) throw new Error("Keine Firma geladen");
     const ext = (file.name.split(".").pop() || "jpg").toLowerCase();
-    const path = `${employeeId}-${Date.now()}.${ext}`;
+    // Pfad-Präfix mit der eigenen Firma — die Storage-Policies (Migration
+    // 0019) erlauben Schreiben/Löschen nur noch innerhalb des eigenen Ordners.
+    const path = `${company.id}/${employeeId}-${Date.now()}.${ext}`;
     const { error: upErr } = await supabase.storage
       .from("employee-photos")
       .upload(path, file, { upsert: true, contentType: file.type || "image/jpeg" });
@@ -588,7 +627,9 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
   async function uploadCompanyLogo(file: File) {
     if (!company) return;
     const ext = (file.name.split(".").pop() || "png").toLowerCase();
-    const path = `company-${company.id}-${Date.now()}.${ext}`;
+    // Muss im eigenen Firmen-Ordner liegen (Migration 0019 prüft den
+    // Pfad-Präfix), sonst lehnt die Storage-Policy den Upload ab.
+    const path = `${company.id}/logo-${Date.now()}.${ext}`;
     const { error: upErr } = await supabase.storage
       .from("employee-photos")
       .upload(path, file, { upsert: true, contentType: file.type || "image/png" });

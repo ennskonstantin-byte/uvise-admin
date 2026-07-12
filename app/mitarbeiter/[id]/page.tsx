@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import { Bell, ArrowLeft, Pencil, Send, Plus } from "lucide-react";
+import { Bell, ArrowLeft, Pencil, Send, Plus, Copy } from "lucide-react";
 import { DashboardShell } from "@/components/DashboardShell";
 import { Card } from "@/components/Card";
 import { EditEmployeeModal } from "@/components/EditEmployeeModal";
@@ -89,6 +89,28 @@ export default function EmployeeDetailPage() {
             Bearbeiten
           </button>
         </div>
+
+        {!employee.registriert && employee.inviteToken && (
+          <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-border bg-surface px-4 py-3 mb-8">
+            <div>
+              <p className="text-sm font-medium">Noch nicht registriert</p>
+              <p className="text-xs text-foreground/60">
+                Gib {employee.vorname} diesen Einladungscode für die App-Registrierung:{" "}
+                <span className="font-mono text-foreground">{employee.inviteToken}</span>
+              </p>
+            </div>
+            <button
+              onClick={() => {
+                navigator.clipboard.writeText(employee.inviteToken!);
+                showToast("Einladungscode kopiert");
+              }}
+              className="flex items-center gap-2 rounded-full border border-border px-3 py-2 text-xs hover:border-foreground/30"
+            >
+              <Copy size={14} />
+              Kopieren
+            </button>
+          </div>
+        )}
 
         <div className="flex items-center justify-between mb-3">
           <h2 className="font-medium">Unterweisungen</h2>

@@ -20,6 +20,8 @@ export type Employee = {
   offenePunkte: number;
   qualifikationsIcons: string[];
   istBeauftragter: boolean;
+  inviteToken: string | null;
+  registriert: boolean;
 };
 
 export type Category = {
@@ -69,6 +71,8 @@ export const EMPLOYEES: Employee[] = [
     offenePunkte: 2,
     qualifikationsIcons: ["✚"],
     istBeauftragter: false,
+    inviteToken: null,
+    registriert: true,
   },
   {
     id: "2",
@@ -86,6 +90,8 @@ export const EMPLOYEES: Employee[] = [
     offenePunkte: 0,
     qualifikationsIcons: ["🛡️"],
     istBeauftragter: true,
+    inviteToken: null,
+    registriert: true,
   },
   {
     id: "3",
@@ -103,6 +109,8 @@ export const EMPLOYEES: Employee[] = [
     offenePunkte: 0,
     qualifikationsIcons: ["🔥"],
     istBeauftragter: false,
+    inviteToken: null,
+    registriert: true,
   },
 ];
 
