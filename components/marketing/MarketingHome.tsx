@@ -11,6 +11,7 @@ import {
   MessageCircleQuestion,
   FileDown,
   Moon,
+  Sun,
   Users,
   Languages,
   Check,
@@ -18,6 +19,7 @@ import {
   X,
 } from "lucide-react";
 import { LogoMark } from "@/components/Logo";
+import { Switch } from "@/components/Switch";
 import { useAppData } from "@/lib/store";
 import { PLANS } from "@/lib/mockData";
 import { Reveal } from "@/components/marketing/Reveal";
@@ -84,6 +86,21 @@ export function MarketingHome() {
   const { session, loading } = useAppData();
   const router = useRouter();
   const [menuOpen, setMenuOpen] = useState(false);
+
+  // Hell/Dunkel — dieselbe Umschaltung wie im Chef-Dashboard (Sidebar.tsx)
+  // und in den beiden Apps, damit die Wahl konsistent auf der ganzen
+  // Domain gilt (gleicher localStorage-Schlüssel "uvise-theme").
+  const [dark, setDark] = useState(false);
+  useEffect(() => {
+    setDark(document.documentElement.classList.contains("dark"));
+  }, []);
+  function toggleTheme(nextDark: boolean) {
+    setDark(nextDark);
+    const mode = nextDark ? "dark" : "light";
+    document.documentElement.classList.remove("light", "dark");
+    document.documentElement.classList.add(mode);
+    localStorage.setItem("uvise-theme", mode);
+  }
   // Barrierefreiheit: wer in den Systemeinstellungen Animationen reduziert
   // hat, bekommt keine schwebenden Blobs/Reveal-Bewegungen — nur ein
   // einfaches Einblenden ohne Bewegung.
@@ -113,6 +130,13 @@ export function MarketingHome() {
           </nav>
 
           <div className="hidden lg:flex items-center gap-3">
+            <button
+              onClick={() => toggleTheme(!dark)}
+              className="h-9 w-9 flex items-center justify-center rounded-full border border-border text-foreground/70 hover:text-foreground"
+              aria-label={dark ? "Helles Design aktivieren" : "Dunkles Design aktivieren"}
+            >
+              {dark ? <Sun size={16} /> : <Moon size={16} />}
+            </button>
             <Link
               href="/login"
               className="btn-feedback whitespace-nowrap rounded-full px-4 py-2 text-sm font-medium text-foreground/80 hover:text-foreground border border-border"
@@ -186,7 +210,14 @@ export function MarketingHome() {
                 </a>
               </nav>
 
-              <div className="mt-auto flex flex-col gap-2 pt-6">
+              <div className="mt-auto flex items-center justify-between rounded-xl bg-surface px-4 py-3 mb-3">
+                <span className="text-sm text-foreground/80">
+                  {dark ? "🌙 Dunkles Design" : "☀️ Helles Design"}
+                </span>
+                <Switch checked={dark} onChange={toggleTheme} label="Dunkles Design umschalten" />
+              </div>
+
+              <div className="flex flex-col gap-2">
                 <Link
                   href="/login"
                   className="text-center rounded-full px-4 py-2.5 text-sm font-medium border border-border"
@@ -250,12 +281,6 @@ export function MarketingHome() {
                 >
                   7 Tage kostenlos testen
                 </Link>
-                <a
-                  href="#vorlesen"
-                  className="btn-feedback rounded-full px-6 py-3 text-sm font-medium border border-border hover:border-foreground/30"
-                >
-                  Vorlesen & Übersetzen ansehen
-                </a>
               </div>
               <p className="text-xs text-foreground/50 mt-4">
                 Keine Kreditkarte nötig · jederzeit kündbar
