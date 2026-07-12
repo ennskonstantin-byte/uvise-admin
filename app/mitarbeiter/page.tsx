@@ -23,16 +23,18 @@ export default function MitarbeiterPage() {
   const [editing, setEditing] = useState<Employee | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [showCategories, setShowCategories] = useState(false);
-  const [showArchived, setShowArchived] = useState(false);
+  const [tab, setTab] = useState<"aktiv" | "archiviert">("aktiv");
+  const [categoryFilter, setCategoryFilter] = useState<string | null>(null);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
   const [deletingCategoryId, setDeletingCategoryId] = useState<string | null>(null);
 
+  const active = employees.filter((e) => !e.archiviert);
   const archived = employees.filter((e) => e.archiviert);
 
   async function handleDelete(id: string, name: string) {
     if (
       !confirm(
-        `${name} archivieren (z.B. bei Kündigung)? Nachweise und Daten bleiben erhalten und sind über den Regler „Archivierte anzeigen" erreichbar.`
+        `${name} archivieren (z.B. bei Kündigung)? Nachweise und Daten bleiben erhalten und sind über den Reiter „Archiviert" erreichbar.`
       )
     )
       return;
@@ -74,31 +76,36 @@ export default function MitarbeiterPage() {
     }
   }
 
-  const grouped = useMemo(() => {
-    const filtered = employees.filter(
-      (e) =>
-        !e.archiviert &&
-        `${e.vorname} ${e.nachname} ${e.personalnummer}`
-          .toLowerCase()
-          .includes(query.toLowerCase())
-    );
-    return categories
-      .map((cat) => ({
-        kategorie: cat.name,
-        icon: cat.icon,
-        employees: filtered.filter((e) => e.kategorie === cat.name),
-      }))
-      .filter((g) => g.employees.length > 0)
-      // Größte Gruppen zuerst — sonst verschwinden gut gefüllte Kategorien
-      // zwischen vielen kleinen 1-Personen-Gruppen.
-      .sort((a, b) => b.employees.length - a.employees.length);
-  }, [employees, categories, query]);
+  // Grundmenge je Reiter; Kategorie-Filter als Chips darüber (statt der
+  // früheren gestapelten Kategorie-Blöcke — eine flache, gefilterte Liste).
+  const base = tab === "aktiv" ? active : archived;
+
+  const categoryChips = useMemo(
+    () =>
+      categories
+        .map((c) => ({ ...c, count: base.filter((e) => e.kategorie === c.name).length }))
+        .filter((c) => c.count > 0)
+        .sort((a, b) => b.count - a.count),
+    [base, categories]
+  );
+
+  const filtered = useMemo(
+    () =>
+      base
+        .filter((e) => !categoryFilter || e.kategorie === categoryFilter)
+        .filter((e) =>
+          `${e.vorname} ${e.nachname} ${e.personalnummer}`
+            .toLowerCase()
+            .includes(query.toLowerCase())
+        ),
+    [base, categoryFilter, query]
+  );
 
   return (
     <DashboardShell>
       <PageHeader
         title="Mitarbeiter"
-        subtitle="Alle Mitarbeiter deiner Firma, gruppiert nach Kategorie."
+        subtitle="Alle Mitarbeiter deiner Firma — nach Kategorie filterbar."
         action={
           <div className="flex items-center gap-2">
             <button
@@ -156,7 +163,35 @@ export default function MitarbeiterPage() {
       )}
 
       <Card>
-        <div className="relative w-full max-w-sm mb-8">
+        {/* Reiter Aktiv/Archiviert — ersetzt den früheren Schalter unten */}
+        <div className="flex flex-wrap items-center gap-2 mb-5">
+          <button
+            onClick={() => {
+              setTab("aktiv");
+              setCategoryFilter(null);
+            }}
+            className={`rounded-full px-4 py-2 text-sm font-medium ${
+              tab === "aktiv" ? "text-white" : "border border-border text-foreground/70"
+            }`}
+            style={tab === "aktiv" ? { background: "var(--accent-gradient)" } : undefined}
+          >
+            Aktiv ({active.length})
+          </button>
+          <button
+            onClick={() => {
+              setTab("archiviert");
+              setCategoryFilter(null);
+            }}
+            className={`rounded-full px-4 py-2 text-sm font-medium ${
+              tab === "archiviert" ? "text-white" : "border border-border text-foreground/70"
+            }`}
+            style={tab === "archiviert" ? { background: "var(--accent-gradient)" } : undefined}
+          >
+            Archiviert ({archived.length})
+          </button>
+        </div>
+
+        <div className="relative w-full max-w-sm mb-4">
           <Search
             size={16}
             className="absolute left-3.5 top-1/2 -translate-y-1/2 text-foreground/65"
@@ -169,159 +204,152 @@ export default function MitarbeiterPage() {
           />
         </div>
 
-        <div className="space-y-8">
-          {grouped.map(({ kategorie, icon, employees }) => (
-            <div key={kategorie}>
-              <div className="flex items-center gap-2 mb-3">
-                <span>{icon}</span>
-                <h2 className="font-medium">{kategorie}</h2>
-                <span className="text-sm text-foreground/65">({employees.length})</span>
-              </div>
-
-              <div className="rounded-3xl border border-border divide-y divide-border overflow-hidden">
-                {employees.map((e) => (
-                  <div
-                    key={e.id}
-                    role="button"
-                    tabIndex={0}
-                    onClick={() => router.push(`/mitarbeiter/${e.id}`)}
-                    onKeyDown={(ev) => {
-                      if (ev.key === "Enter" || ev.key === " ") {
-                        ev.preventDefault();
-                        router.push(`/mitarbeiter/${e.id}`);
-                      }
-                    }}
-                    className="btn-feedback flex items-center gap-4 px-5 py-3 cursor-pointer hover:bg-surface"
-                  >
-                    <div
-                      className="relative shrink-0"
-                      title={
-                        e.offenePunkte > 0
-                          ? `${e.offenePunkte} offene Unterweisung(en)`
-                          : "Alles unterschrieben"
-                      }
-                    >
-                      <EmployeeAvatar vorname={e.vorname} nachname={e.nachname} fotoUrl={e.fotoUrl} size={40} />
-                      {e.offenePunkte > 0 ? (
-                        <span className="absolute -top-1 -right-1 h-4 min-w-4 px-0.5 rounded-full bg-red-600 text-white text-[9px] font-bold flex items-center justify-center border-2 border-background">
-                          {e.offenePunkte}
-                        </span>
-                      ) : (
-                        <span
-                          className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border-2 border-background"
-                          style={{ background: "var(--ampel-green)" }}
-                        />
-                      )}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <p className="font-medium truncate">
-                          {e.vorname} {e.nachname}
-                        </p>
-                        <QualiIcons icons={e.qualifikationsIcons} />
-                      </div>
-                      <p className="text-xs text-foreground/65">{e.personalnummer}</p>
-                    </div>
-                    <button
-                      onClick={(ev) => {
-                        ev.stopPropagation();
-                        setEditing(e);
-                      }}
-                      className="h-8 w-8 rounded-full border border-border flex items-center justify-center hover:border-foreground/30 shrink-0"
-                      aria-label="Bearbeiten"
-                    >
-                      <Pencil size={14} />
-                    </button>
-                    <button
-                      onClick={(ev) => {
-                        ev.stopPropagation();
-                        handleDelete(e.id, `${e.vorname} ${e.nachname}`);
-                      }}
-                      disabled={deletingId === e.id}
-                      className="h-8 w-8 rounded-full border border-border flex items-center justify-center text-red-600 hover:border-red-300 disabled:opacity-40 shrink-0"
-                      aria-label="Löschen"
-                    >
-                      <Trash2 size={14} />
-                    </button>
-                    <ChevronRight size={16} className="text-foreground/40 shrink-0" />
-                  </div>
-                ))}
-              </div>
-            </div>
-          ))}
-
-          {grouped.length === 0 && (
-            <p className="text-foreground/65 text-sm text-center mt-10">
-              Keine Mitarbeiter gefunden.
-            </p>
-          )}
-
-          {/* Regler: Archivierte/gekündigte Mitarbeiter einblenden */}
-          <div className="flex items-center gap-3 pt-4 border-t border-border">
+        {/* Kategorie-Filter als Chips statt gestapelter Gruppen-Blöcke */}
+        {categoryChips.length > 0 && (
+          <div className="flex flex-wrap gap-2 mb-6">
             <button
-              role="switch"
-              aria-checked={showArchived}
-              aria-label="Archivierte Mitarbeiter anzeigen"
-              onClick={() => setShowArchived((v) => !v)}
-              className={`relative h-6 w-11 rounded-full transition-colors ${
-                showArchived ? "bg-green-500" : "bg-border"
+              onClick={() => setCategoryFilter(null)}
+              className={`rounded-full px-3.5 py-1.5 text-sm ${
+                !categoryFilter ? "text-white" : "border border-border text-foreground/70"
+              }`}
+              style={!categoryFilter ? { background: "var(--accent-gradient)" } : undefined}
+            >
+              Alle ({base.length})
+            </button>
+            {categoryChips.map((c) => (
+              <button
+                key={c.id}
+                onClick={() => setCategoryFilter(c.name)}
+                className={`rounded-full px-3.5 py-1.5 text-sm ${
+                  categoryFilter === c.name
+                    ? "text-white"
+                    : "border border-border text-foreground/70"
+                }`}
+                style={
+                  categoryFilter === c.name ? { background: "var(--accent-gradient)" } : undefined
+                }
+              >
+                {c.icon} {c.name} ({c.count})
+              </button>
+            ))}
+          </div>
+        )}
+
+        <div className="rounded-3xl border border-border divide-y divide-border overflow-hidden">
+          {filtered.map((e) => (
+            <div
+              key={e.id}
+              role="button"
+              tabIndex={0}
+              onClick={() => router.push(`/mitarbeiter/${e.id}`)}
+              onKeyDown={(ev) => {
+                if (ev.key === "Enter" || ev.key === " ") {
+                  ev.preventDefault();
+                  router.push(`/mitarbeiter/${e.id}`);
+                }
+              }}
+              className={`btn-feedback flex items-center gap-4 px-5 py-3 cursor-pointer hover:bg-surface ${
+                tab === "archiviert" ? "opacity-60" : ""
               }`}
             >
-              <span
-                className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-all ${
-                  showArchived ? "left-[22px]" : "left-0.5"
-                }`}
-              />
-            </button>
-            <div>
-              <p className="text-sm font-medium">Archivierte anzeigen</p>
-              <p className="text-xs text-foreground/65">
-                Gekündigte Mitarbeiter ({archived.length}) — Daten bleiben erhalten
-              </p>
-            </div>
-          </div>
-
-          {showArchived && (
-            <div>
-              <div className="flex items-center gap-2 mb-3 mt-2">
-                <span>🗄️</span>
-                <h2 className="font-medium">Archiviert / Gekündigt</h2>
-                <span className="text-sm text-foreground/65">({archived.length})</span>
+              <div
+                className="relative shrink-0"
+                title={
+                  tab === "archiviert"
+                    ? "Archiviert"
+                    : e.offenePunkte > 0
+                      ? `${e.offenePunkte} offene Unterweisung(en)`
+                      : "Alles unterschrieben"
+                }
+              >
+                <EmployeeAvatar
+                  vorname={e.vorname}
+                  nachname={e.nachname}
+                  fotoUrl={e.fotoUrl}
+                  size={40}
+                  grayscale={tab === "archiviert"}
+                />
+                {tab === "aktiv" &&
+                  (e.offenePunkte > 0 ? (
+                    <span className="absolute -top-1 -right-1 h-4 min-w-4 px-0.5 rounded-full bg-red-600 text-white text-[9px] font-bold flex items-center justify-center border-2 border-background">
+                      {e.offenePunkte}
+                    </span>
+                  ) : (
+                    <span
+                      className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border-2 border-background"
+                      style={{ background: "var(--ampel-green)" }}
+                    />
+                  ))}
               </div>
-              <div className="rounded-3xl border border-border divide-y divide-border overflow-hidden">
-                {archived.map((e) => (
-                  <div key={e.id} className="flex items-center gap-4 px-5 py-3 opacity-60">
-                    <EmployeeAvatar vorname={e.vorname} nachname={e.nachname} fotoUrl={e.fotoUrl} size={40} grayscale />
-                    <div className="flex-1 min-w-0">
-                      <p className="font-medium truncate">
-                        {e.vorname} {e.nachname}
-                      </p>
-                      <p className="text-xs text-foreground/65">{e.kategorie || "—"}</p>
-                    </div>
-                    <button
-                      onClick={() => setEmployeeArchived(e.id, false)}
-                      className="text-sm rounded-full border border-border px-3 py-1.5 hover:border-foreground/30"
-                      aria-label="Wiederherstellen"
-                    >
-                      ♻️ Wiederherstellen
-                    </button>
-                    <button
-                      onClick={() => handleDeleteForever(e.id, `${e.vorname} ${e.nachname}`)}
-                      disabled={deletingId === e.id}
-                      className="h-8 w-8 rounded-full border border-border flex items-center justify-center text-red-500 hover:border-red-300 disabled:opacity-40"
-                      aria-label="Endgültig löschen"
-                    >
-                      <Trash2 size={14} />
-                    </button>
-                  </div>
-                ))}
-                {archived.length === 0 && (
-                  <p className="px-5 py-4 text-sm text-foreground/65">
-                    Keine archivierten Mitarbeiter.
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <p className="font-medium truncate">
+                    {e.vorname} {e.nachname}
                   </p>
-                )}
+                  {tab === "aktiv" && <QualiIcons icons={e.qualifikationsIcons} />}
+                </div>
+                <p className="text-xs text-foreground/65">
+                  {e.kategorie || "—"}
+                  {e.personalnummer ? ` · ${e.personalnummer}` : ""}
+                </p>
               </div>
+              {tab === "aktiv" ? (
+                <>
+                  <button
+                    onClick={(ev) => {
+                      ev.stopPropagation();
+                      setEditing(e);
+                    }}
+                    className="h-8 w-8 rounded-full border border-border flex items-center justify-center hover:border-foreground/30 shrink-0"
+                    aria-label="Bearbeiten"
+                  >
+                    <Pencil size={14} />
+                  </button>
+                  <button
+                    onClick={(ev) => {
+                      ev.stopPropagation();
+                      handleDelete(e.id, `${e.vorname} ${e.nachname}`);
+                    }}
+                    disabled={deletingId === e.id}
+                    className="h-8 w-8 rounded-full border border-border flex items-center justify-center text-red-600 hover:border-red-300 disabled:opacity-40 shrink-0"
+                    aria-label="Löschen"
+                  >
+                    <Trash2 size={14} />
+                  </button>
+                </>
+              ) : (
+                <>
+                  <button
+                    onClick={(ev) => {
+                      ev.stopPropagation();
+                      setEmployeeArchived(e.id, false);
+                    }}
+                    className="h-8 w-8 rounded-full border border-border flex items-center justify-center hover:border-foreground/30 shrink-0"
+                    aria-label="Wiederherstellen"
+                    title="Wiederherstellen"
+                  >
+                    ♻️
+                  </button>
+                  <button
+                    onClick={(ev) => {
+                      ev.stopPropagation();
+                      handleDeleteForever(e.id, `${e.vorname} ${e.nachname}`);
+                    }}
+                    disabled={deletingId === e.id}
+                    className="h-8 w-8 rounded-full border border-border flex items-center justify-center text-red-600 hover:border-red-300 disabled:opacity-40 shrink-0"
+                    aria-label="Endgültig löschen"
+                  >
+                    <Trash2 size={14} />
+                  </button>
+                </>
+              )}
+              <ChevronRight size={16} className="text-foreground/40 shrink-0" />
             </div>
+          ))}
+          {filtered.length === 0 && (
+            <p className="px-5 py-6 text-sm text-foreground/65 text-center">
+              {tab === "aktiv" ? "Keine Mitarbeiter gefunden." : "Keine archivierten Mitarbeiter."}
+            </p>
           )}
         </div>
       </Card>
