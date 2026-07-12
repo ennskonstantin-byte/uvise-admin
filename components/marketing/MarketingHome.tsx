@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { motion, useReducedMotion } from "framer-motion";
+import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import {
   ShieldCheck,
   BellRing,
@@ -136,39 +136,75 @@ export function MarketingHome() {
             {menuOpen ? <X size={18} /> : <Menu size={18} />}
           </button>
         </div>
-
-        {menuOpen && (
-          <div className="lg:hidden border-t border-border/60 bg-background px-5 py-4 space-y-3">
-            <a href="#ausprobieren" onClick={() => setMenuOpen(false)} className="block text-sm text-foreground/70">
-              Live ausprobieren
-            </a>
-            <a href="#vorlesen" onClick={() => setMenuOpen(false)} className="block text-sm text-foreground/70">
-              Vorlesen & Übersetzen
-            </a>
-            <a href="#funktionen" onClick={() => setMenuOpen(false)} className="block text-sm text-foreground/70">
-              Funktionen
-            </a>
-            <a href="#preise" onClick={() => setMenuOpen(false)} className="block text-sm text-foreground/70">
-              Preise
-            </a>
-            <div className="flex gap-2 pt-2">
-              <Link
-                href="/login"
-                className="flex-1 text-center rounded-full px-4 py-2.5 text-sm font-medium border border-border"
-              >
-                Anmelden
-              </Link>
-              <Link
-                href="/login?mode=register"
-                className="flex-1 text-center rounded-full px-4 py-2.5 text-sm font-medium text-white"
-                style={{ background: "var(--accent-gradient)" }}
-              >
-                Kostenlos testen
-              </Link>
-            </div>
-          </div>
-        )}
       </header>
+
+      {/* Als Geschwister-Element außerhalb des Headers, weil "backdrop-blur"
+          am Header sonst zum containing block für "position: fixed" wird
+          und das Menü dadurch am Header statt am ganzen Bildschirm klebt. */}
+      <AnimatePresence>
+        {menuOpen && (
+          <>
+            <motion.div
+              key="backdrop"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setMenuOpen(false)}
+              className="lg:hidden fixed inset-0 z-40 bg-black/40"
+            />
+            <motion.div
+              key="drawer"
+              initial={{ x: "100%" }}
+              animate={{ x: 0 }}
+              exit={{ x: "100%" }}
+              transition={{ type: "tween", duration: 0.25, ease: "easeOut" }}
+              className="lg:hidden fixed top-0 right-0 z-50 h-full w-[78%] max-w-xs bg-background shadow-2xl px-6 py-5 flex flex-col"
+            >
+              <div className="flex items-center justify-between mb-8">
+                <span className="font-semibold text-lg tracking-tight">uVise</span>
+                <button
+                  onClick={() => setMenuOpen(false)}
+                  className="h-10 w-10 flex items-center justify-center rounded-full border border-border"
+                  aria-label="Menü schließen"
+                >
+                  <X size={18} />
+                </button>
+              </div>
+
+              <nav className="flex flex-col gap-1">
+                <a href="#ausprobieren" onClick={() => setMenuOpen(false)} className="rounded-xl px-3 py-3 text-sm font-medium text-foreground/80 hover:bg-surface">
+                  Live ausprobieren
+                </a>
+                <a href="#vorlesen" onClick={() => setMenuOpen(false)} className="rounded-xl px-3 py-3 text-sm font-medium text-foreground/80 hover:bg-surface">
+                  Vorlesen & Übersetzen
+                </a>
+                <a href="#funktionen" onClick={() => setMenuOpen(false)} className="rounded-xl px-3 py-3 text-sm font-medium text-foreground/80 hover:bg-surface">
+                  Funktionen
+                </a>
+                <a href="#preise" onClick={() => setMenuOpen(false)} className="rounded-xl px-3 py-3 text-sm font-medium text-foreground/80 hover:bg-surface">
+                  Preise
+                </a>
+              </nav>
+
+              <div className="mt-auto flex flex-col gap-2 pt-6">
+                <Link
+                  href="/login"
+                  className="text-center rounded-full px-4 py-2.5 text-sm font-medium border border-border"
+                >
+                  Anmelden
+                </Link>
+                <Link
+                  href="/login?mode=register"
+                  className="text-center rounded-full px-4 py-2.5 text-sm font-medium text-white"
+                  style={{ background: "var(--accent-gradient)" }}
+                >
+                  Kostenlos testen
+                </Link>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
 
       <main id="top">
         {/* Hero — startet direkt mit der klickbaren Live-Vorschau statt einem Fake-Mockup */}

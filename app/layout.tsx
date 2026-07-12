@@ -1,14 +1,8 @@
 import type { Metadata } from "next";
-import { Fraunces, Inter } from "next/font/google";
+import { Inter } from "next/font/google";
 import { AppDataProvider } from "@/lib/store";
 import { AuthGate } from "@/components/AuthGate";
 import "./globals.css";
-
-const fraunces = Fraunces({
-  variable: "--font-display",
-  subsets: ["latin"],
-  weight: ["500", "600", "700"],
-});
 
 const inter = Inter({
   variable: "--font-body",
@@ -29,7 +23,7 @@ export default function RootLayout({
   return (
     <html
       lang="de"
-      className={`${fraunces.variable} ${inter.variable} h-full antialiased`}
+      className={`${inter.variable} h-full antialiased`}
       suppressHydrationWarning
     >
       <head>

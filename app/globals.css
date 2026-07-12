@@ -60,7 +60,7 @@
   --color-sidebar-from: var(--sidebar-from);
   --color-sidebar-to: var(--sidebar-to);
 
-  --font-display: var(--font-display);
+  --font-display: var(--font-body);
   --font-body: var(--font-body);
 }
 
@@ -102,5 +102,5 @@ button:not(:disabled):active {
 }
 
 h1, h2, h3, h4 {
-  font-family: var(--font-display), serif;
+  font-family: var(--font-body), system-ui, sans-serif;
 }
