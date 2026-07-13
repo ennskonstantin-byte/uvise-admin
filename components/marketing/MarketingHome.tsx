@@ -421,7 +421,7 @@ export function MarketingHome() {
                   }`}
                   style={billing === "jaehrlich" ? { background: "var(--accent-gradient)" } : undefined}
                 >
-                  Jährlich <span className="opacity-80">· 2% sparen</span>
+                  Jährlich <span className="opacity-80">· 20% sparen</span>
                 </button>
               </div>
             </Reveal>

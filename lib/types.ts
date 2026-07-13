@@ -199,26 +199,26 @@ export function qualIcon(name: string): string {
   return QUALIFICATION_PRESETS.find((q) => q.name === name)?.icon ?? "📋";
 }
 
-// Jahrespreis = 12 Monate mit 2% Rabatt, auf volle Euro gerundet.
+// Jahrespreis = 12 Monate mit 20% Rabatt, auf volle Euro gerundet.
 export const PLANS = [
   {
     name: "Starter",
     preis: "19",
-    preisJaehrlich: 223,
+    preisJaehrlich: 182,
     limit: "bis 5 Mitarbeiter",
     features: ["Unterweisungen & Fristen", "Ampelsystem & Badges", "E-Mail-Erinnerungen"],
   },
   {
     name: "Team",
     preis: "29",
-    preisJaehrlich: 341,
+    preisJaehrlich: 278,
     limit: "bis 15 Mitarbeiter",
     features: ["Alles aus Starter", "Bundle-Vorlagen", "App-Push-Erinnerungen"],
   },
   {
     name: "Betrieb",
     preis: "49",
-    preisJaehrlich: 576,
+    preisJaehrlich: 470,
     limit: "bis 30 Mitarbeiter",
     features: ["Alles aus Team", "Priorisierter Support", "Erweitertes Archiv"],
   },
