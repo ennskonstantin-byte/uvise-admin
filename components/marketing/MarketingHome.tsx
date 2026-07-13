@@ -301,8 +301,8 @@ export function MarketingHome() {
                 die sich von selbst erledigen.
               </h1>
               <p className="text-lg text-foreground/65 mb-8 max-w-md">
-                uVise digitalisiert Mitarbeiter-Unterweisungen, Qualifikations-Fristen und
-                Unterschriften — rechtssicher, mehrsprachig und ohne Papierkram.
+                Die digitale Unterweisungs-Software kümmert sich selbst um Fristen, Erinnerungen
+                und rechtssichere Unterschriften — mehrsprachig und ohne Papierkram.
               </p>
               <div className="flex flex-wrap gap-3">
                 <Link
@@ -551,24 +551,26 @@ export function MarketingHome() {
                         <span className="font-medium">{item.q}</span>
                         <span className="text-foreground/50 text-xl leading-none">{open ? "−" : "+"}</span>
                       </button>
-                      {open && (
-                        <p className="px-5 pb-4 text-sm text-foreground/65">
-                          {item.a}
-                          {"link" in item && item.link && (
-                            <>
-                              {" "}
-                              <a
-                                href={item.link.href}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="text-accent-blue hover:underline"
-                              >
-                                {item.link.label}
-                              </a>
-                            </>
-                          )}
-                        </p>
-                      )}
+                      <p
+                        className={`px-5 text-sm text-foreground/65 ${
+                          open ? "pb-4" : "sr-only"
+                        }`}
+                      >
+                        {item.a}
+                        {"link" in item && item.link && (
+                          <>
+                            {" "}
+                            <a
+                              href={item.link.href}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-accent-blue hover:underline"
+                            >
+                              {item.link.label}
+                            </a>
+                          </>
+                        )}
+                      </p>
                     </div>
                   </Reveal>
                 );
