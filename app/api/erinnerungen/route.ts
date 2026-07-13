@@ -132,7 +132,10 @@ export async function GET(request: Request) {
       subject: `uVise — ${eintraege.length} offene Punkt${eintraege.length === 1 ? "" : "e"} bei ${company.name}`,
       html: `
         <div style="font-family: sans-serif; padding: 24px; max-width: 560px;">
-          <h2 style="color:#2563eb;">uVise — Wochenübersicht</h2>
+          <table role="presentation" cellpadding="0" cellspacing="0" style="margin-bottom:20px;"><tr>
+            <td><img src="https://www.uvise.de/logo-mark.png" width="36" height="36" alt="uVise" style="border-radius:8px; display:block;" /></td>
+            <td style="padding-left:10px; font-size:20px; font-weight:700; color:#2563eb;">uVise — Wochenübersicht</td>
+          </tr></table>
           <p>Hallo, hier die offenen Punkte für <strong>${company.name}</strong>:</p>
           <ul style="padding-left:20px;">${liste}</ul>
           <p style="color:#71717a; font-size: 13px; margin-top: 20px;">

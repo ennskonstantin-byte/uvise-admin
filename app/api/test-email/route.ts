@@ -13,7 +13,10 @@ export async function POST(request: Request) {
     subject: "uVise — Test-E-Mail",
     html: `
       <div style="font-family: sans-serif; padding: 24px;">
-        <h2 style="color:#2563eb;">uVise</h2>
+        <table role="presentation" cellpadding="0" cellspacing="0" style="margin-bottom:16px;"><tr>
+          <td><img src="https://www.uvise.de/logo-mark.png" width="36" height="36" alt="uVise" style="border-radius:8px; display:block;" /></td>
+          <td style="padding-left:10px; font-size:20px; font-weight:700; color:#2563eb;">uVise</td>
+        </tr></table>
         <p>Diese Test-E-Mail bestätigt: Der E-Mail-Versand über Resend funktioniert.</p>
         <p style="color:#71717a; font-size: 13px;">Sobald eine eigene Domain eingerichtet ist, kommen automatische Erinnerungen genauso an.</p>
       </div>
