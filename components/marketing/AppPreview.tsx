@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 
 const APPS = [
@@ -50,7 +50,24 @@ export function AppPreview() {
   // Nur bereits aktivierte Tabs werden überhaupt als iframe gemountet — sonst
   // laden Chef- und Mitarbeiter-App-Bundle beide gleichzeitig im Hintergrund,
   // auch wenn nur eine Vorschau sichtbar ist, und alles wirkt doppelt so langsam.
-  const [mounted, setMounted] = useState<Record<string, boolean>>({ [active]: true });
+  const [mounted, setMounted] = useState<Record<string, boolean>>({});
+
+  // Die erste Vorschau (Standard: Mitarbeiter-App) erst mounten, nachdem die
+  // restliche Landingpage fertig geladen ist — sonst konkurriert das
+  // Demo-App-Bundle beim allerersten Seitenaufruf mit Schriften, Animationen
+  // und Bildern um Bandbreite/CPU und wirkt dadurch quälend langsam, obwohl
+  // das Bundle selbst nicht größer ist als das der Chef-App.
+  useEffect(() => {
+    if (document.readyState === "complete") {
+      setMounted((p) => ({ ...p, [active]: true }));
+      return;
+    }
+    const onLoad = () => setMounted((p) => ({ ...p, [active]: true }));
+    window.addEventListener("load", onLoad, { once: true });
+    return () => window.removeEventListener("load", onLoad);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const current = APPS.find((a) => a.key === active)!;
 
   function handleSelect(key: (typeof APPS)[number]["key"]) {
