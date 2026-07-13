@@ -7,7 +7,7 @@ import { PageHeader } from "@/components/PageHeader";
 import { Card } from "@/components/Card";
 import { NewQualificationModal } from "@/components/NewQualificationModal";
 import { useToast } from "@/components/Toast";
-import { employeeName } from "@/lib/mockData";
+import { employeeName } from "@/lib/types";
 import { EmployeeAvatar } from "@/components/EmployeeAvatar";
 import { useAppData } from "@/lib/store";
 

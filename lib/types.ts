@@ -1,9 +1,3 @@
-export const COMPANY = {
-  name: "Musterfirma GmbH",
-  address: "Musterstraße 1, 12345 Musterstadt",
-  adminName: "Erika Musterchefin",
-};
-
 export type Employee = {
   id: string;
   vorname: string;
@@ -54,66 +48,6 @@ export const CATEGORY_ICON_OPTIONS: { name: string; icon: string }[] = [
   { name: "Sonstiges 4", icon: "4️⃣" },
 ];
 
-export const EMPLOYEES: Employee[] = [
-  {
-    id: "1",
-    vorname: "Max",
-    nachname: "Mustermann",
-    personalnummer: "P-001",
-    email: null,
-    telefon: null,
-    fotoUrl: null,
-    geburtsdatum: null,
-    archiviert: false,
-    minderjaehrig: false,
-    kategorie: "Lager",
-    ampel: "rot",
-    offenePunkte: 2,
-    qualifikationsIcons: ["✚"],
-    istBeauftragter: false,
-    inviteToken: null,
-    registriert: true,
-  },
-  {
-    id: "2",
-    vorname: "Anna",
-    nachname: "Beispiel",
-    personalnummer: "P-002",
-    email: null,
-    telefon: null,
-    fotoUrl: null,
-    geburtsdatum: null,
-    archiviert: false,
-    minderjaehrig: false,
-    kategorie: "Büro",
-    ampel: "gruen",
-    offenePunkte: 0,
-    qualifikationsIcons: ["🛡️"],
-    istBeauftragter: true,
-    inviteToken: null,
-    registriert: true,
-  },
-  {
-    id: "3",
-    vorname: "Jonas",
-    nachname: "Weber",
-    personalnummer: "P-003",
-    email: null,
-    telefon: null,
-    fotoUrl: null,
-    geburtsdatum: null,
-    archiviert: false,
-    minderjaehrig: false,
-    kategorie: "Produktion",
-    ampel: "gruen",
-    offenePunkte: 0,
-    qualifikationsIcons: ["🔥"],
-    istBeauftragter: false,
-    inviteToken: null,
-    registriert: true,
-  },
-];
-
 export type Training = {
   id: string;
   name: string;
@@ -159,39 +93,6 @@ export const TRAINING_ICON_OPTIONS: { name: string; icon: string }[] = [
   { name: "Schlüssel/Zugang", icon: "🔑" },
 ];
 
-export const TRAININGS: Training[] = [
-  {
-    id: "t1",
-    name: "Brandschutzunterweisung",
-    typ: "online",
-    icon: "✍️",
-    inhalt: null,
-    erstelltAm: "12.01.2026",
-    ablaufdatum: "12.01.2027",
-    status: "aktuell",
-  },
-  {
-    id: "t2",
-    name: "Gefahrstoffe/GHS",
-    typ: "hochgeladen",
-    icon: "📄",
-    inhalt: null,
-    erstelltAm: "03.03.2025",
-    ablaufdatum: "03.03.2026",
-    status: "laeuft_ab",
-  },
-  {
-    id: "t3",
-    name: "Datenschutz/DSGVO",
-    typ: "online",
-    icon: "✍️",
-    inhalt: null,
-    erstelltAm: "20.06.2025",
-    ablaufdatum: "20.06.2027",
-    status: "aktuell",
-  },
-];
-
 export type EmployeeTraining = {
   id: string;
   employeeId: string;
@@ -202,40 +103,12 @@ export type EmployeeTraining = {
   geraet: string | null;
 };
 
-export const EMPLOYEE_TRAININGS: EmployeeTraining[] = [
-  { id: "et1", employeeId: "1", trainingId: "t1", status: "offen", signiertAm: null, signaturBildUrl: null, geraet: null },
-  { id: "et2", employeeId: "1", trainingId: "t2", status: "offen", signiertAm: null, signaturBildUrl: null, geraet: null },
-  {
-    id: "et3",
-    employeeId: "2",
-    trainingId: "t3",
-    status: "signiert",
-    signiertAm: "04.01.2026",
-    signaturBildUrl: null,
-    geraet: null,
-  },
-  {
-    id: "et4",
-    employeeId: "3",
-    trainingId: "t2",
-    status: "signiert",
-    signiertAm: "10.03.2025",
-    signaturBildUrl: null,
-    geraet: null,
-  },
-];
-
 export type Bundle = {
   id: string;
   name: string;
   icon: string;
   trainingIds: string[];
 };
-
-export const BUNDLES: Bundle[] = [
-  { id: "b1", name: "Produktion", icon: "🏭", trainingIds: ["t2"] },
-  { id: "b2", name: "Büro", icon: "🗂️", trainingIds: ["t3"] },
-];
 
 export type Qualification = {
   id: string;
@@ -246,33 +119,6 @@ export type Qualification = {
   status: "gueltig" | "laeuft_ab" | "abgelaufen";
 };
 
-export const QUALIFICATIONS: Qualification[] = [
-  {
-    id: "q1",
-    employeeId: "1",
-    name: "Ersthelfer",
-    icon: "✚",
-    ablaufdatum: "31.12.2026",
-    status: "gueltig",
-  },
-  {
-    id: "q2",
-    employeeId: "2",
-    name: "Sicherheitsfachkraft/SiFa",
-    icon: "🛡️",
-    ablaufdatum: "15.08.2026",
-    status: "laeuft_ab",
-  },
-  {
-    id: "q3",
-    employeeId: "3",
-    name: "Brandschutzhelfer",
-    icon: "🔥",
-    ablaufdatum: "01.02.2026",
-    status: "abgelaufen",
-  },
-];
-
 export type Question = {
   id: string;
   employeeId: string;
@@ -282,27 +128,6 @@ export type Question = {
   status: "offen" | "beantwortet";
   gestelltAm: string;
 };
-
-export const QUESTIONS: Question[] = [
-  {
-    id: "qu1",
-    employeeId: "1",
-    trainingId: "t1",
-    frage: "Muss ich das jährlich wiederholen?",
-    antwort: null,
-    status: "offen",
-    gestelltAm: "05.07.2026",
-  },
-  {
-    id: "qu2",
-    employeeId: "3",
-    trainingId: "t2",
-    frage: "Gilt das auch für Praktikanten?",
-    antwort: "Ja, für alle im Lager tätigen Personen.",
-    status: "beantwortet",
-    gestelltAm: "01.07.2026",
-  },
-];
 
 export function employeeName(employees: Employee[], id: string) {
   const e = employees.find((e) => e.id === id);

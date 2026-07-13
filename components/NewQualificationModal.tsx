@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useAppData } from "@/lib/store";
-import { QUALIFICATION_PRESETS } from "@/lib/mockData";
+import { QUALIFICATION_PRESETS } from "@/lib/types";
 import { DateSelect } from "@/components/DateSelect";
 import { EmployeeSearchPicker } from "@/components/EmployeeSearchPicker";
 import { useEscapeClose } from "@/lib/useEscapeClose";

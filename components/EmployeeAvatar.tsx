@@ -1,4 +1,4 @@
-import { initials } from "@/lib/mockData";
+import { initials } from "@/lib/types";
 
 // Einheitliches Mitarbeiter-Bild (Foto oder Initialen-Kreis) — überall in
 // der App gleich, statt an jeder Stelle einzeln nachgebaut.

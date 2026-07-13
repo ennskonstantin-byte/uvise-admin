@@ -14,7 +14,7 @@ import {
   type Category,
   qualIcon,
   istMinderjaehrig,
-} from "@/lib/mockData";
+} from "@/lib/types";
 
 type Company = {
   id: string;

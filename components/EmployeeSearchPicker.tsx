@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Search } from "lucide-react";
-import type { Employee } from "@/lib/mockData";
+import type { Employee } from "@/lib/types";
 
 // Sucheingabe statt langer Liste/Dropdown — bei vielen Mitarbeitern
 // (>20-30) wird ein reines Scrollen/Dropdown schnell unpraktisch.

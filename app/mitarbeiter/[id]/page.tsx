@@ -11,7 +11,7 @@ import { AssignTrainingToEmployeeModal } from "@/components/AssignTrainingToEmpl
 import { NewQualificationModal } from "@/components/NewQualificationModal";
 import { useToast } from "@/components/Toast";
 import { EmployeeAvatar } from "@/components/EmployeeAvatar";
-import { trainingName } from "@/lib/mockData";
+import { trainingName } from "@/lib/types";
 import { useAppData } from "@/lib/store";
 
 const REMINDER_HINT =

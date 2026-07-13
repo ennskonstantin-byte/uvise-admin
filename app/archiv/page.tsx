@@ -6,7 +6,7 @@ import { DashboardShell } from "@/components/DashboardShell";
 import { PageHeader } from "@/components/PageHeader";
 import { Card } from "@/components/Card";
 import { ArchiveDocumentModal } from "@/components/ArchiveDocumentModal";
-import { trainingName, type EmployeeTraining } from "@/lib/mockData";
+import { trainingName, type EmployeeTraining } from "@/lib/types";
 import { EmployeeAvatar } from "@/components/EmployeeAvatar";
 import { useAppData } from "@/lib/store";
 

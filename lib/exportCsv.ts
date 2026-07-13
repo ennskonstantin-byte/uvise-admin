@@ -1,6 +1,6 @@
 "use client";
 
-import type { Employee, EmployeeTraining, Qualification, Training } from "@/lib/mockData";
+import type { Employee, EmployeeTraining, Qualification, Training } from "@/lib/types";
 
 // CSV für deutsches Excel: Semikolon als Trenner, BOM am Anfang (sonst
 // zeigt Excel Umlaute kaputt an), Anführungszeichen um jeden Wert.

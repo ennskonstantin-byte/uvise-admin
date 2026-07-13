@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useAppData } from "@/lib/store";
 import { useEscapeClose } from "@/lib/useEscapeClose";
-import type { Employee } from "@/lib/mockData";
+import type { Employee } from "@/lib/types";
 
 // Umgekehrte Blickrichtung zu AssignTrainingModal: hier startet man beim
 // Mitarbeiter und wählt aus, welche noch fehlenden Unterweisungen er/sie

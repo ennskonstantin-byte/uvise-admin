@@ -6,7 +6,7 @@ import { DashboardShell } from "@/components/DashboardShell";
 import { PageHeader } from "@/components/PageHeader";
 import { Card } from "@/components/Card";
 import { EmployeeAvatar } from "@/components/EmployeeAvatar";
-import { trainingName, type Question, type Employee } from "@/lib/mockData";
+import { trainingName, type Question, type Employee } from "@/lib/types";
 import { useAppData } from "@/lib/store";
 
 type Thread = {

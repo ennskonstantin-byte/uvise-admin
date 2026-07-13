@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { BUNDLE_ICONS as ICONS, type Bundle } from "@/lib/mockData";
+import { BUNDLE_ICONS as ICONS, type Bundle } from "@/lib/types";
 import { useAppData } from "@/lib/store";
 import { useEscapeClose } from "@/lib/useEscapeClose";
 

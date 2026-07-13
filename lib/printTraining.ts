@@ -1,6 +1,6 @@
 "use client";
 
-import type { Training } from "@/lib/mockData";
+import type { Training } from "@/lib/types";
 
 function escapeHtml(text: string): string {
   return text

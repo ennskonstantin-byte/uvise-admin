@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { TRAINING_ICON_OPTIONS, type Training } from "@/lib/mockData";
+import { TRAINING_ICON_OPTIONS, type Training } from "@/lib/types";
 import { useAppData } from "@/lib/store";
 import { DateSelect } from "@/components/DateSelect";
 import { useEscapeClose } from "@/lib/useEscapeClose";

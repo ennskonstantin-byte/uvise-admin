@@ -5,7 +5,7 @@ import { Search } from "lucide-react";
 import { DateSelect } from "@/components/DateSelect";
 import { useAppData } from "@/lib/store";
 import { useEscapeClose } from "@/lib/useEscapeClose";
-import { TRAINING_ICON_OPTIONS, BUNDLE_ICONS, type Training } from "@/lib/mockData";
+import { TRAINING_ICON_OPTIONS, BUNDLE_ICONS, type Training } from "@/lib/types";
 
 function DistributionDialog({
   training,

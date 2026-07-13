@@ -1,7 +1,7 @@
 "use client";
 
 import JSZip from "jszip";
-import type { Employee, EmployeeTraining, Qualification, Training } from "@/lib/mockData";
+import type { Employee, EmployeeTraining, Qualification, Training } from "@/lib/types";
 import { heute, nachweiseCsvString, qualifikationenCsvString } from "@/lib/exportCsv";
 
 type CompanyInfo = { name: string; address: string | null; chefName: string | null } | null;

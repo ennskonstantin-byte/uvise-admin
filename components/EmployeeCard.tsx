@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { type Employee } from "@/lib/mockData";
+import { type Employee } from "@/lib/types";
 import { QualiIcons } from "@/components/QualiIcons";
 import { EmployeeAvatar } from "@/components/EmployeeAvatar";
 

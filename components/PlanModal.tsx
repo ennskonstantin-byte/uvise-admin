@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Check } from "lucide-react";
-import { PLANS } from "@/lib/mockData";
+import { PLANS } from "@/lib/types";
 import { useToast } from "@/components/Toast";
 import { useEscapeClose } from "@/lib/useEscapeClose";
 

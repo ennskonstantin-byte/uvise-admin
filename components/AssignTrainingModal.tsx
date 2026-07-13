@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Search } from "lucide-react";
 import { useAppData } from "@/lib/store";
 import { useEscapeClose } from "@/lib/useEscapeClose";
-import type { Training } from "@/lib/mockData";
+import type { Training } from "@/lib/types";
 
 // Spiegelt die "Verteilen"-Funktion aus der Chef-App — bisher gab es auf der
 // Website keinen Weg, eine bereits bestehende Unterweisung nachträglich

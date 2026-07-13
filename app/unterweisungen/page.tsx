@@ -10,7 +10,7 @@ import { NewBundleWizard } from "@/components/NewBundleWizard";
 import { EditTrainingModal } from "@/components/EditTrainingModal";
 import { EditBundleModal } from "@/components/EditBundleModal";
 import { AssignTrainingModal } from "@/components/AssignTrainingModal";
-import type { Bundle, Training } from "@/lib/mockData";
+import type { Bundle, Training } from "@/lib/types";
 import { useAppData } from "@/lib/store";
 import { printTraining } from "@/lib/printTraining";
 

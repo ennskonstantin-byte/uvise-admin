@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Search } from "lucide-react";
-import { CATEGORY_ICON_OPTIONS, type Category } from "@/lib/mockData";
+import { CATEGORY_ICON_OPTIONS, type Category } from "@/lib/types";
 import { useAppData } from "@/lib/store";
 import { useEscapeClose } from "@/lib/useEscapeClose";
 

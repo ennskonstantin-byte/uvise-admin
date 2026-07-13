@@ -11,7 +11,7 @@ import { EditEmployeeModal } from "@/components/EditEmployeeModal";
 import { EditCategoryModal } from "@/components/EditCategoryModal";
 import { QualiIcons } from "@/components/QualiIcons";
 import { EmployeeAvatar } from "@/components/EmployeeAvatar";
-import { type Category, type Employee } from "@/lib/mockData";
+import { type Category, type Employee } from "@/lib/types";
 import { useAppData } from "@/lib/store";
 
 export default function MitarbeiterPage() {

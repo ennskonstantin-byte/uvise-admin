@@ -10,7 +10,7 @@ import { useAppData } from "@/lib/store";
 import { exportNachweiseCsv, exportQualifikationenCsv } from "@/lib/exportCsv";
 import { exportGesamtBackupZip } from "@/lib/exportZip";
 import { SUPPORT_EMAIL } from "@/lib/legal";
-import { PLANS } from "@/lib/mockData";
+import { PLANS } from "@/lib/types";
 
 export default function EinstellungenPage() {
   const {

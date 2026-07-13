@@ -1,6 +1,6 @@
 "use client";
 
-import type { EmployeeTraining } from "@/lib/mockData";
+import type { EmployeeTraining } from "@/lib/types";
 import { useEscapeClose } from "@/lib/useEscapeClose";
 
 export function ArchiveDocumentModal({

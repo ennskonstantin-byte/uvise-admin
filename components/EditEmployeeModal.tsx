@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { CATEGORY_ICON_OPTIONS, istMinderjaehrig as isMinderjaehrig, type Employee } from "@/lib/mockData";
+import { CATEGORY_ICON_OPTIONS, istMinderjaehrig as isMinderjaehrig, type Employee } from "@/lib/types";
 import { useAppData } from "@/lib/store";
 import { Switch } from "@/components/Switch";
 import { DateSelect } from "@/components/DateSelect";

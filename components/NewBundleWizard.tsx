@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useAppData } from "@/lib/store";
 import { useEscapeClose } from "@/lib/useEscapeClose";
-import { BUNDLE_ICONS as ICONS } from "@/lib/mockData";
+import { BUNDLE_ICONS as ICONS } from "@/lib/types";
 
 export function NewBundleWizard({ onClose }: { onClose: () => void }) {
   useEscapeClose(onClose);
