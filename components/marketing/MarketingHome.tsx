@@ -87,7 +87,8 @@ const FAQ = [
   },
   {
     q: "Ersetzt uVise die gesetzliche Pflicht zur Unterweisung?",
-    a: "uVise ersetzt nicht die inhaltliche Durchführung der Unterweisung, sondern digitalisiert Planung, Fristen, Nachweise und Unterschriften dafür — verpflichtend bleibt weiterhin, dass der Arbeitgeber seine Mitarbeiter nach ArbSchG und DGUV-Vorschriften unterweist.",
+    a: "uVise ersetzt nicht die inhaltliche Durchführung der Unterweisung, sondern digitalisiert Planung, Fristen, Nachweise und Unterschriften dafür — verpflichtend bleibt weiterhin, dass der Arbeitgeber seine Mitarbeiter nach dem Arbeitsschutzgesetz und den DGUV-Vorschriften unterweist.",
+    link: { label: "Arbeitsschutzgesetz (ArbSchG) im Volltext", href: "https://www.gesetze-im-internet.de/arbschg/" },
   },
 ];
 
@@ -175,6 +176,7 @@ export function MarketingHome() {
             </Link>
             <Link
               href="/login?mode=register"
+              rel="nofollow"
               className="btn-feedback whitespace-nowrap rounded-full px-4 py-2 text-sm font-medium text-white"
               style={{ background: "var(--accent-gradient)" }}
             >
@@ -257,6 +259,7 @@ export function MarketingHome() {
           </Link>
           <Link
             href="/login?mode=register"
+              rel="nofollow"
             className="text-center rounded-full px-4 py-2.5 text-sm font-medium text-white"
             style={{ background: "var(--accent-gradient)" }}
           >
@@ -304,6 +307,7 @@ export function MarketingHome() {
               <div className="flex flex-wrap gap-3">
                 <Link
                   href="/login?mode=register"
+              rel="nofollow"
                   className="btn-feedback rounded-full px-6 py-3 text-sm font-medium text-white"
                   style={{ background: "var(--accent-gradient)" }}
                 >
@@ -510,6 +514,7 @@ export function MarketingHome() {
                       </ul>
                       <Link
                         href="/login?mode=register"
+              rel="nofollow"
                         className={`btn-feedback block text-center rounded-full px-5 py-2.5 text-sm font-medium ${
                           featured ? "bg-white text-foreground" : "text-white"
                         }`}
@@ -546,7 +551,24 @@ export function MarketingHome() {
                         <span className="font-medium">{item.q}</span>
                         <span className="text-foreground/50 text-xl leading-none">{open ? "−" : "+"}</span>
                       </button>
-                      {open && <p className="px-5 pb-4 text-sm text-foreground/65">{item.a}</p>}
+                      {open && (
+                        <p className="px-5 pb-4 text-sm text-foreground/65">
+                          {item.a}
+                          {"link" in item && item.link && (
+                            <>
+                              {" "}
+                              <a
+                                href={item.link.href}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-accent-blue hover:underline"
+                              >
+                                {item.link.label}
+                              </a>
+                            </>
+                          )}
+                        </p>
+                      )}
                     </div>
                   </Reveal>
                 );
@@ -564,6 +586,7 @@ export function MarketingHome() {
             </p>
             <Link
               href="/login?mode=register"
+              rel="nofollow"
               className="btn-feedback inline-block rounded-full px-7 py-3.5 text-sm font-medium text-white"
               style={{ background: "var(--accent-gradient)" }}
             >

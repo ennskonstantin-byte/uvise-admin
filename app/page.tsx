@@ -7,7 +7,7 @@ import { MarketingHome } from "@/components/marketing/MarketingHome";
 export const metadata: Metadata = {
   title: "uVise — Digitale Unterweisungen, Nachweise & Erinnerungen",
   description:
-    "uVise digitalisiert Mitarbeiter-Unterweisungen und Qualifikationen: automatische Erinnerungen, rechtssichere Unterschriften und Vorlesefunktion in 41 Sprachen.",
+    "uVise digitalisiert Mitarbeiter-Unterweisungen und Qualifikationen: Erinnerungen, rechtssichere Unterschriften und Vorlesefunktion in 41 Sprachen.",
   alternates: {
     canonical: "https://uvise.de",
   },
