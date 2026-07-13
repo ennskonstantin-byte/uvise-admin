@@ -16,6 +16,6 @@ export default function robots(): MetadataRoute.Robots {
         "/api/",
       ],
     },
-    sitemap: "https://uvise.de/sitemap.xml",
+    sitemap: "https://www.uvise.de/sitemap.xml",
   };
 }

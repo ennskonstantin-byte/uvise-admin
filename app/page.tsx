@@ -9,13 +9,13 @@ export const metadata: Metadata = {
   description:
     "uVise digitalisiert Mitarbeiter-Unterweisungen und Qualifikationen: Erinnerungen, rechtssichere Unterschriften und Vorlesefunktion in 41 Sprachen.",
   alternates: {
-    canonical: "https://uvise.de",
+    canonical: "https://www.uvise.de",
   },
   openGraph: {
     title: "uVise — Digitale Unterweisungen, Nachweise & Erinnerungen",
     description:
-      "Digitalisiert Mitarbeiter-Unterweisungen und Qualifikationen: automatische Erinnerungen, rechtssichere Unterschriften und Vorlesefunktion in 41 Sprachen.",
-    url: "https://uvise.de",
+      "Digitalisiert Mitarbeiter-Unterweisungen und Qualifikationen: Erinnerungen, rechtssichere Unterschriften und Vorlesefunktion in 41 Sprachen.",
+    url: "https://www.uvise.de",
     siteName: "uVise",
     locale: "de_DE",
     type: "website",
@@ -24,7 +24,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "uVise — Digitale Unterweisungen, Nachweise & Erinnerungen",
     description:
-      "Digitalisiert Mitarbeiter-Unterweisungen und Qualifikationen: automatische Erinnerungen, rechtssichere Unterschriften und Vorlesefunktion in 41 Sprachen.",
+      "Digitalisiert Mitarbeiter-Unterweisungen und Qualifikationen: Erinnerungen, rechtssichere Unterschriften und Vorlesefunktion in 41 Sprachen.",
   },
 };
 
