@@ -22,6 +22,9 @@ type Company = {
   address: string | null;
   chefName: string | null;
   logoUrl: string | null;
+  plan: string | null;
+  billing: string | null;
+  subscriptionStatus: string | null;
 };
 
 type NewEmployeeInput = Omit<
@@ -273,6 +276,9 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
         address: companies[0].address,
         chefName: companies[0].chef_name,
         logoUrl: resolvePhoto(companies[0].logo_url),
+        plan: companies[0].plan,
+        billing: companies[0].billing,
+        subscriptionStatus: companies[0].subscription_status,
       });
     }
     setEmployees(mappedEmployees);

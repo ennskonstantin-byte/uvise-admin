@@ -28,7 +28,6 @@ export default function EinstellungenPage() {
   const [editingName, setEditingName] = useState(false);
   const [adresse, setAdresse] = useState("");
   const [adminName, setAdminName] = useState("");
-  const [selectedPlan] = useState("Team");
   const [billing, setBilling] = useState<"monatlich" | "jaehrlich">("monatlich");
   const [saving, setSaving] = useState(false);
   const [uploadingLogo, setUploadingLogo] = useState(false);
@@ -300,6 +299,18 @@ export default function EinstellungenPage() {
             Bezahlung per Apple Pay, Google Pay, Visa, Lastschrift, PayPal oder Klarna.
           </p>
 
+          {company?.subscriptionStatus === "active" && company.plan && (
+            <p className="text-sm mb-4 rounded-2xl bg-green-500/10 text-green-700 dark:text-green-400 px-4 py-2.5 max-w-xl">
+              ✅ Aktives Abo: <strong>{company.plan}</strong>
+              {company.billing === "jaehrlich" ? " (jährlich)" : " (monatlich)"}
+            </p>
+          )}
+          {company?.subscriptionStatus && company.subscriptionStatus !== "active" && (
+            <p className="text-sm mb-4 rounded-2xl bg-amber-500/10 text-amber-700 dark:text-amber-400 px-4 py-2.5 max-w-xl">
+              ⚠️ Abo-Status: {company.subscriptionStatus}
+            </p>
+          )}
+
           <div className="inline-flex rounded-full border border-border p-1 text-sm mb-6">
             <button
               onClick={() => setBilling("monatlich")}
@@ -323,7 +334,7 @@ export default function EinstellungenPage() {
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
             {PLANS.map((plan) => {
-              const active = selectedPlan === plan.name;
+              const active = company?.subscriptionStatus === "active" && company.plan === plan.name;
               return (
                 <Card
                   key={plan.name}
