@@ -7,7 +7,7 @@ import { MarketingHome } from "@/components/marketing/MarketingHome";
 export const metadata: Metadata = {
   title: "uVise — Digitale Unterweisungen, Nachweise & Erinnerungen",
   description:
-    "uVise digitalisiert Mitarbeiter-Unterweisungen, Qualifikations-Fristen und rechtssichere Unterschriften — mehrsprachig, mit Vorlese-Funktion und ohne Papierkram.",
+    "uVise digitalisiert Mitarbeiter-Unterweisungen und Qualifikationen: automatische Erinnerungen, rechtssichere Unterschriften und Vorlesefunktion in 41 Sprachen.",
 };
 
 export default function Page() {

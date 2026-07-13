@@ -261,7 +261,7 @@ export function MarketingHome() {
                 🇩🇪 Gemacht für deutsche Betriebe
               </span>
               <h1 className="font-display text-4xl sm:text-5xl font-semibold tracking-tight leading-[1.08] mb-5">
-                Unterweisungen & Nachweise,
+                Digitale Unterweisungen & Nachweise,
                 <br />
                 die sich von selbst erledigen.
               </h1>
