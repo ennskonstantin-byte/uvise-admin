@@ -28,12 +28,36 @@ export default function EinstellungenPage() {
   const [editingName, setEditingName] = useState(false);
   const [adresse, setAdresse] = useState("");
   const [adminName, setAdminName] = useState("");
-  const [selectedPlan, setSelectedPlan] = useState("Team");
+  const [selectedPlan] = useState("Team");
   const [billing, setBilling] = useState<"monatlich" | "jaehrlich">("monatlich");
   const [saving, setSaving] = useState(false);
   const [uploadingLogo, setUploadingLogo] = useState(false);
   const [sendingTestMail, setSendingTestMail] = useState(false);
   const [zippingBackup, setZippingBackup] = useState(false);
+  const [startingCheckout, setStartingCheckout] = useState<string | null>(null);
+
+  async function startCheckout(planName: string) {
+    if (!session?.access_token) {
+      showToast("Bitte neu einloggen und erneut versuchen.");
+      return;
+    }
+    setStartingCheckout(planName);
+    try {
+      const res = await fetch("/api/create-checkout-session", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${session.access_token}` },
+        body: JSON.stringify({ planName, billing }),
+      });
+      const json = await res.json();
+      if (!res.ok || !json.url) {
+        showToast(`Fehlgeschlagen: ${json.error ?? "Unbekannter Fehler"}`);
+        return;
+      }
+      window.location.href = json.url;
+    } finally {
+      setStartingCheckout(null);
+    }
+  }
 
   async function sendTestMail() {
     if (!session?.user.email) return;
@@ -331,58 +355,28 @@ export default function EinstellungenPage() {
                     ))}
                   </ul>
                   <button
-                    onClick={() => setSelectedPlan(plan.name)}
-                    disabled={active}
-                    className={`w-full rounded-full py-2.5 text-sm font-medium ${
+                    onClick={() => startCheckout(plan.name)}
+                    disabled={startingCheckout !== null}
+                    className={`w-full rounded-full py-2.5 text-sm font-medium disabled:opacity-50 ${
                       active ? "text-white" : "border border-border"
                     }`}
                     style={active ? { background: "var(--accent-gradient)" } : undefined}
                   >
-                    {active ? "Aktuell aktiv" : "Auswählen"}
+                    {startingCheckout === plan.name
+                      ? "Leitet weiter…"
+                      : active
+                        ? "Erneut abonnieren"
+                        : "Jetzt abonnieren"}
                   </button>
                 </Card>
               );
             })}
           </div>
 
-          <Card>
-            <h3 className="font-medium mb-4">Zahlungsmethode</h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-5">
-              <label className="block">
-                <span className="text-xs text-foreground/65 mb-1 block">Karteninhaber</span>
-                <input
-                  placeholder="Name auf der Karte"
-                  className="w-full rounded-full border border-border bg-surface px-4 py-2.5 text-sm outline-none"
-                />
-              </label>
-              <label className="block">
-                <span className="text-xs text-foreground/65 mb-1 block">Zahlungsart</span>
-                <select className="w-full rounded-full border border-border bg-surface px-4 py-2.5 text-sm outline-none">
-                  <option>Visa / Mastercard</option>
-                  <option>SEPA-Lastschrift</option>
-                  <option>PayPal</option>
-                  <option>Klarna</option>
-                  <option>Apple Pay</option>
-                  <option>Google Pay</option>
-                </select>
-              </label>
-            </div>
-            <button
-              onClick={() =>
-                showToast(
-                  "Echte Zahlungen werden aktiv, sobald Stripe angebunden ist. Bis dahin nur Vorschau."
-                )
-              }
-              className="rounded-full px-6 py-2.5 text-sm font-medium text-white"
-              style={{ background: "var(--accent-gradient)" }}
-            >
-              Speichern
-            </button>
-          </Card>
-
-          <p className="text-xs text-foreground/65 mt-4 max-w-xl">
-            Hinweis: Vertrieb erfolgt als Progressive Web App über einen Link auf der Website —
-            dadurch entfallen die 15–20 % Store-Gebühren von Apple/Google.
+          <p className="text-xs text-foreground/65 max-w-xl">
+            Zahlung und Kartendaten werden sicher über Stripe abgewickelt — nie direkt bei uVise
+            gespeichert. Nach dem Klick auf &bdquo;Jetzt abonnieren&ldquo; geht es auf Stripes
+            eigener, gesicherter Seite weiter.
           </p>
         </section>
       </div>

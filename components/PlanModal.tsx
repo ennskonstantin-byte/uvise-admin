@@ -5,6 +5,7 @@ import { Check } from "lucide-react";
 import { PLANS } from "@/lib/types";
 import { useToast } from "@/components/Toast";
 import { useEscapeClose } from "@/lib/useEscapeClose";
+import { supabase } from "@/lib/supabase";
 
 // Große Kachel-Auswahl fürs Abo — direkt vom Dashboard aus erreichbar,
 // ohne erst zu den Einstellungen navigieren und suchen zu müssen.
@@ -13,6 +14,32 @@ export function PlanModal({ onClose }: { onClose: () => void }) {
   const { showToast, ToastView } = useToast();
   const [selectedPlan, setSelectedPlan] = useState("Team");
   const [billing, setBilling] = useState<"monatlich" | "jaehrlich">("monatlich");
+  const [starting, setStarting] = useState(false);
+
+  async function startCheckout() {
+    setStarting(true);
+    try {
+      const { data } = await supabase.auth.getSession();
+      const accessToken = data.session?.access_token;
+      if (!accessToken) {
+        showToast("Bitte neu einloggen und erneut versuchen.");
+        return;
+      }
+      const res = await fetch("/api/create-checkout-session", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${accessToken}` },
+        body: JSON.stringify({ planName: selectedPlan, billing }),
+      });
+      const json = await res.json();
+      if (!res.ok || !json.url) {
+        showToast(`Fehlgeschlagen: ${json.error ?? "Unbekannter Fehler"}`);
+        return;
+      }
+      window.location.href = json.url;
+    } finally {
+      setStarting(false);
+    }
+  }
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
@@ -98,15 +125,12 @@ export function PlanModal({ onClose }: { onClose: () => void }) {
         </div>
 
         <button
-          onClick={() => {
-            showToast(
-              "Echte Zahlungen werden aktiv, sobald Stripe angebunden ist. Bis dahin nur Vorschau."
-            );
-          }}
-          className="w-full rounded-full px-6 py-3 text-sm font-medium text-white"
+          onClick={startCheckout}
+          disabled={starting}
+          className="w-full rounded-full px-6 py-3 text-sm font-medium text-white disabled:opacity-50"
           style={{ background: "var(--accent-gradient)" }}
         >
-          {selectedPlan}-Abo starten
+          {starting ? "Leitet weiter…" : `${selectedPlan}-Abo starten`}
         </button>
         <ToastView />
       </div>
