@@ -64,6 +64,33 @@ const FEATURES = [
   },
 ];
 
+const FAQ = [
+  {
+    q: "Ist uVise DSGVO-konform und rechtssicher?",
+    a: "Ja. Mitarbeiterdaten werden auf Servern in der EU gespeichert, jede Unterschrift ist nach eIDAS-Grundsätzen mit Zeitstempel und Gerätekennung versehen und lässt sich nachträglich nicht mehr verändern. Details findest du in unserer Datenschutzerklärung.",
+  },
+  {
+    q: "Brauchen meine Mitarbeiter ein Firmen-Handy?",
+    a: "Nein. Die Mitarbeiter-App läuft auf dem eigenen Smartphone jedes Mitarbeiters — ein Firmen-Laptop oder -Handy ist nicht nötig.",
+  },
+  {
+    q: "In wie vielen Sprachen können Unterweisungen vorgelesen werden?",
+    a: "Jede Unterweisung kann in 41 Sprachen vorgelesen und übersetzt werden, darunter Türkisch, Ukrainisch, Arabisch und Polnisch — so verstehen auch Mitarbeiter mit wenig Deutschkenntnissen den Inhalt, bevor sie unterschreiben.",
+  },
+  {
+    q: "Kann ich uVise jederzeit kündigen?",
+    a: "Ja, im Monatsabo ist uVise jederzeit zum Ende des laufenden Monats kündbar, ohne Mindestlaufzeit. Alternativ gibt es ein Jahresabo mit 20% Rabatt.",
+  },
+  {
+    q: "Was passiert nach der 7-tägigen Testphase?",
+    a: "Du testest 7 Tage kostenlos und ohne Kreditkarte. Erst danach entscheidest du dich für ein kostenpflichtiges Paket — ohne automatische Kündigungsfalle im Hintergrund.",
+  },
+  {
+    q: "Ersetzt uVise die gesetzliche Pflicht zur Unterweisung?",
+    a: "uVise ersetzt nicht die inhaltliche Durchführung der Unterweisung, sondern digitalisiert Planung, Fristen, Nachweise und Unterschriften dafür — verpflichtend bleibt weiterhin, dass der Arbeitgeber seine Mitarbeiter nach ArbSchG und DGUV-Vorschriften unterweist.",
+  },
+];
+
 const PRODUCTS = [
   {
     tag: "Für Beauftragte & Chefs",
@@ -87,6 +114,7 @@ export function MarketingHome() {
   const router = useRouter();
   const [menuOpen, setMenuOpen] = useState(false);
   const [billing, setBilling] = useState<"monatlich" | "jaehrlich">("monatlich");
+  const [openFaq, setOpenFaq] = useState<number | null>(0);
 
   // Hell/Dunkel — dieselbe Umschaltung wie im Chef-Dashboard (Sidebar.tsx)
   // und in den beiden Apps, damit die Wahl konsistent auf der ganzen
@@ -128,6 +156,7 @@ export function MarketingHome() {
             <a href="#vorlesen" className="whitespace-nowrap hover:text-foreground">Vorlesen & Übersetzen</a>
             <a href="#funktionen" className="whitespace-nowrap hover:text-foreground">Funktionen</a>
             <a href="#preise" className="whitespace-nowrap hover:text-foreground">Preise</a>
+            <a href="#faq" className="whitespace-nowrap hover:text-foreground">FAQ</a>
           </nav>
 
           <div className="hidden lg:flex items-center gap-3">
@@ -206,6 +235,9 @@ export function MarketingHome() {
           </a>
           <a href="#preise" onClick={() => setMenuOpen(false)} className="rounded-xl px-3 py-3 text-sm font-medium text-foreground/80 hover:bg-surface">
             Preise
+          </a>
+          <a href="#faq" onClick={() => setMenuOpen(false)} className="rounded-xl px-3 py-3 text-sm font-medium text-foreground/80 hover:bg-surface">
+            FAQ
           </a>
         </nav>
 
@@ -486,6 +518,36 @@ export function MarketingHome() {
                         Jetzt starten
                       </Link>
                     </motion.div>
+                  </Reveal>
+                );
+              })}
+            </div>
+          </div>
+        </section>
+
+        {/* Häufige Fragen */}
+        <section id="faq" className="scroll-mt-16 border-t border-border/60 py-20">
+          <div className="mx-auto max-w-3xl px-5 sm:px-8">
+            <Reveal className="mb-10">
+              <h2 className="font-display text-3xl font-semibold mb-3">Häufige Fragen</h2>
+              <p className="text-foreground/65">Was uVise-Kunden uns am häufigsten fragen.</p>
+            </Reveal>
+            <div className="space-y-3">
+              {FAQ.map((item, i) => {
+                const open = openFaq === i;
+                return (
+                  <Reveal key={item.q} delay={i * 0.04}>
+                    <div className="rounded-2xl border border-border overflow-hidden">
+                      <button
+                        onClick={() => setOpenFaq(open ? null : i)}
+                        className="w-full flex items-center justify-between gap-4 px-5 py-4 text-left"
+                        aria-expanded={open}
+                      >
+                        <span className="font-medium">{item.q}</span>
+                        <span className="text-foreground/50 text-xl leading-none">{open ? "−" : "+"}</span>
+                      </button>
+                      {open && <p className="px-5 pb-4 text-sm text-foreground/65">{item.a}</p>}
+                    </div>
                   </Reveal>
                 );
               })}

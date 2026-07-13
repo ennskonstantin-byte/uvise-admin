@@ -11,6 +11,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://uvise.de"),
   title: "uVise Admin",
   description: "Verwaltung von Mitarbeiter-Unterweisungen und Qualifikationen",
 };
