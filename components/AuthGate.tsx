@@ -29,6 +29,7 @@ function AuthForm() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [resetSent, setResetSent] = useState(false);
+  const [dataResponsibilityConfirmed, setDataResponsibilityConfirmed] = useState(false);
 
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault();
@@ -217,11 +218,31 @@ function AuthForm() {
           />
         </div>
 
+        {isRegister && (
+          <label className="flex items-start gap-2.5 mt-4 text-xs text-foreground/65 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={dataResponsibilityConfirmed}
+              onChange={(e) => setDataResponsibilityConfirmed(e.target.checked)}
+              className="mt-0.5 shrink-0"
+            />
+            <span>
+              Ich bin dafür verantwortlich, dass die von mir eingegebenen Mitarbeiterdaten und
+              Unterweisungsinhalte richtig sind (siehe{" "}
+              <Link href="/agb" className="underline hover:text-foreground">AGB</Link>).
+            </span>
+          </label>
+        )}
+
         <button
           type="submit"
           disabled={
             loading ||
-            (isRegister && (firma.trim() === "" || vorname.trim() === "" || nachname.trim() === ""))
+            (isRegister &&
+              (firma.trim() === "" ||
+                vorname.trim() === "" ||
+                nachname.trim() === "" ||
+                !dataResponsibilityConfirmed))
           }
           className="w-full mt-5 rounded-full px-5 py-2.5 text-sm font-medium text-white disabled:opacity-50"
           style={{ background: "var(--accent-gradient)" }}
