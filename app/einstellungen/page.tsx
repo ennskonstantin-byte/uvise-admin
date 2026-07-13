@@ -29,6 +29,7 @@ export default function EinstellungenPage() {
   const [adresse, setAdresse] = useState("");
   const [adminName, setAdminName] = useState("");
   const [selectedPlan, setSelectedPlan] = useState("Team");
+  const [billing, setBilling] = useState<"monatlich" | "jaehrlich">("monatlich");
   const [saving, setSaving] = useState(false);
   const [uploadingLogo, setUploadingLogo] = useState(false);
   const [sendingTestMail, setSendingTestMail] = useState(false);
@@ -275,6 +276,27 @@ export default function EinstellungenPage() {
             Bezahlung per Apple Pay, Google Pay, Visa, Lastschrift, PayPal oder Klarna.
           </p>
 
+          <div className="inline-flex rounded-full border border-border p-1 text-sm mb-6">
+            <button
+              onClick={() => setBilling("monatlich")}
+              className={`rounded-full px-4 py-1.5 font-medium transition-colors ${
+                billing === "monatlich" ? "text-white" : "text-foreground/60"
+              }`}
+              style={billing === "monatlich" ? { background: "var(--accent-gradient)" } : undefined}
+            >
+              Monatlich
+            </button>
+            <button
+              onClick={() => setBilling("jaehrlich")}
+              className={`rounded-full px-4 py-1.5 font-medium transition-colors ${
+                billing === "jaehrlich" ? "text-white" : "text-foreground/60"
+              }`}
+              style={billing === "jaehrlich" ? { background: "var(--accent-gradient)" } : undefined}
+            >
+              Jährlich <span className="opacity-80">· 2% sparen</span>
+            </button>
+          </div>
+
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
             {PLANS.map((plan) => {
               const active = selectedPlan === plan.name;
@@ -286,7 +308,15 @@ export default function EinstellungenPage() {
                 >
                   <p className="font-medium mb-1">{plan.name}</p>
                   <p className="text-2xl font-semibold">
-                    {plan.preis}€<span className="text-sm font-normal text-foreground/65">/Monat</span>
+                    {billing === "monatlich" ? (
+                      <>
+                        {plan.preis}€<span className="text-sm font-normal text-foreground/65">/Monat</span>
+                      </>
+                    ) : (
+                      <>
+                        {plan.preisJaehrlich}€<span className="text-sm font-normal text-foreground/65">/Jahr</span>
+                      </>
+                    )}
                   </p>
                   <p className="text-sm text-foreground/65 mb-4">
                     {plan.limit}

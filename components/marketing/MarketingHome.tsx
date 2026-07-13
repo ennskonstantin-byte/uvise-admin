@@ -86,6 +86,7 @@ export function MarketingHome() {
   const { session, loading } = useAppData();
   const router = useRouter();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [billing, setBilling] = useState<"monatlich" | "jaehrlich">("monatlich");
 
   // Hell/Dunkel — dieselbe Umschaltung wie im Chef-Dashboard (Sidebar.tsx)
   // und in den beiden Apps, damit die Wahl konsistent auf der ganzen
@@ -396,11 +397,33 @@ export function MarketingHome() {
         {/* Preise */}
         <section id="preise" className="scroll-mt-16 border-t border-border/60 bg-background py-20">
           <div className="mx-auto max-w-6xl px-5 sm:px-8">
-            <Reveal className="max-w-xl mb-12">
+            <Reveal className="max-w-xl mb-8">
               <h2 className="font-display text-3xl font-semibold mb-3">Ein Preis pro Team-Größe</h2>
               <p className="text-foreground/65">
                 7 Tage kostenlos testen, danach monatlich kündbar. Keine Einrichtungsgebühr.
               </p>
+            </Reveal>
+            <Reveal className="mb-8">
+              <div className="inline-flex rounded-full border border-border p-1 text-sm">
+                <button
+                  onClick={() => setBilling("monatlich")}
+                  className={`rounded-full px-4 py-1.5 font-medium transition-colors ${
+                    billing === "monatlich" ? "text-white" : "text-foreground/60"
+                  }`}
+                  style={billing === "monatlich" ? { background: "var(--accent-gradient)" } : undefined}
+                >
+                  Monatlich
+                </button>
+                <button
+                  onClick={() => setBilling("jaehrlich")}
+                  className={`rounded-full px-4 py-1.5 font-medium transition-colors ${
+                    billing === "jaehrlich" ? "text-white" : "text-foreground/60"
+                  }`}
+                  style={billing === "jaehrlich" ? { background: "var(--accent-gradient)" } : undefined}
+                >
+                  Jährlich <span className="opacity-80">· 2% sparen</span>
+                </button>
+              </div>
             </Reveal>
             <div className="grid md:grid-cols-3 gap-5">
               {PLANS.map((plan, i) => {
@@ -427,11 +450,23 @@ export function MarketingHome() {
                         {plan.limit}
                       </p>
                       <p className="mb-6">
-                        <span className="text-4xl font-bold">{plan.preis}€</span>
-                        <span className={`text-sm ${featured ? "text-white/70" : "text-foreground/55"}`}>
-                          {" "}
-                          /Monat
-                        </span>
+                        {billing === "monatlich" ? (
+                          <>
+                            <span className="text-4xl font-bold">{plan.preis}€</span>
+                            <span className={`text-sm ${featured ? "text-white/70" : "text-foreground/55"}`}>
+                              {" "}
+                              /Monat
+                            </span>
+                          </>
+                        ) : (
+                          <>
+                            <span className="text-4xl font-bold">{plan.preisJaehrlich}€</span>
+                            <span className={`text-sm ${featured ? "text-white/70" : "text-foreground/55"}`}>
+                              {" "}
+                              /Jahr
+                            </span>
+                          </>
+                        )}
                       </p>
                       <ul className="space-y-2.5 mb-7">
                         {plan.features.map((f) => (
