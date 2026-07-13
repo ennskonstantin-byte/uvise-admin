@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { resend, RESEND_FROM } from "@/lib/resend";
+import { sendPushNotifications } from "@/lib/expoPush";
 
 // Wöchentliche Erinnerungs-Mail an alle Beauftragten je Firma:
 // - Qualifikationen, die in ≤30 Tagen ablaufen oder überfällig sind
@@ -52,7 +53,7 @@ export async function GET(request: Request) {
   const [{ data: companies }, { data: employees }, { data: trainings }, { data: quals }, { data: ets }] =
     await Promise.all([
       db.from("companies").select("id, name"),
-      db.from("employees").select("id, company_id, vorname, nachname, email, ist_beauftragter, archiviert"),
+      db.from("employees").select("id, company_id, vorname, nachname, email, push_token, ist_beauftragter, archiviert"),
       db.from("trainings").select("id, company_id, name, ablaufdatum"),
       db.from("qualifications").select("employee_id, name, ablaufdatum"),
       db.from("employee_trainings").select("employee_id, status"),
@@ -71,6 +72,7 @@ export async function GET(request: Request) {
     if (empfaenger.length === 0) continue;
 
     const eintraege: Eintrag[] = [];
+    const qualPushByEmployee = new Map<string, string[]>();
 
     // Ablaufende Qualifikationen der (aktiven) Mitarbeiter dieser Firma
     for (const q of quals ?? []) {
@@ -85,7 +87,23 @@ export async function GET(request: Request) {
               : `Qualifikation „${q.name}" von ${e.vorname} ${e.nachname} läuft am ${formatDatum(q.ablaufdatum)} ab (${tage} Tag${tage === 1 ? "" : "e"})`,
           ueberfaellig: tage < 0,
         });
+        const kurztext =
+          tage < 0
+            ? `„${q.name}" ist seit ${formatDatum(q.ablaufdatum)} überfällig`
+            : `„${q.name}" läuft am ${formatDatum(q.ablaufdatum)} ab`;
+        qualPushByEmployee.set(e.id, [...(qualPushByEmployee.get(e.id) ?? []), kurztext]);
       }
+    }
+
+    // Push direkt an die betroffenen Mitarbeiter (zusätzlich zur Chef-Mail).
+    for (const [employeeId, texte] of qualPushByEmployee) {
+      const empfaengerToken = firmenMitarbeiter.find((m) => m.id === employeeId)?.push_token;
+      if (!empfaengerToken) continue;
+      await sendPushNotifications(
+        [empfaengerToken],
+        texte.length === 1 ? "Qualifikation läuft ab" : `${texte.length} Qualifikationen laufen ab`,
+        texte.join(" · ")
+      );
     }
 
     // Ablaufende Unterweisungs-Vorlagen der Firma

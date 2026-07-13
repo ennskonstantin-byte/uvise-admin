@@ -3,6 +3,7 @@
 import { createContext, useContext, useEffect, useRef, useState, useCallback } from "react";
 import type { Session } from "@supabase/supabase-js";
 import { supabase } from "@/lib/supabase";
+import { notifyPush } from "@/lib/notifyPush";
 import { useToast } from "@/components/Toast";
 import {
   type Employee,
@@ -668,6 +669,10 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
     );
     if (error) throw error;
     await loadData();
+    const trainingName = trainings.find((t) => t.id === trainingId)?.name ?? "eine Unterweisung";
+    if (session) {
+      notifyPush(session.access_token, employeeIds, "Neue Unterweisung", `Dir wurde „${trainingName}" zugewiesen.`);
+    }
   }
 
   async function uploadCompanyLogo(file: File) {
@@ -703,6 +708,10 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
       .eq("id", id);
     if (error) throw error;
     await loadData();
+    const employeeId = questions.find((q) => q.id === id)?.employeeId;
+    if (session && employeeId) {
+      notifyPush(session.access_token, [employeeId], "Antwort auf deine Rückfrage", antwort);
+    }
   }
 
   async function signOut() {
