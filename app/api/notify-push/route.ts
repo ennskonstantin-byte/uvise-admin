@@ -61,7 +61,8 @@ export async function POST(request: Request) {
   const { data: targets } = await query;
 
   const tokens = (targets ?? []).map((t) => t.push_token);
+  const gueltigeTokens = tokens.filter((t): t is string => !!t && t.startsWith("ExponentPushToken"));
   await sendPushNotifications(tokens, title, body);
 
-  return NextResponse.json({ ok: true, empfaenger: tokens.length });
+  return NextResponse.json({ ok: true, empfaenger: gueltigeTokens.length });
 }
