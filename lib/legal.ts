@@ -98,25 +98,35 @@ Sie haben jederzeit das Recht auf unentgeltliche Auskunft über Herkunft, Empfä
 
 Quelle für Teile dieses Textes: e-recht24.de`;
 
-export const AGB = `Allgemeine Geschäftsbedingungen (Entwurf — vor Veröffentlichung anwaltlich prüfen lassen)
+export const AGB = `Allgemeine Geschäftsbedingungen
 
 1. Geltungsbereich
-Diese AGB gelten für die Nutzung der Software „uVise" durch Unternehmen (B2B).
+Diese Allgemeinen Geschäftsbedingungen (AGB) gelten für alle Verträge zwischen Konstantin Enns, Rossinistraße 11, 93133 Burglengenfeld (im Folgenden „Anbieter") und Unternehmen (im Folgenden „Kunde") über die Nutzung der Software „uVise" (Software-as-a-Service). Der Vertrag richtet sich ausschließlich an Unternehmer im Sinne von § 14 BGB, nicht an Verbraucher.
 
-2. Leistung
-uVise stellt eine Software zur Verwaltung und Dokumentation von Mitarbeiter-Unterweisungen und Qualifikationen bereit (SaaS).
+2. Vertragsschluss
+Der Vertrag kommt durch die Registrierung des Kunden über die Website oder App und die anschließende automatisierte Bestätigung durch den Anbieter zustande. Mit der Registrierung erkennt der Kunde diese AGB an.
 
-3. Preise und Laufzeit
-Die aktuellen Pakete und Preise sind in der Anwendung einsehbar. Testphase: 7 Tage kostenlos. Kündigung: [Frist eintragen].
+3. Leistungsbeschreibung
+uVise stellt eine Software zur digitalen Verwaltung und Dokumentation von Mitarbeiter-Unterweisungen, Qualifikationen und deren Nachweisen bereit. Der Funktionsumfang richtet sich nach dem vom Kunden gewählten Paket (siehe Preisübersicht in der Anwendung).
 
-4. Pflichten des Kunden
-Der Kunde ist verantwortlich für die Richtigkeit der eingegebenen Daten und für die Information seiner Mitarbeiter gemäß DSGVO.
+4. Preise, Zahlung und Testphase
+Die aktuell gültigen Preise sind in der Anwendung unter „Preise" bzw. „Abo wählen" einsehbar. Neue Kunden erhalten eine 7-tägige kostenlose Testphase; danach wird das gewählte Abonnement kostenpflichtig, sofern der Kunde nicht vor Ablauf der Testphase kündigt.
+Die Zahlungsabwicklung erfolgt über den Zahlungsdienstleister Stripe (Stripe Payments Europe, Ltd.). Mit Abschluss des kostenpflichtigen Abonnements autorisiert der Kunde die wiederkehrende Abbuchung des jeweiligen Abo-Preises über Stripe.
 
-5. Verfügbarkeit und Haftung
-[Verfügbarkeitszusage und Haftungsregelung eintragen]
+5. Laufzeit und Kündigung
+Das Abonnement läuft auf unbestimmte Zeit und ist monatlich, jeweils zum Ende des laufenden Abrechnungsmonats, kündbar. Es besteht keine Mindestvertragslaufzeit. Die Kündigung kann jederzeit über die Einstellungen in der Anwendung oder per E-Mail an den Anbieter erklärt werden. Das Recht zur außerordentlichen Kündigung aus wichtigem Grund bleibt unberührt.
 
-6. Schlussbestimmungen
-Es gilt deutsches Recht. Gerichtsstand ist [Ort], soweit gesetzlich zulässig.`;
+6. Pflichten des Kunden
+Der Kunde ist verantwortlich für die Richtigkeit der von ihm eingegebenen Daten (u. a. Mitarbeiterdaten) sowie dafür, seine Mitarbeiter im erforderlichen Umfang gemäß DSGVO über die Verarbeitung ihrer Daten zu informieren (siehe Datenschutzerklärung). Zugangsdaten sind vom Kunden vertraulich zu behandeln und nicht an Dritte weiterzugeben.
+
+7. Verfügbarkeit
+Der Anbieter bemüht sich um eine Verfügbarkeit der Software von 99 % im Jahresmittel. Hiervon ausgenommen sind Zeiten, in denen die Software aufgrund von Wartungsarbeiten, die dem Kunden nach Möglichkeit vorab angekündigt werden, oder aufgrund von Umständen, die der Anbieter nicht zu vertreten hat (z. B. Ausfälle bei Hosting- oder Infrastrukturanbietern), nicht erreichbar ist.
+
+8. Haftung
+Der Anbieter haftet unbeschränkt für Vorsatz und grobe Fahrlässigkeit sowie nach Maßgabe des Produkthaftungsgesetzes. Für Schäden aus der Verletzung des Lebens, des Körpers oder der Gesundheit haftet der Anbieter ebenfalls unbeschränkt. Bei leicht fahrlässiger Verletzung wesentlicher Vertragspflichten (Kardinalpflichten) ist die Haftung auf den bei Vertragsschluss vorhersehbaren, vertragstypischen Schaden begrenzt. Im Übrigen ist die Haftung für leichte Fahrlässigkeit ausgeschlossen. Für den Verlust von Daten haftet der Anbieter nur in Höhe des Aufwands, der bei ordnungsgemäßer regelmäßiger Datensicherung durch den Kunden zur Wiederherstellung der Daten erforderlich gewesen wäre.
+
+9. Schlussbestimmungen
+Es gilt das Recht der Bundesrepublik Deutschland unter Ausschluss des UN-Kaufrechts. Gerichtsstand für alle Streitigkeiten aus oder im Zusammenhang mit diesem Vertrag ist, soweit gesetzlich zulässig, der Sitz des Anbieters. Sollten einzelne Bestimmungen dieser AGB unwirksam sein, bleibt die Wirksamkeit der übrigen Bestimmungen davon unberührt.`;
 
 // Support-Kontakt — später durch echte Support-Adresse (z.B. support@uvise.de) ersetzen.
 export const SUPPORT_EMAIL = 'ennskonstantin@gmail.com';
