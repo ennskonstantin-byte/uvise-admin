@@ -13,6 +13,7 @@ import {
   Settings,
   LogOut,
   BarChart3,
+  Megaphone,
 } from "lucide-react";
 import { useAppData } from "@/lib/store";
 import { LogoMark } from "@/components/Logo";
@@ -83,7 +84,15 @@ export function Sidebar() {
       </Link>
 
       <nav className="flex-1 px-3 space-y-1">
-        {[...NAV_ITEMS, ...(istBetreiber ? [{ label: "Statistik", href: "/statistik", icon: BarChart3 }] : [])].map(({ label, href, icon: Icon }) => {
+        {[
+          ...NAV_ITEMS,
+          ...(istBetreiber
+            ? [
+                { label: "Statistik", href: "/statistik", icon: BarChart3 },
+                { label: "Marketing", href: "/marketing", icon: Megaphone },
+              ]
+            : []),
+        ].map(({ label, href, icon: Icon }) => {
           const active = href === "/dashboard" ? pathname === "/dashboard" : pathname.startsWith(href);
           const badge = label === "Rückfragen" ? openQuestions : undefined;
           return (
