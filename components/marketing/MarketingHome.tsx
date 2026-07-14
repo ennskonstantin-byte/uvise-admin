@@ -29,6 +29,7 @@ import { SUPPORT_EMAIL } from "@/lib/legal";
 import { TrackPageView } from "@/components/TrackPageView";
 import { AffiliateRef } from "@/components/AffiliateRef";
 import { ChatWidget } from "@/components/marketing/ChatWidget";
+import { FAQ } from "@/components/marketing/faqData";
 
 const FEATURES = [
   {
@@ -65,34 +66,6 @@ const FEATURES = [
     icon: Moon,
     title: "Hell & Dunkel",
     text: "Durchdachtes Design für Büro und Werkstatt — mit vollem Dark-Mode-Support in jeder App.",
-  },
-];
-
-const FAQ = [
-  {
-    q: "Ist uVise DSGVO-konform und rechtssicher?",
-    a: "Ja. Mitarbeiterdaten werden auf Servern in der EU gespeichert, jede Unterschrift ist nach eIDAS-Grundsätzen mit Zeitstempel und Gerätekennung versehen und lässt sich nachträglich nicht mehr verändern. Details findest du in unserer Datenschutzerklärung.",
-  },
-  {
-    q: "Brauchen meine Mitarbeiter ein Firmen-Handy?",
-    a: "Nein. Die Mitarbeiter-App läuft auf dem eigenen Smartphone jedes Mitarbeiters — ein Firmen-Laptop oder -Handy ist nicht nötig.",
-  },
-  {
-    q: "In wie vielen Sprachen können Unterweisungen vorgelesen werden?",
-    a: "Jede Unterweisung kann in 41 Sprachen vorgelesen und übersetzt werden, darunter Türkisch, Ukrainisch, Arabisch und Polnisch — so verstehen auch Mitarbeiter mit wenig Deutschkenntnissen den Inhalt, bevor sie unterschreiben.",
-  },
-  {
-    q: "Kann ich uVise jederzeit kündigen?",
-    a: "Ja, im Monatsabo ist uVise jederzeit zum Ende des laufenden Monats kündbar, ohne Mindestlaufzeit. Alternativ gibt es ein Jahresabo mit 20% Rabatt.",
-  },
-  {
-    q: "Was passiert nach der 7-tägigen Testphase?",
-    a: "Du testest 7 Tage kostenlos und ohne Kreditkarte. Erst danach entscheidest du dich für ein kostenpflichtiges Paket — ohne automatische Kündigungsfalle im Hintergrund.",
-  },
-  {
-    q: "Ersetzt uVise die gesetzliche Pflicht zur Unterweisung?",
-    a: "uVise ersetzt nicht die inhaltliche Durchführung der Unterweisung, sondern digitalisiert Planung, Fristen, Nachweise und Unterschriften dafür — verpflichtend bleibt weiterhin, dass der Arbeitgeber seine Mitarbeiter nach dem Arbeitsschutzgesetz und den DGUV-Vorschriften unterweist.",
-    link: { label: "Arbeitsschutzgesetz (ArbSchG) im Volltext", href: "https://www.gesetze-im-internet.de/arbschg/" },
   },
 ];
 
@@ -307,8 +280,9 @@ export function MarketingHome() {
                 die sich von selbst erledigen.
               </h1>
               <p className="text-lg text-foreground/65 mb-8 max-w-md">
-                Die digitale Unterweisungs-Software kümmert sich selbst um Fristen, Erinnerungen
-                und rechtssichere Unterschriften — mehrsprachig und ohne Papierkram.
+                Die digitale Unterweisungs-Software für den Arbeitsschutz kümmert sich selbst um
+                Fristen, Erinnerungen und rechtssichere Unterschriften — mehrsprachig und ohne
+                Papierkram.
               </p>
               <div className="flex flex-wrap gap-3">
                 <Link
@@ -378,8 +352,9 @@ export function MarketingHome() {
             <Reveal className="max-w-xl mb-12">
               <h2 className="font-display text-3xl font-semibold mb-3">Alles, was eine Unterweisung braucht</h2>
               <p className="text-foreground/65">
-                Von der Erinnerung bis zur rechtssicheren Unterschrift — konzipiert für den Alltag im
-                Betrieb, nicht für die IT-Abteilung.
+                Sicherheitsunterweisungen, Qualifikationen und Nachweise an einem Ort — von der
+                Erinnerung bis zur rechtssicheren Unterschrift. Konzipiert für Handwerk und kleine
+                Betriebe, nicht für die IT-Abteilung.
               </p>
             </Reveal>
             <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
