@@ -131,7 +131,7 @@ Der Anbieter haftet unbeschränkt für Vorsatz und grobe Fahrlässigkeit sowie n
 Es gilt das Recht der Bundesrepublik Deutschland unter Ausschluss des UN-Kaufrechts. Gerichtsstand für alle Streitigkeiten aus oder im Zusammenhang mit diesem Vertrag ist, soweit gesetzlich zulässig, der Sitz des Anbieters. Sollten einzelne Bestimmungen dieser AGB unwirksam sein, bleibt die Wirksamkeit der übrigen Bestimmungen davon unberührt.`;
 
 // Support-Kontakt — später durch echte Support-Adresse (z.B. support@uvise.de) ersetzen.
-export const SUPPORT_EMAIL = 'ennskonstantin@gmail.com';
+export const SUPPORT_EMAIL = 'info@ennsmedia.com';
 
 // Allgemeiner Kontakt (Anfragen, Geschäftliches) — getrennt von SUPPORT_EMAIL.
 export const CONTACT_EMAIL = 'info@ennsmedia.com';
