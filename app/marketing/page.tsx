@@ -94,6 +94,7 @@ export default function MarketingPage() {
   const [bildId, setBildId] = useState<string | null>(null);
   const [ladeBildId, setLadeBildId] = useState<string | null>(null);
   const [motiv, setMotiv] = useState("handwerk");
+  const [appAn, setAppAn] = useState(true);
 
   async function bildHochladen(id: string, e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -394,22 +395,30 @@ export default function MarketingPage() {
                                   </button>
                                 ))}
                               </div>
+                              <button
+                                onClick={() => setAppAn((v) => !v)}
+                                className={`mb-2 rounded-full border px-3 py-1 text-[11px] ${
+                                  appAn ? "border-blue-500 text-blue-500 font-medium" : "border-border text-foreground/60"
+                                }`}
+                              >
+                                📱 App-Handy {appAn ? "an" : "aus"}
+                              </button>
                               {/* eslint-disable-next-line @next/next/no-img-element */}
                               <img
-                                src={`/api/beitragsbild?text=${encodeURIComponent(bildText(p))}&format=quadrat&motiv=${motiv}`}
+                                src={`/api/beitragsbild?text=${encodeURIComponent(bildText(p))}&format=quadrat&motiv=${motiv}${appAn ? "&app=1" : ""}`}
                                 alt="Vorschau des automatischen Bilds"
                                 className="w-full max-w-[280px] rounded-xl border border-border"
                               />
                               <div className="flex flex-wrap gap-2 mt-2">
                                 <a
-                                  href={`/api/beitragsbild?text=${encodeURIComponent(bildText(p))}&format=quadrat&motiv=${motiv}`}
+                                  href={`/api/beitragsbild?text=${encodeURIComponent(bildText(p))}&format=quadrat&motiv=${motiv}${appAn ? "&app=1" : ""}`}
                                   download="uvise-instagram.png"
                                   className="rounded-full border border-border px-4 py-1.5 text-xs"
                                 >
                                   ⬇︎ Instagram (quadrat)
                                 </a>
                                 <a
-                                  href={`/api/beitragsbild?text=${encodeURIComponent(bildText(p))}&format=quer&motiv=${motiv}`}
+                                  href={`/api/beitragsbild?text=${encodeURIComponent(bildText(p))}&format=quer&motiv=${motiv}${appAn ? "&app=1" : ""}`}
                                   download="uvise-facebook.png"
                                   className="rounded-full border border-border px-4 py-1.5 text-xs"
                                 >
