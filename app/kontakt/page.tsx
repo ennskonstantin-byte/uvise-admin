@@ -110,6 +110,14 @@ export default function KontaktPage() {
               >
                 {status === "sending" ? "Wird gesendet…" : "Nachricht senden"}
               </button>
+
+              <p className="text-xs text-foreground/50 mt-1">
+                Mit dem Absenden stimmst du zu, dass wir deine Angaben zur Bearbeitung
+                deiner Anfrage verarbeiten. Weitere Informationen findest du in unserer{" "}
+                <Link href="/datenschutz" className="underline underline-offset-4 hover:text-foreground">
+                  Datenschutzerklärung
+                </Link>.
+              </p>
             </form>
           )}
         </div>
