@@ -27,6 +27,7 @@ import { VorlesenDemo } from "@/components/marketing/VorlesenDemo";
 import { AppPreview } from "@/components/marketing/AppPreview";
 import { SUPPORT_EMAIL } from "@/lib/legal";
 import { TrackPageView } from "@/components/TrackPageView";
+import { AffiliateRef } from "@/components/AffiliateRef";
 
 const FEATURES = [
   {
@@ -148,6 +149,7 @@ export function MarketingHome() {
   return (
     <div className="min-h-screen bg-page-bg overflow-x-hidden">
       <TrackPageView path="/" />
+      <AffiliateRef />
       <header className="sticky top-0 z-40 border-b border-border/60 bg-background/80 backdrop-blur">
         <div className="mx-auto max-w-6xl px-5 sm:px-8 h-16 flex items-center justify-between">
           <a href="#top" className="flex items-center gap-2.5">

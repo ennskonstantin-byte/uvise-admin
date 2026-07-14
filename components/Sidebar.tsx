@@ -14,6 +14,7 @@ import {
   LogOut,
   BarChart3,
   Megaphone,
+  Handshake,
 } from "lucide-react";
 import { useAppData } from "@/lib/store";
 import { LogoMark } from "@/components/Logo";
@@ -90,6 +91,7 @@ export function Sidebar() {
             ? [
                 { label: "Statistik", href: "/statistik", icon: BarChart3 },
                 { label: "Marketing", href: "/marketing", icon: Megaphone },
+                { label: "Partner", href: "/partner-verwaltung", icon: Handshake },
               ]
             : []),
         ].map(({ label, href, icon: Icon }) => {

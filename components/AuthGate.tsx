@@ -10,7 +10,7 @@ import { LogoMark } from "@/components/Logo";
 // Diese Seiten sind gesetzlich ohne Login erreichbar (Impressumspflicht)
 // + die Passwort-zurücksetzen-Seite (E-Mail-Link) + die öffentliche
 // Marketing-Startseite, von der aus man sich anmelden/registrieren kann.
-const PUBLIC_PATHS = ["/", "/impressum", "/datenschutz", "/agb", "/passwort-zuruecksetzen", "/kontakt"];
+const PUBLIC_PATHS = ["/", "/impressum", "/datenschutz", "/agb", "/passwort-zuruecksetzen", "/kontakt", "/partner"];
 
 function AuthForm() {
   const { reload } = useAppData();
@@ -84,6 +84,25 @@ function AuthForm() {
       setError(rpcError.message);
       setLoading(false);
       return;
+    }
+
+    // Kam der Besuch über einen Partner-Link (?ref=CODE)? Dann die neue Firma
+    // dem Partner zuordnen — schlägt still fehl, blockiert die Anmeldung nie.
+    try {
+      const refCode = localStorage.getItem("uvise-ref");
+      if (refCode) {
+        await fetch("/api/affiliate", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${data.session.access_token}`,
+          },
+          body: JSON.stringify({ aktion: "registrierung", code: refCode }),
+        });
+        localStorage.removeItem("uvise-ref");
+      }
+    } catch {
+      // still — Affiliate ist ein Zusatz.
     }
 
     await reload();
