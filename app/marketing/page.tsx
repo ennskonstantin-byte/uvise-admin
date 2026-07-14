@@ -218,6 +218,21 @@ export default function MarketingPage() {
         </div>
       </section>
 
+      {posts.length > 0 && (
+        <div className="max-w-2xl mb-6 flex justify-end">
+          <button
+            onClick={() => {
+              if (confirm(`Wirklich ALLE ${posts.length} Beiträge löschen? Das kann nicht rückgängig gemacht werden.`)) {
+                aktion({ aktion: "alle-loeschen" });
+              }
+            }}
+            className="rounded-full border border-red-300 px-4 py-1.5 text-xs text-red-500 dark:border-red-500/40"
+          >
+            🗑 Alle löschen
+          </button>
+        </div>
+      )}
+
       {fehler && (
         <div className="rounded-2xl border border-red-500/40 bg-red-500/10 p-4 text-sm max-w-2xl mb-8 whitespace-pre-wrap">{fehler}</div>
       )}
@@ -315,6 +330,14 @@ export default function MarketingPage() {
                             className="rounded-full border border-border px-4 py-1.5 text-xs"
                           >
                             🖼️ Bild{p.bild_url ? " ✓" : ""}
+                          </button>
+                          <button
+                            onClick={() => {
+                              if (confirm("Diesen Beitrag wirklich löschen?")) aktion({ aktion: "loeschen", id: p.id });
+                            }}
+                            className="rounded-full border border-border px-4 py-1.5 text-xs text-red-500"
+                          >
+                            🗑 Löschen
                           </button>
                         </div>
                         {bildId === p.id && (

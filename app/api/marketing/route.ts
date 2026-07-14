@@ -166,6 +166,19 @@ Antworte NUR mit einem JSON-Array aus Objekten, ohne Erklärung und ohne Markdow
     return NextResponse.json({ ok: true });
   }
 
+  if (body.aktion === "loeschen") {
+    if (!body.id) return NextResponse.json({ error: "Ungültige Anfrage." }, { status: 400 });
+    const { error } = await db.from("social_posts").delete().eq("id", body.id);
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ ok: true });
+  }
+
+  if (body.aktion === "alle-loeschen") {
+    const { error } = await db.from("social_posts").delete().not("id", "is", null);
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ ok: true });
+  }
+
   if (body.aktion === "bild-hochladen") {
     const dataUrl = typeof body.bild === "string" ? body.bild : "";
     if (!body.id || !dataUrl.startsWith("data:image/")) {
