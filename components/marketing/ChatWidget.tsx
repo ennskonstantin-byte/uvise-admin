@@ -16,13 +16,22 @@ export function ChatWidget() {
   const [eingabe, setEingabe] = useState("");
   const [laedt, setLaedt] = useState(false);
   const endeRef = useRef<HTMLDivElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
     if (offen) endeRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, offen, laedt]);
 
-  async function senden(e: React.FormEvent) {
-    e.preventDefault();
+  // Textfeld wächst mit dem Inhalt nach unten (bis max. Höhe, dann scrollt es),
+  // damit man immer sieht, was man geschrieben hat.
+  useEffect(() => {
+    const el = textareaRef.current;
+    if (!el) return;
+    el.style.height = "auto";
+    el.style.height = Math.min(el.scrollHeight, 140) + "px";
+  }, [eingabe, offen]);
+
+  async function abschicken() {
     const text = eingabe.trim();
     if (!text || laedt) return;
     const neu: Msg[] = [...messages, { role: "user", content: text }];
@@ -42,6 +51,11 @@ export function ChatWidget() {
     } finally {
       setLaedt(false);
     }
+  }
+
+  function senden(e: React.FormEvent) {
+    e.preventDefault();
+    abschicken();
   }
 
   return (
@@ -90,13 +104,21 @@ export function ChatWidget() {
             <div ref={endeRef} />
           </div>
 
-          <form onSubmit={senden} className="flex items-center gap-2 border-t border-border p-3 shrink-0">
-            <input
+          <form onSubmit={senden} className="flex items-end gap-2 border-t border-border p-3 shrink-0">
+            <textarea
+              ref={textareaRef}
               value={eingabe}
               onChange={(e) => setEingabe(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && !e.shiftKey) {
+                  e.preventDefault();
+                  abschicken();
+                }
+              }}
               placeholder="Deine Frage…"
               maxLength={1500}
-              className="flex-1 rounded-full border border-border bg-surface px-4 py-2.5 text-sm outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+              rows={1}
+              className="flex-1 resize-none max-h-[140px] overflow-y-auto rounded-2xl border border-border bg-surface px-4 py-2.5 text-sm leading-relaxed outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
             />
             <button
               type="submit"
