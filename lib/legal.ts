@@ -130,3 +130,6 @@ Es gilt das Recht der Bundesrepublik Deutschland unter Ausschluss des UN-Kaufrec
 
 // Support-Kontakt — später durch echte Support-Adresse (z.B. support@uvise.de) ersetzen.
 export const SUPPORT_EMAIL = 'ennskonstantin@gmail.com';
+
+// Allgemeiner Kontakt (Anfragen, Geschäftliches) — getrennt von SUPPORT_EMAIL.
+export const CONTACT_EMAIL = 'info@ennsmedia.com';

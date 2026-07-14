@@ -9,7 +9,7 @@ import { useToast } from "@/components/Toast";
 import { useAppData } from "@/lib/store";
 import { exportNachweiseCsv, exportQualifikationenCsv } from "@/lib/exportCsv";
 import { exportGesamtBackupZip } from "@/lib/exportZip";
-import { SUPPORT_EMAIL } from "@/lib/legal";
+import { SUPPORT_EMAIL, CONTACT_EMAIL } from "@/lib/legal";
 import { PLANS } from "@/lib/types";
 
 export default function EinstellungenPage() {
@@ -282,12 +282,18 @@ export default function EinstellungenPage() {
           <p className="text-foreground/60 text-sm mb-4">
             Fragen oder Probleme? Schreib uns — wir melden uns so schnell wie möglich.
           </p>
-          <Card className="max-w-lg">
+          <Card className="max-w-lg flex flex-wrap gap-3">
             <a
               href={`mailto:${SUPPORT_EMAIL}?subject=uVise%20Support`}
               className="inline-flex items-center gap-2 rounded-full border border-border px-5 py-2.5 text-sm font-medium hover:border-foreground/30"
             >
-              ✉️ {SUPPORT_EMAIL}
+              ✉️ Support: {SUPPORT_EMAIL}
+            </a>
+            <a
+              href={`mailto:${CONTACT_EMAIL}?subject=uVise%20Kontakt`}
+              className="inline-flex items-center gap-2 rounded-full border border-border px-5 py-2.5 text-sm font-medium hover:border-foreground/30"
+            >
+              ✉️ Kontakt: {CONTACT_EMAIL}
             </a>
           </Card>
         </section>
