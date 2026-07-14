@@ -96,7 +96,9 @@ export async function POST(request: Request) {
         messages: [
           {
             role: "user",
-            content: `Schreibe ${anzahl} unterschiedliche Beitragsentwürfe für ${plattform === "beide" ? "Facebook und Instagram" : plattform}. Thema: ${thema}. Antworte NUR mit einem JSON-Array aus Strings, ein String pro Beitrag, ohne Erklärung.`,
+            content: `Schreibe ${anzahl} unterschiedliche Beitragsentwürfe für ${plattform === "beide" ? "Facebook und Instagram" : plattform}. Thema: ${thema}.
+Antworte NUR mit einem JSON-Array aus Objekten, ohne Erklärung und ohne Markdown-Codeblock. Jedes Objekt hat genau zwei Felder:
+{"beitrag": "<der komplette Beitragstext inkl. Hashtags>", "titel": "<sehr kurzer, knackiger Bild-Titel: max. 6 Wörter, ca. 40 Zeichen, ohne Hashtags, ohne Emojis, bringt den Kern auf den Punkt>"}`,
           },
         ],
       });
@@ -108,15 +110,29 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: `KI-Fehler: ${(e as Error).message.slice(0, 300)}` }, { status: 502 });
     }
 
-    let entwuerfe: string[];
+    type Entwurf = { inhalt: string; bild_titel: string | null };
+    let entwuerfe: Entwurf[];
     try {
       // Antwort kann in ```json ... ``` eingepackt sein — herausschälen.
       const roh = antwort.replace(/^```(json)?/m, "").replace(/```$/m, "").trim();
       const parsed = JSON.parse(roh);
-      entwuerfe = Array.isArray(parsed) ? parsed.filter((e) => typeof e === "string" && e.trim()) : [];
+      entwuerfe = Array.isArray(parsed)
+        ? parsed
+            .map((e): Entwurf | null => {
+              // Neues Format: { beitrag, titel }
+              if (e && typeof e === "object" && typeof e.beitrag === "string" && e.beitrag.trim()) {
+                const titel = typeof e.titel === "string" && e.titel.trim() ? e.titel.trim().slice(0, 80) : null;
+                return { inhalt: e.beitrag.trim(), bild_titel: titel };
+              }
+              // Zur Sicherheit auch altes Format (reiner String) akzeptieren.
+              if (typeof e === "string" && e.trim()) return { inhalt: e.trim(), bild_titel: null };
+              return null;
+            })
+            .filter((e): e is Entwurf => e !== null)
+        : [];
     } catch {
       // Zur Not die ganze Antwort als einen Entwurf übernehmen.
-      entwuerfe = antwort.trim() ? [antwort.trim()] : [];
+      entwuerfe = antwort.trim() ? [{ inhalt: antwort.trim(), bild_titel: null }] : [];
     }
     if (entwuerfe.length === 0) {
       return NextResponse.json({ error: "Die KI hat keine verwertbaren Entwürfe geliefert — bitte erneut versuchen." }, { status: 502 });
@@ -124,7 +140,7 @@ export async function POST(request: Request) {
 
     const { data, error } = await db
       .from("social_posts")
-      .insert(entwuerfe.map((inhalt) => ({ plattform, thema, inhalt, status: "entwurf" })))
+      .insert(entwuerfe.map((e) => ({ plattform, thema, inhalt: e.inhalt, bild_titel: e.bild_titel, status: "entwurf" })))
       .select();
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
     return NextResponse.json({ posts: data });

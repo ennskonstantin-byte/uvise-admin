@@ -12,6 +12,7 @@ type Post = {
   inhalt: string;
   status: "entwurf" | "freigegeben" | "veroeffentlicht" | "verworfen";
   bild_url?: string | null;
+  bild_titel?: string | null;
 };
 
 // Verkleinert ein hochgeladenes Bild im Browser auf max. 1280px (JPEG),
@@ -62,10 +63,21 @@ const MOTIVE: { k: string; l: string }[] = [
   { k: "team", l: "Team" },
 ];
 
-// Kürzt den Beitragstext auf eine knackige Zeile fürs Marken-Bild.
+// Fallback fürs Bild, wenn (noch) kein kurzer Bild-Titel vorhanden ist:
+// Hashtags raus, nur der erste Satz, hart auf ~70 Zeichen gekürzt.
 function kurzText(inhalt: string): string {
-  const ersteZeile = inhalt.split("\n").map((s) => s.trim()).filter(Boolean)[0] ?? inhalt;
-  return ersteZeile.slice(0, 160);
+  const ohneHashtags = inhalt
+    .split("\n")
+    .filter((z) => !z.trim().startsWith("#"))
+    .join(" ")
+    .trim();
+  const ersterSatz = ohneHashtags.split(/(?<=[.!?])\s/)[0]?.trim() || ohneHashtags;
+  return ersterSatz.length > 70 ? ersterSatz.slice(0, 68).trim() + "…" : ersterSatz;
+}
+
+// Der Text, der aufs Bild kommt: bevorzugt der kurze KI-Bild-Titel.
+function bildText(p: Post): string {
+  return (p.bild_titel && p.bild_titel.trim()) || kurzText(p.inhalt);
 }
 
 export default function MarketingPage() {
@@ -361,20 +373,20 @@ export default function MarketingPage() {
                               </div>
                               {/* eslint-disable-next-line @next/next/no-img-element */}
                               <img
-                                src={`/api/beitragsbild?text=${encodeURIComponent(kurzText(p.inhalt))}&format=quadrat&motiv=${motiv}`}
+                                src={`/api/beitragsbild?text=${encodeURIComponent(bildText(p))}&format=quadrat&motiv=${motiv}`}
                                 alt="Vorschau des automatischen Bilds"
                                 className="w-full max-w-[280px] rounded-xl border border-border"
                               />
                               <div className="flex flex-wrap gap-2 mt-2">
                                 <a
-                                  href={`/api/beitragsbild?text=${encodeURIComponent(kurzText(p.inhalt))}&format=quadrat&motiv=${motiv}`}
+                                  href={`/api/beitragsbild?text=${encodeURIComponent(bildText(p))}&format=quadrat&motiv=${motiv}`}
                                   download="uvise-instagram.png"
                                   className="rounded-full border border-border px-4 py-1.5 text-xs"
                                 >
                                   ⬇︎ Instagram (quadrat)
                                 </a>
                                 <a
-                                  href={`/api/beitragsbild?text=${encodeURIComponent(kurzText(p.inhalt))}&format=quer&motiv=${motiv}`}
+                                  href={`/api/beitragsbild?text=${encodeURIComponent(bildText(p))}&format=quer&motiv=${motiv}`}
                                   download="uvise-facebook.png"
                                   className="rounded-full border border-border px-4 py-1.5 text-xs"
                                 >
