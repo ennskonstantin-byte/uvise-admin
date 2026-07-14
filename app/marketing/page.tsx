@@ -26,6 +26,12 @@ const PLATTFORM_LABEL: Record<Post["plattform"], string> = {
   beide: "Facebook + Instagram",
 };
 
+// Kürzt den Beitragstext auf eine knackige Zeile fürs Marken-Bild.
+function kurzText(inhalt: string): string {
+  const ersteZeile = inhalt.split("\n").map((s) => s.trim()).filter(Boolean)[0] ?? inhalt;
+  return ersteZeile.slice(0, 160);
+}
+
 export default function MarketingPage() {
   const [posts, setPosts] = useState<Post[]>([]);
   const [fehler, setFehler] = useState<string | null>(null);
@@ -37,6 +43,7 @@ export default function MarketingPage() {
 
   const [bearbeiteId, setBearbeiteId] = useState<string | null>(null);
   const [bearbeiteText, setBearbeiteText] = useState("");
+  const [bildId, setBildId] = useState<string | null>(null);
 
   async function token(): Promise<string | null> {
     const {
@@ -238,7 +245,41 @@ export default function MarketingPage() {
                               </button>
                             </>
                           )}
+                          <button
+                            onClick={() => setBildId(bildId === p.id ? null : p.id)}
+                            className="rounded-full border border-border px-4 py-1.5 text-xs"
+                          >
+                            🖼️ Marken-Bild
+                          </button>
                         </div>
+                        {bildId === p.id && (
+                          <div className="mt-3">
+                            <img
+                              src={`/api/beitragsbild?text=${encodeURIComponent(kurzText(p.inhalt))}&format=quadrat`}
+                              alt="Vorschau des Beitragsbilds"
+                              className="w-full max-w-[280px] rounded-xl border border-border"
+                            />
+                            <div className="flex flex-wrap gap-2 mt-2">
+                              <a
+                                href={`/api/beitragsbild?text=${encodeURIComponent(kurzText(p.inhalt))}&format=quadrat`}
+                                download="uvise-instagram.png"
+                                className="rounded-full bg-blue-600 px-4 py-1.5 text-xs font-semibold text-white"
+                              >
+                                ⬇︎ Instagram-Bild
+                              </a>
+                              <a
+                                href={`/api/beitragsbild?text=${encodeURIComponent(kurzText(p.inhalt))}&format=quer`}
+                                download="uvise-facebook.png"
+                                className="rounded-full border border-border px-4 py-1.5 text-xs"
+                              >
+                                ⬇︎ Facebook-Bild
+                              </a>
+                            </div>
+                            <p className="text-[11px] text-foreground/40 mt-1">
+                              Automatisch aus dem Text erzeugt, in deinen uVise-Farben — kostenlos.
+                            </p>
+                          </div>
+                        )}
                       </>
                     )}
                   </article>
