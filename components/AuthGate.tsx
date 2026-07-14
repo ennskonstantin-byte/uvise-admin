@@ -10,7 +10,7 @@ import { LogoMark } from "@/components/Logo";
 // Diese Seiten sind gesetzlich ohne Login erreichbar (Impressumspflicht)
 // + die Passwort-zurücksetzen-Seite (E-Mail-Link) + die öffentliche
 // Marketing-Startseite, von der aus man sich anmelden/registrieren kann.
-const PUBLIC_PATHS = ["/", "/impressum", "/datenschutz", "/agb", "/passwort-zuruecksetzen"];
+const PUBLIC_PATHS = ["/", "/impressum", "/datenschutz", "/agb", "/passwort-zuruecksetzen", "/kontakt"];
 
 function AuthForm() {
   const { reload } = useAppData();
