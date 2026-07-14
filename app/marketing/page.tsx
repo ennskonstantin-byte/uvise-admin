@@ -51,6 +51,17 @@ const PLATTFORM_LABEL: Record<Post["plattform"], string> = {
   beide: "Facebook + Instagram",
 };
 
+// Motive für das automatische Foto (echtes Bild als Hintergrund).
+const MOTIVE: { k: string; l: string }[] = [
+  { k: "handwerk", l: "Handwerk" },
+  { k: "werkstatt", l: "Werkstatt" },
+  { k: "lager", l: "Lager" },
+  { k: "baustelle", l: "Baustelle" },
+  { k: "buero", l: "Büro" },
+  { k: "gastro", l: "Gastro" },
+  { k: "team", l: "Team" },
+];
+
 // Kürzt den Beitragstext auf eine knackige Zeile fürs Marken-Bild.
 function kurzText(inhalt: string): string {
   const ersteZeile = inhalt.split("\n").map((s) => s.trim()).filter(Boolean)[0] ?? inhalt;
@@ -70,6 +81,7 @@ export default function MarketingPage() {
   const [bearbeiteText, setBearbeiteText] = useState("");
   const [bildId, setBildId] = useState<string | null>(null);
   const [ladeBildId, setLadeBildId] = useState<string | null>(null);
+  const [motiv, setMotiv] = useState("handwerk");
 
   async function bildHochladen(id: string, e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -329,25 +341,40 @@ export default function MarketingPage() {
                               </label>
                             </div>
 
-                            {/* Automatische Marken-Vorlage */}
+                            {/* Automatisch: echtes Foto + uVise-Marke */}
                             <div>
-                              <p className="text-xs font-medium mb-1">Oder automatisch eine Marken-Vorlage:</p>
+                              <p className="text-xs font-medium mb-1">Oder automatisch ein Bild (echtes Foto + uVise-Marke):</p>
+                              <div className="flex flex-wrap gap-1.5 mb-2">
+                                {MOTIVE.map((m) => (
+                                  <button
+                                    key={m.k}
+                                    onClick={() => setMotiv(m.k)}
+                                    className={`rounded-full border px-3 py-1 text-[11px] ${
+                                      motiv === m.k
+                                        ? "border-blue-500 text-blue-500 font-medium"
+                                        : "border-border text-foreground/60"
+                                    }`}
+                                  >
+                                    {m.l}
+                                  </button>
+                                ))}
+                              </div>
                               {/* eslint-disable-next-line @next/next/no-img-element */}
                               <img
-                                src={`/api/beitragsbild?text=${encodeURIComponent(kurzText(p.inhalt))}&format=quadrat`}
-                                alt="Vorschau der Marken-Vorlage"
+                                src={`/api/beitragsbild?text=${encodeURIComponent(kurzText(p.inhalt))}&format=quadrat&motiv=${motiv}`}
+                                alt="Vorschau des automatischen Bilds"
                                 className="w-full max-w-[280px] rounded-xl border border-border"
                               />
                               <div className="flex flex-wrap gap-2 mt-2">
                                 <a
-                                  href={`/api/beitragsbild?text=${encodeURIComponent(kurzText(p.inhalt))}&format=quadrat`}
+                                  href={`/api/beitragsbild?text=${encodeURIComponent(kurzText(p.inhalt))}&format=quadrat&motiv=${motiv}`}
                                   download="uvise-instagram.png"
                                   className="rounded-full border border-border px-4 py-1.5 text-xs"
                                 >
                                   ⬇︎ Instagram (quadrat)
                                 </a>
                                 <a
-                                  href={`/api/beitragsbild?text=${encodeURIComponent(kurzText(p.inhalt))}&format=quer`}
+                                  href={`/api/beitragsbild?text=${encodeURIComponent(kurzText(p.inhalt))}&format=quer&motiv=${motiv}`}
                                   download="uvise-facebook.png"
                                   className="rounded-full border border-border px-4 py-1.5 text-xs"
                                 >
@@ -355,7 +382,7 @@ export default function MarketingPage() {
                                 </a>
                               </div>
                               <p className="text-[11px] text-foreground/40 mt-1">
-                                Kostenlos, in deinen uVise-Farben aus dem Text erzeugt.
+                                Kostenlos. Echte Fotos erscheinen, sobald der Pexels-Schlüssel eingetragen ist — sonst die dunkle Vorlage.
                               </p>
                             </div>
                           </div>
