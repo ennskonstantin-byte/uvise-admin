@@ -6,6 +6,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { useAppData } from "@/lib/store";
 import { LogoMark } from "@/components/Logo";
+import { PasswordInput } from "@/components/PasswordInput";
 
 // Diese Seiten sind gesetzlich ohne Login erreichbar (Impressumspflicht)
 // + die Passwort-zurücksetzen-Seite (E-Mail-Link) + die öffentliche
@@ -232,12 +233,10 @@ function AuthForm() {
             placeholder="E-Mail"
             className="w-full rounded-full border border-border bg-surface px-4 py-2.5 text-sm outline-none"
           />
-          <input
+          <PasswordInput
             value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            type="password"
-            placeholder="Passwort"
-            className="w-full rounded-full border border-border bg-surface px-4 py-2.5 text-sm outline-none"
+            onChange={setPassword}
+            autoComplete={isRegister ? "new-password" : "current-password"}
           />
         </div>
 

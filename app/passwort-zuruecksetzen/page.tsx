@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import { LogoMark } from "@/components/Logo";
+import { PasswordInput } from "@/components/PasswordInput";
 
 export default function PasswortZuruecksetzenPage() {
   // Der E-Mail-Link setzt automatisch eine Sitzung (Supabase erkennt das
@@ -61,13 +62,11 @@ export default function PasswortZuruecksetzenPage() {
             {error && (
               <p className="text-sm text-red-600 mb-4 rounded-2xl bg-red-500/10 px-4 py-2">{error}</p>
             )}
-            <input
+            <PasswordInput
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              type="password"
+              onChange={setPassword}
               placeholder="Neues Passwort"
-              minLength={6}
-              className="w-full rounded-full border border-border bg-surface px-4 py-2.5 text-sm outline-none"
+              autoComplete="new-password"
             />
             <button
               type="submit"
