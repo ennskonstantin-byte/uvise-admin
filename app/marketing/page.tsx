@@ -110,6 +110,40 @@ export default function MarketingPage() {
   });
   const [planStart, setPlanStart] = useState(() => isoDatum(new Date()));
   const [planSchritt, setPlanSchritt] = useState(1);
+  const [kampAnzahl, setKampAnzahl] = useState(7);
+  const [kampLaeuft, setKampLaeuft] = useState(false);
+  const [tagModal, setTagModal] = useState<string | null>(null);
+  const [neuLaeuftId, setNeuLaeuftId] = useState<string | null>(null);
+
+  async function kampagneErzeugen() {
+    setKampLaeuft(true);
+    const ok = await aktion({
+      aktion: "kampagne-erzeugen",
+      start: planStart,
+      schritt: planSchritt,
+      anzahl: kampAnzahl,
+      plattform,
+      thema,
+    });
+    setKampLaeuft(false);
+    if (ok) {
+      // Zum Monat des Startdatums springen, damit man den Plan gleich sieht.
+      const d = new Date(planStart + "T00:00:00");
+      setKalDatum(new Date(d.getFullYear(), d.getMonth(), 1));
+    }
+  }
+
+  async function tagErzeugen(datum: string) {
+    setKampLaeuft(true);
+    await aktion({ aktion: "kampagne-erzeugen", start: datum, schritt: 1, anzahl: 1, plattform, thema });
+    setKampLaeuft(false);
+  }
+
+  async function neuGenerieren(id: string) {
+    setNeuLaeuftId(id);
+    await aktion({ aktion: "neu-generieren", id });
+    setNeuLaeuftId(null);
+  }
 
   async function bildHochladen(id: string, e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -192,7 +226,7 @@ export default function MarketingPage() {
 
   // Zellen für das Monatsraster: Leerfelder vor dem 1., dann alle Tage mit
   // den auf diesen Tag geplanten Beiträgen.
-  const kalenderZellen: ({ tag: number; posts: Post[] } | null)[] = [];
+  const kalenderZellen: ({ tag: number; iso: string; posts: Post[] } | null)[] = [];
   {
     const jahr = kalDatum.getFullYear();
     const monat = kalDatum.getMonth();
@@ -201,9 +235,11 @@ export default function MarketingPage() {
     for (let i = 0; i < ersterWochentag; i++) kalenderZellen.push(null);
     for (let t = 1; t <= tageImMonat; t++) {
       const iso = isoDatum(new Date(jahr, monat, t));
-      kalenderZellen.push({ tag: t, posts: posts.filter((p) => p.geplant_am === iso) });
+      kalenderZellen.push({ tag: t, iso, posts: posts.filter((p) => p.geplant_am === iso) });
     }
   }
+  const heuteIso = isoDatum(new Date());
+  const modalPosts = tagModal ? posts.filter((p) => p.geplant_am === tagModal) : [];
 
   return (
     <DashboardShell>
@@ -258,44 +294,70 @@ export default function MarketingPage() {
             </button>
           </div>
 
-          {/* Automatisch verteilen */}
-          <div className="flex flex-wrap items-end gap-2 mb-2 text-sm">
-            <label className="flex flex-col gap-1">
-              <span className="text-foreground/60 text-xs">Ab</span>
-              <input
-                type="date"
-                value={planStart}
-                onChange={(e) => setPlanStart(e.target.value)}
-                className="rounded-lg border border-border bg-page-bg px-3 py-1.5"
-              />
-            </label>
-            <label className="flex flex-col gap-1">
-              <span className="text-foreground/60 text-xs">Rhythmus</span>
-              <select
-                value={planSchritt}
-                onChange={(e) => setPlanSchritt(parseInt(e.target.value, 10))}
-                className="rounded-lg border border-border bg-page-bg px-3 py-1.5"
+          {/* Kampagne mit KI erzeugen */}
+          <div className="rounded-xl border border-border bg-page-bg p-3 mb-4">
+            <p className="text-sm font-medium mb-2">🤖 Kampagne mit KI erzeugen</p>
+            <div className="flex flex-wrap items-end gap-2 text-sm">
+              <label className="flex flex-col gap-1">
+                <span className="text-foreground/60 text-xs">Ab</span>
+                <input
+                  type="date"
+                  value={planStart}
+                  onChange={(e) => setPlanStart(e.target.value)}
+                  className="rounded-lg border border-border bg-background px-3 py-1.5"
+                />
+              </label>
+              <label className="flex flex-col gap-1">
+                <span className="text-foreground/60 text-xs">Anzahl</span>
+                <input
+                  type="number"
+                  min={1}
+                  max={31}
+                  value={kampAnzahl}
+                  onChange={(e) => setKampAnzahl(Math.min(Math.max(parseInt(e.target.value, 10) || 1, 1), 31))}
+                  className="w-20 rounded-lg border border-border bg-background px-3 py-1.5"
+                />
+              </label>
+              <label className="flex flex-col gap-1">
+                <span className="text-foreground/60 text-xs">Rhythmus</span>
+                <select
+                  value={planSchritt}
+                  onChange={(e) => setPlanSchritt(parseInt(e.target.value, 10))}
+                  className="rounded-lg border border-border bg-background px-3 py-1.5"
+                >
+                  <option value={1}>jeden Tag</option>
+                  <option value={2}>jeden 2. Tag</option>
+                  <option value={3}>jeden 3. Tag</option>
+                  <option value={7}>jede Woche</option>
+                </select>
+              </label>
+            </div>
+            <div className="flex flex-wrap items-center gap-2 mt-2">
+              {(["beide", "facebook", "instagram"] as const).map((p) => (
+                <button
+                  key={p}
+                  onClick={() => setPlattform(p)}
+                  className={`rounded-full border px-3 py-1 text-xs transition active:scale-95 ${
+                    plattform === p ? "border-blue-500 text-blue-500 font-medium" : "border-border text-foreground/60"
+                  }`}
+                >
+                  {PLATTFORM_LABEL[p]}
+                </button>
+              ))}
+              <button
+                onClick={kampagneErzeugen}
+                disabled={kampLaeuft}
+                className="ml-auto rounded-full bg-gradient-to-r from-violet-600 to-sky-400 px-4 py-2 text-xs font-semibold text-white transition active:scale-95 disabled:opacity-60"
               >
-                <option value={1}>jeden Tag</option>
-                <option value={2}>jeden 2. Tag</option>
-                <option value={3}>jeden 3. Tag</option>
-                <option value={7}>jede Woche</option>
-              </select>
-            </label>
-            <button
-              onClick={() => {
-                if (confirm("Alle freigegebenen Beiträge automatisch auf Tage verteilen?")) {
-                  aktion({ aktion: "plan-verteilen", start: planStart, schritt: planSchritt });
-                }
-              }}
-              className="rounded-full bg-blue-600 px-4 py-2 text-xs font-semibold text-white"
-            >
-              Freigegebene verteilen
-            </button>
+                {kampLaeuft ? "KI plant…" : "📅 Kampagne erzeugen"}
+              </button>
+            </div>
+            <p className="text-[11px] text-foreground/40 mt-2">
+              Die KI schreibt {kampAnzahl} Beiträge (Thema oben eintragen) und legt sie ab{" "}
+              {new Date(planStart + "T00:00:00").toLocaleDateString("de-DE")} im gewählten Rhythmus auf die Kalendertage.
+              Danach auf einen Tag klicken zum Bearbeiten. Automatisch posten kommt mit der Meta-Anbindung.
+            </p>
           </div>
-          <p className="text-[11px] text-foreground/40 mb-4">
-            Verteilt alle „freigegebenen" Beiträge der Reihe nach. Automatisch posten geht erst mit der Meta-Anbindung — bis dahin siehst du hier den Plan und postest per Meta Business Suite.
-          </p>
 
           {/* Monatsnavigation */}
           <div className="flex items-center justify-between mb-2">
@@ -326,29 +388,33 @@ export default function MarketingPage() {
           </div>
           {/* Tage */}
           <div className="grid grid-cols-7 gap-1">
-            {kalenderZellen.map((zelle, i) => (
-              <div
-                key={i}
-                className={`min-h-[64px] rounded-lg border p-1 ${zelle ? "border-border" : "border-transparent"}`}
-              >
-                {zelle && (
-                  <>
-                    <div className="text-[11px] text-foreground/50">{zelle.tag}</div>
-                    <div className="flex flex-col gap-0.5 mt-0.5">
-                      {zelle.posts.map((p) => (
-                        <div
-                          key={p.id}
-                          title={p.inhalt}
-                          className="truncate rounded bg-blue-500/15 px-1 py-0.5 text-[10px] text-blue-600 dark:text-blue-300"
-                        >
-                          {bildText(p)}
-                        </div>
-                      ))}
-                    </div>
-                  </>
-                )}
-              </div>
-            ))}
+            {kalenderZellen.map((zelle, i) =>
+              zelle ? (
+                <button
+                  key={i}
+                  onClick={() => setTagModal(zelle.iso)}
+                  className={`min-h-[64px] rounded-lg border p-1 text-left transition hover:border-blue-400 hover:bg-blue-500/5 active:scale-95 ${
+                    zelle.iso === heuteIso ? "border-blue-500" : "border-border"
+                  }`}
+                >
+                  <div className={`text-[11px] ${zelle.iso === heuteIso ? "text-blue-500 font-semibold" : "text-foreground/50"}`}>
+                    {zelle.tag}
+                  </div>
+                  <div className="flex flex-col gap-0.5 mt-0.5">
+                    {zelle.posts.map((p) => (
+                      <div
+                        key={p.id}
+                        className="truncate rounded bg-blue-500/15 px-1 py-0.5 text-[10px] text-blue-600 dark:text-blue-300"
+                      >
+                        {bildText(p)}
+                      </div>
+                    ))}
+                  </div>
+                </button>
+              ) : (
+                <div key={i} className="min-h-[64px] rounded-lg border border-transparent" />
+              )
+            )}
           </div>
         </section>
       ) : (
@@ -587,6 +653,128 @@ export default function MarketingPage() {
             </section>
           );
         })}
+
+      {/* Tag-Pop-up */}
+      {tagModal && (
+        <div
+          className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 p-4 uv-fade"
+          onClick={() => setTagModal(null)}
+        >
+          <div
+            className="uv-pop w-full max-w-lg max-h-[85vh] overflow-y-auto rounded-2xl border border-border bg-background p-5 shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="font-semibold">
+                {new Date(tagModal + "T00:00:00").toLocaleDateString("de-DE", {
+                  weekday: "long",
+                  day: "numeric",
+                  month: "long",
+                })}
+              </h3>
+              <button
+                onClick={() => setTagModal(null)}
+                className="rounded-full px-2 py-1 text-foreground/60 hover:bg-surface transition active:scale-90"
+                aria-label="Schließen"
+              >
+                ✕
+              </button>
+            </div>
+
+            {modalPosts.length === 0 ? (
+              <div className="text-center py-6">
+                <p className="text-sm text-foreground/60 mb-3">Für diesen Tag ist noch kein Beitrag geplant.</p>
+                <button
+                  onClick={() => tagErzeugen(tagModal)}
+                  disabled={kampLaeuft}
+                  className="rounded-full bg-blue-600 px-5 py-2 text-sm font-semibold text-white transition active:scale-95 disabled:opacity-60"
+                >
+                  {kampLaeuft ? "KI schreibt…" : "✨ Beitrag für diesen Tag erzeugen"}
+                </button>
+              </div>
+            ) : (
+              <div className="flex flex-col gap-4">
+                {modalPosts.map((p) => (
+                  <div key={p.id} className="rounded-xl border border-border p-3 uv-fade">
+                    {bearbeiteId === p.id ? (
+                      <>
+                        <textarea
+                          value={bearbeiteText}
+                          onChange={(e) => setBearbeiteText(e.target.value)}
+                          rows={6}
+                          className="w-full rounded-xl border border-border bg-page-bg px-3 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-blue-500 resize-y"
+                        />
+                        <div className="flex gap-2 mt-2">
+                          <button
+                            onClick={async () => {
+                              if (await aktion({ aktion: "speichern", id: p.id, inhalt: bearbeiteText })) setBearbeiteId(null);
+                            }}
+                            className="rounded-full bg-blue-600 px-4 py-1.5 text-xs font-semibold text-white transition active:scale-95"
+                          >
+                            Speichern
+                          </button>
+                          <button
+                            onClick={() => setBearbeiteId(null)}
+                            className="rounded-full border border-border px-4 py-1.5 text-xs transition active:scale-95"
+                          >
+                            Abbrechen
+                          </button>
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <p className="text-sm whitespace-pre-wrap">{p.inhalt}</p>
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={
+                            p.bild_url ||
+                            `/api/beitragsbild?text=${encodeURIComponent(bildText(p))}&format=quadrat&motiv=${motiv}${appAn ? "&app=1" : ""}`
+                          }
+                          alt="Bild-Vorschau"
+                          className="mt-2 w-full max-w-[220px] rounded-lg border border-border"
+                        />
+                        <div className="flex flex-wrap gap-2 mt-3">
+                          <button
+                            onClick={() => {
+                              setBearbeiteId(p.id);
+                              setBearbeiteText(p.inhalt);
+                            }}
+                            className="rounded-full border border-border px-4 py-1.5 text-xs transition active:scale-95"
+                          >
+                            ✏️ Bearbeiten
+                          </button>
+                          <button
+                            onClick={() => neuGenerieren(p.id)}
+                            disabled={neuLaeuftId === p.id}
+                            className="rounded-full border border-border px-4 py-1.5 text-xs transition active:scale-95 disabled:opacity-60"
+                          >
+                            {neuLaeuftId === p.id ? "KI schreibt…" : "🔄 Neu generieren"}
+                          </button>
+                          <button
+                            onClick={() => {
+                              if (confirm("Diesen Beitrag wirklich löschen?")) aktion({ aktion: "loeschen", id: p.id });
+                            }}
+                            className="rounded-full border border-border px-4 py-1.5 text-xs text-red-500 transition active:scale-95"
+                          >
+                            🗑 Löschen
+                          </button>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                ))}
+                <button
+                  onClick={() => tagErzeugen(tagModal)}
+                  disabled={kampLaeuft}
+                  className="self-start rounded-full border border-border px-4 py-1.5 text-xs transition active:scale-95 disabled:opacity-60"
+                >
+                  {kampLaeuft ? "KI schreibt…" : "+ Weiteren Beitrag für diesen Tag"}
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </DashboardShell>
   );
 }

@@ -104,3 +104,15 @@ button:not(:disabled):active {
 h1, h2, h3, h4 {
   font-family: var(--font-body), system-ui, sans-serif;
 }
+
+/* Animationen für den Redaktionsplan (Pop-up + Aktionen) */
+@keyframes uvFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes uvPopIn {
+  from { opacity: 0; transform: scale(0.96) translateY(10px); }
+  to { opacity: 1; transform: none; }
+}
+.uv-fade { animation: uvFadeIn 0.18s ease-out; }
+.uv-pop { animation: uvPopIn 0.22s cubic-bezier(0.16, 1, 0.3, 1); }

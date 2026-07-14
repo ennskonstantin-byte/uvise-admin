@@ -64,6 +64,54 @@ So klingt der Ton (nur als Stil-Beispiel, NICHT wörtlich übernehmen):
 - "Zettelwirtschaft war gestern. Unterschrift aufs Handy — fertig."
 - "Fristen im Kopf behalten? Überlass das Kopfrechnen lieber uns."`;
 
+type Entwurf = { inhalt: string; bild_titel: string | null };
+
+// Erzeugt über Claude `anzahl` Beitragsentwürfe (jeweils Text + kurzer Bild-Titel).
+async function erzeugeEntwuerfe(
+  apiKey: string,
+  plattform: string,
+  thema: string,
+  anzahl: number
+): Promise<Entwurf[]> {
+  const client = new Anthropic({ apiKey });
+  const message = await client.messages.create({
+    model: "claude-haiku-4-5",
+    max_tokens: Math.min(1500 + anzahl * 350, 20000),
+    system: SYSTEM_PROMPT,
+    messages: [
+      {
+        role: "user",
+        content: `Schreibe ${anzahl} unterschiedliche Beitragsentwürfe für ${plattform === "beide" ? "Facebook und Instagram" : plattform}. Thema: ${thema}.
+Antworte NUR mit einem JSON-Array aus Objekten, ohne Erklärung und ohne Markdown-Codeblock. Jedes Objekt hat genau zwei Felder:
+{"beitrag": "<der komplette Beitragstext inkl. Hashtags>", "titel": "<sehr kurzer, knackiger Bild-Titel: max. 6 Wörter, ca. 40 Zeichen, ohne Hashtags, ohne Emojis, bringt den Kern auf den Punkt>"}`,
+      },
+    ],
+  });
+  const antwort = message.content
+    .filter((block): block is Anthropic.TextBlock => block.type === "text")
+    .map((block) => block.text)
+    .join("\n");
+  try {
+    const roh = antwort.replace(/^```(json)?/m, "").replace(/```$/m, "").trim();
+    const parsed = JSON.parse(roh);
+    if (Array.isArray(parsed)) {
+      return parsed
+        .map((e): Entwurf | null => {
+          if (e && typeof e === "object" && typeof e.beitrag === "string" && e.beitrag.trim()) {
+            const titel = typeof e.titel === "string" && e.titel.trim() ? e.titel.trim().slice(0, 80) : null;
+            return { inhalt: e.beitrag.trim(), bild_titel: titel };
+          }
+          if (typeof e === "string" && e.trim()) return { inhalt: e.trim(), bild_titel: null };
+          return null;
+        })
+        .filter((e): e is Entwurf => e !== null);
+    }
+  } catch {
+    // Fällt unten auf den Roh-Text zurück.
+  }
+  return antwort.trim() ? [{ inhalt: antwort.trim(), bild_titel: null }] : [];
+}
+
 export async function POST(request: Request) {
   const auth = await betreiberPruefen(request);
   if (auth instanceof NextResponse) return auth;
@@ -71,79 +119,99 @@ export async function POST(request: Request) {
 
   const body = await request.json();
 
+  const KEIN_KEY = "Der KI-Textgenerator ist noch nicht eingerichtet. API-Key auf console.anthropic.com erzeugen und als ANTHROPIC_API_KEY bei Vercel eintragen.";
+
   if (body.aktion === "generieren") {
     const apiKey = process.env.ANTHROPIC_API_KEY;
-    if (!apiKey) {
-      return NextResponse.json(
-        {
-          error:
-            "Der KI-Textgenerator ist noch nicht eingerichtet. API-Key auf console.anthropic.com erzeugen und als ANTHROPIC_API_KEY bei Vercel eintragen.",
-        },
-        { status: 503 }
-      );
-    }
+    if (!apiKey) return NextResponse.json({ error: KEIN_KEY }, { status: 503 });
     const thema = typeof body.thema === "string" && body.thema.trim() ? body.thema.trim().slice(0, 500) : "freies Thema rund um Unterweisungen im Betrieb";
     const plattform = ["facebook", "instagram", "beide"].includes(body.plattform) ? body.plattform : "beide";
     const anzahl = Math.min(Math.max(parseInt(body.anzahl, 10) || 3, 1), 5);
 
-    let antwort = "";
-    try {
-      const client = new Anthropic({ apiKey });
-      const message = await client.messages.create({
-        model: "claude-haiku-4-5",
-        max_tokens: 2048,
-        system: SYSTEM_PROMPT,
-        messages: [
-          {
-            role: "user",
-            content: `Schreibe ${anzahl} unterschiedliche Beitragsentwürfe für ${plattform === "beide" ? "Facebook und Instagram" : plattform}. Thema: ${thema}.
-Antworte NUR mit einem JSON-Array aus Objekten, ohne Erklärung und ohne Markdown-Codeblock. Jedes Objekt hat genau zwei Felder:
-{"beitrag": "<der komplette Beitragstext inkl. Hashtags>", "titel": "<sehr kurzer, knackiger Bild-Titel: max. 6 Wörter, ca. 40 Zeichen, ohne Hashtags, ohne Emojis, bringt den Kern auf den Punkt>"}`,
-          },
-        ],
-      });
-      antwort = message.content
-        .filter((block): block is Anthropic.TextBlock => block.type === "text")
-        .map((block) => block.text)
-        .join("\n");
-    } catch (e) {
-      return NextResponse.json({ error: `KI-Fehler: ${(e as Error).message.slice(0, 300)}` }, { status: 502 });
-    }
-
-    type Entwurf = { inhalt: string; bild_titel: string | null };
     let entwuerfe: Entwurf[];
     try {
-      // Antwort kann in ```json ... ``` eingepackt sein — herausschälen.
-      const roh = antwort.replace(/^```(json)?/m, "").replace(/```$/m, "").trim();
-      const parsed = JSON.parse(roh);
-      entwuerfe = Array.isArray(parsed)
-        ? parsed
-            .map((e): Entwurf | null => {
-              // Neues Format: { beitrag, titel }
-              if (e && typeof e === "object" && typeof e.beitrag === "string" && e.beitrag.trim()) {
-                const titel = typeof e.titel === "string" && e.titel.trim() ? e.titel.trim().slice(0, 80) : null;
-                return { inhalt: e.beitrag.trim(), bild_titel: titel };
-              }
-              // Zur Sicherheit auch altes Format (reiner String) akzeptieren.
-              if (typeof e === "string" && e.trim()) return { inhalt: e.trim(), bild_titel: null };
-              return null;
-            })
-            .filter((e): e is Entwurf => e !== null)
-        : [];
-    } catch {
-      // Zur Not die ganze Antwort als einen Entwurf übernehmen.
-      entwuerfe = antwort.trim() ? [{ inhalt: antwort.trim(), bild_titel: null }] : [];
+      entwuerfe = await erzeugeEntwuerfe(apiKey, plattform, thema, anzahl);
+    } catch (e) {
+      return NextResponse.json({ error: `KI-Fehler: ${(e as Error).message.slice(0, 300)}` }, { status: 502 });
     }
     if (entwuerfe.length === 0) {
       return NextResponse.json({ error: "Die KI hat keine verwertbaren Entwürfe geliefert — bitte erneut versuchen." }, { status: 502 });
     }
-
     const { data, error } = await db
       .from("social_posts")
       .insert(entwuerfe.map((e) => ({ plattform, thema, inhalt: e.inhalt, bild_titel: e.bild_titel, status: "entwurf" })))
       .select();
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
     return NextResponse.json({ posts: data });
+  }
+
+  if (body.aktion === "kampagne-erzeugen") {
+    const apiKey = process.env.ANTHROPIC_API_KEY;
+    if (!apiKey) return NextResponse.json({ error: KEIN_KEY }, { status: 503 });
+    const start = typeof body.start === "string" && /^\d{4}-\d{2}-\d{2}$/.test(body.start) ? body.start : null;
+    const schritt = Math.min(Math.max(parseInt(body.schritt, 10) || 1, 1), 30);
+    const anzahl = Math.min(Math.max(parseInt(body.anzahl, 10) || 7, 1), 31);
+    const plattform = ["facebook", "instagram", "beide"].includes(body.plattform) ? body.plattform : "beide";
+    const thema = typeof body.thema === "string" && body.thema.trim() ? body.thema.trim().slice(0, 500) : "freies Thema rund um Unterweisungen im Betrieb";
+    if (!start) return NextResponse.json({ error: "Ungültiges Startdatum." }, { status: 400 });
+
+    let entwuerfe: Entwurf[];
+    try {
+      entwuerfe = await erzeugeEntwuerfe(apiKey, plattform, thema, anzahl);
+    } catch (e) {
+      return NextResponse.json({ error: `KI-Fehler: ${(e as Error).message.slice(0, 300)}` }, { status: 502 });
+    }
+    if (entwuerfe.length === 0) {
+      return NextResponse.json({ error: "Die KI hat keine verwertbaren Entwürfe geliefert — bitte erneut versuchen." }, { status: 502 });
+    }
+    const rows = entwuerfe.map((e, i) => {
+      const d = new Date(start + "T00:00:00Z");
+      d.setUTCDate(d.getUTCDate() + i * schritt);
+      return {
+        plattform,
+        thema,
+        inhalt: e.inhalt,
+        bild_titel: e.bild_titel,
+        status: "freigegeben",
+        geplant_am: d.toISOString().slice(0, 10),
+      };
+    });
+    const { data, error } = await db.from("social_posts").insert(rows).select();
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ posts: data });
+  }
+
+  if (body.aktion === "neu-generieren") {
+    const apiKey = process.env.ANTHROPIC_API_KEY;
+    if (!apiKey) return NextResponse.json({ error: KEIN_KEY }, { status: 503 });
+    if (!body.id) return NextResponse.json({ error: "Ungültige Anfrage." }, { status: 400 });
+    const { data: vorhanden, error: e0 } = await db
+      .from("social_posts")
+      .select("plattform, thema")
+      .eq("id", body.id)
+      .single();
+    if (e0 || !vorhanden) return NextResponse.json({ error: "Beitrag nicht gefunden." }, { status: 404 });
+
+    let entwuerfe: Entwurf[];
+    try {
+      entwuerfe = await erzeugeEntwuerfe(
+        apiKey,
+        vorhanden.plattform,
+        vorhanden.thema || "freies Thema rund um Unterweisungen im Betrieb",
+        1
+      );
+    } catch (e) {
+      return NextResponse.json({ error: `KI-Fehler: ${(e as Error).message.slice(0, 300)}` }, { status: 502 });
+    }
+    if (entwuerfe.length === 0) {
+      return NextResponse.json({ error: "Die KI hat keinen Text geliefert — bitte erneut versuchen." }, { status: 502 });
+    }
+    const { error } = await db
+      .from("social_posts")
+      .update({ inhalt: entwuerfe[0].inhalt, bild_titel: entwuerfe[0].bild_titel })
+      .eq("id", body.id);
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ ok: true });
   }
 
   if (body.aktion === "speichern") {
