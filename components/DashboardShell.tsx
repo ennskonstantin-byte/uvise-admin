@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { Menu, X } from "lucide-react";
 import { Sidebar } from "@/components/Sidebar";
 import { LogoMark } from "@/components/Logo";
+import { ChatWidget } from "@/components/marketing/ChatWidget";
 import { useAppData } from "@/lib/store";
 
 export function DashboardShell({ children }: { children: React.ReactNode }) {
@@ -67,6 +68,9 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
       <main className="flex-1 min-w-0 overflow-x-hidden px-4 sm:px-6 lg:px-10 py-6 lg:py-8 pt-20 lg:pt-8 max-w-6xl">
         {children}
       </main>
+
+      {/* Schwebender Hilfe-Chat, auch im eingeloggten Bereich */}
+      <ChatWidget />
     </div>
   );
 }
