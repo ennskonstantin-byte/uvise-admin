@@ -1,8 +1,8 @@
-// Login-Adressen, die die Betreiber-Ansichten (Besucherstatistik, Marketing)
-// sehen dürfen — das ist bewusst KEINE Kundenfunktion, sondern nur für den
-// uVise-Betreiber selbst. Die Test-Chef-Adresse ist mit drin, damit sich die
-// Ansicht auch über das Testkonto prüfen lässt; vor dem echten Start entfernen.
-export const OWNER_EMAILS = ["ennskonstantin@gmail.com", "chef.nord@example.com"];
+// Login-Adressen, die die Betreiber-Ansichten (Überwachung, Statistik,
+// Marketing, Partner) sehen und deren geschützte Server-Routen aufrufen
+// dürfen — das ist bewusst KEINE Kundenfunktion, sondern nur für den
+// uVise-Betreiber. Aktuell exakt eine Adresse: nur dieser Login hat Zugriff.
+export const OWNER_EMAILS = ["info@ennsmedia.com"];
 
 export function isOwnerEmail(email: string | null | undefined): boolean {
   return !!email && OWNER_EMAILS.includes(email.toLowerCase());
