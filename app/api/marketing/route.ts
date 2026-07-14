@@ -145,5 +145,36 @@ export async function POST(request: Request) {
     return NextResponse.json({ ok: true });
   }
 
+  if (body.aktion === "bild-hochladen") {
+    const dataUrl = typeof body.bild === "string" ? body.bild : "";
+    if (!body.id || !dataUrl.startsWith("data:image/")) {
+      return NextResponse.json({ error: "Ungültiges Bild." }, { status: 400 });
+    }
+    const match = dataUrl.match(/^data:(image\/[a-zA-Z0-9.+-]+);base64,(.+)$/);
+    if (!match) return NextResponse.json({ error: "Ungültiges Bildformat." }, { status: 400 });
+    const contentType = match[1];
+    const buffer = Buffer.from(match[2], "base64");
+    if (buffer.length > 6 * 1024 * 1024) {
+      return NextResponse.json({ error: "Bild zu groß (max. 6 MB)." }, { status: 413 });
+    }
+    const ext = (contentType.split("/")[1] || "jpg").replace("jpeg", "jpg");
+    const pfad = `${body.id}-${Date.now()}.${ext}`;
+    const { error: upErr } = await db.storage
+      .from("marketing-bilder")
+      .upload(pfad, buffer, { contentType, upsert: true });
+    if (upErr) return NextResponse.json({ error: upErr.message }, { status: 500 });
+    const { data: pub } = db.storage.from("marketing-bilder").getPublicUrl(pfad);
+    const { error } = await db.from("social_posts").update({ bild_url: pub.publicUrl }).eq("id", body.id);
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ ok: true, bild_url: pub.publicUrl });
+  }
+
+  if (body.aktion === "bild-entfernen") {
+    if (!body.id) return NextResponse.json({ error: "Ungültige Anfrage." }, { status: 400 });
+    const { error } = await db.from("social_posts").update({ bild_url: null }).eq("id", body.id);
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ ok: true });
+  }
+
   return NextResponse.json({ error: "Unbekannte Aktion." }, { status: 400 });
 }

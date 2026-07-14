@@ -11,7 +11,32 @@ type Post = {
   thema: string;
   inhalt: string;
   status: "entwurf" | "freigegeben" | "veroeffentlicht" | "verworfen";
+  bild_url?: string | null;
 };
+
+// Verkleinert ein hochgeladenes Bild im Browser auf max. 1280px (JPEG),
+// damit der Upload klein und schnell bleibt.
+async function bildVerkleinern(file: File): Promise<string> {
+  const bild = await new Promise<HTMLImageElement>((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => resolve(img);
+    img.onerror = () => reject(new Error("Bild konnte nicht geladen werden."));
+    img.src = URL.createObjectURL(file);
+  });
+  const max = 1280;
+  let { width, height } = bild;
+  if (width > max || height > max) {
+    const f = max / Math.max(width, height);
+    width = Math.round(width * f);
+    height = Math.round(height * f);
+  }
+  const canvas = document.createElement("canvas");
+  canvas.width = width;
+  canvas.height = height;
+  canvas.getContext("2d")?.drawImage(bild, 0, 0, width, height);
+  URL.revokeObjectURL(bild.src);
+  return canvas.toDataURL("image/jpeg", 0.85);
+}
 
 const STATUS_LABEL: Record<Post["status"], string> = {
   entwurf: "Entwurf",
@@ -44,6 +69,22 @@ export default function MarketingPage() {
   const [bearbeiteId, setBearbeiteId] = useState<string | null>(null);
   const [bearbeiteText, setBearbeiteText] = useState("");
   const [bildId, setBildId] = useState<string | null>(null);
+  const [ladeBildId, setLadeBildId] = useState<string | null>(null);
+
+  async function bildHochladen(id: string, e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+    setLadeBildId(id);
+    try {
+      const dataUrl = await bildVerkleinern(file);
+      await aktion({ aktion: "bild-hochladen", id, bild: dataUrl });
+    } catch {
+      setFehler("Bild konnte nicht verarbeitet werden — bitte ein anderes probieren.");
+    } finally {
+      setLadeBildId(null);
+    }
+  }
 
   async function token(): Promise<string | null> {
     const {
@@ -249,35 +290,74 @@ export default function MarketingPage() {
                             onClick={() => setBildId(bildId === p.id ? null : p.id)}
                             className="rounded-full border border-border px-4 py-1.5 text-xs"
                           >
-                            🖼️ Marken-Bild
+                            🖼️ Bild{p.bild_url ? " ✓" : ""}
                           </button>
                         </div>
                         {bildId === p.id && (
-                          <div className="mt-3">
-                            <img
-                              src={`/api/beitragsbild?text=${encodeURIComponent(kurzText(p.inhalt))}&format=quadrat`}
-                              alt="Vorschau des Beitragsbilds"
-                              className="w-full max-w-[280px] rounded-xl border border-border"
-                            />
-                            <div className="flex flex-wrap gap-2 mt-2">
-                              <a
-                                href={`/api/beitragsbild?text=${encodeURIComponent(kurzText(p.inhalt))}&format=quadrat`}
-                                download="uvise-instagram.png"
-                                className="rounded-full bg-blue-600 px-4 py-1.5 text-xs font-semibold text-white"
-                              >
-                                ⬇︎ Instagram-Bild
-                              </a>
-                              <a
-                                href={`/api/beitragsbild?text=${encodeURIComponent(kurzText(p.inhalt))}&format=quer`}
-                                download="uvise-facebook.png"
-                                className="rounded-full border border-border px-4 py-1.5 text-xs"
-                              >
-                                ⬇︎ Facebook-Bild
-                              </a>
+                          <div className="mt-3 flex flex-col gap-4 rounded-xl border border-border bg-page-bg p-3">
+                            {/* Gewähltes (hochgeladenes) Bild */}
+                            {p.bild_url && (
+                              <div>
+                                <p className="text-xs font-medium mb-1">Gewähltes Bild für diesen Beitrag:</p>
+                                {/* eslint-disable-next-line @next/next/no-img-element */}
+                                <img
+                                  src={p.bild_url}
+                                  alt="Hochgeladenes Beitragsbild"
+                                  className="w-full max-w-[280px] rounded-xl border border-border"
+                                />
+                                <button
+                                  onClick={() => aktion({ aktion: "bild-entfernen", id: p.id })}
+                                  className="mt-2 rounded-full border border-border px-4 py-1.5 text-xs text-foreground/60"
+                                >
+                                  Bild entfernen
+                                </button>
+                              </div>
+                            )}
+
+                            {/* Eigenes Bild hochladen */}
+                            <div>
+                              <p className="text-xs font-medium mb-1">Eigenes Bild hochladen (z. B. aus Higgsfield):</p>
+                              <label className="inline-block cursor-pointer rounded-full bg-blue-600 px-4 py-1.5 text-xs font-semibold text-white">
+                                {ladeBildId === p.id ? "Lädt hoch…" : "📤 Bild wählen"}
+                                <input
+                                  type="file"
+                                  accept="image/*"
+                                  className="hidden"
+                                  disabled={ladeBildId === p.id}
+                                  onChange={(e) => bildHochladen(p.id, e)}
+                                />
+                              </label>
                             </div>
-                            <p className="text-[11px] text-foreground/40 mt-1">
-                              Automatisch aus dem Text erzeugt, in deinen uVise-Farben — kostenlos.
-                            </p>
+
+                            {/* Automatische Marken-Vorlage */}
+                            <div>
+                              <p className="text-xs font-medium mb-1">Oder automatisch eine Marken-Vorlage:</p>
+                              {/* eslint-disable-next-line @next/next/no-img-element */}
+                              <img
+                                src={`/api/beitragsbild?text=${encodeURIComponent(kurzText(p.inhalt))}&format=quadrat`}
+                                alt="Vorschau der Marken-Vorlage"
+                                className="w-full max-w-[280px] rounded-xl border border-border"
+                              />
+                              <div className="flex flex-wrap gap-2 mt-2">
+                                <a
+                                  href={`/api/beitragsbild?text=${encodeURIComponent(kurzText(p.inhalt))}&format=quadrat`}
+                                  download="uvise-instagram.png"
+                                  className="rounded-full border border-border px-4 py-1.5 text-xs"
+                                >
+                                  ⬇︎ Instagram (quadrat)
+                                </a>
+                                <a
+                                  href={`/api/beitragsbild?text=${encodeURIComponent(kurzText(p.inhalt))}&format=quer`}
+                                  download="uvise-facebook.png"
+                                  className="rounded-full border border-border px-4 py-1.5 text-xs"
+                                >
+                                  ⬇︎ Facebook (quer)
+                                </a>
+                              </div>
+                              <p className="text-[11px] text-foreground/40 mt-1">
+                                Kostenlos, in deinen uVise-Farben aus dem Text erzeugt.
+                              </p>
+                            </div>
                           </div>
                         )}
                       </>
