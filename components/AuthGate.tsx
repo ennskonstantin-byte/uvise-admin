@@ -121,7 +121,9 @@ function AuthForm() {
           className="w-full max-w-sm rounded-[2rem] bg-background border border-border/60 shadow-sm p-8"
         >
           <div className="flex justify-center mb-3">
-            <LogoMark size={52} />
+            <Link href="/" aria-label="Zur Startseite">
+              <LogoMark size={52} />
+            </Link>
           </div>
           <h1 className="text-xl font-semibold text-center mb-1">Passwort vergessen</h1>
           <p className="text-sm text-foreground/60 text-center mb-6">
@@ -177,7 +179,9 @@ function AuthForm() {
         className="w-full max-w-sm rounded-[2rem] bg-background border border-border/60 shadow-sm p-8"
       >
         <div className="flex justify-center mb-3">
-          <LogoMark size={52} />
+          <Link href="/" aria-label="Zur Startseite">
+            <LogoMark size={52} />
+          </Link>
         </div>
         <h1 className="text-xl font-semibold text-center mb-1">uVise Admin</h1>
         <p className="text-sm text-foreground/60 text-center mb-1">
@@ -376,7 +380,9 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
       <div className="min-h-screen flex items-center justify-center bg-page-bg px-4">
         <div className="w-full max-w-sm rounded-[2rem] bg-background border border-border/60 shadow-sm p-8 text-center">
           <div className="flex justify-center mb-3">
-            <LogoMark size={52} />
+            <Link href="/" aria-label="Zur Startseite">
+              <LogoMark size={52} />
+            </Link>
           </div>
           <h1 className="text-xl font-semibold mb-2">Dies ist der Chef-Bereich</h1>
           <p className="text-sm text-foreground/60 mb-6">

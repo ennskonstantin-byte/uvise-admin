@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import { LogoMark } from "@/components/Logo";
 
@@ -38,7 +39,9 @@ export default function PasswortZuruecksetzenPage() {
     <div className="min-h-screen flex items-center justify-center bg-page-bg px-4">
       <div className="w-full max-w-sm rounded-[2rem] bg-background border border-border/60 shadow-sm p-8">
         <div className="flex justify-center mb-3">
-          <LogoMark size={52} />
+          <Link href="/" aria-label="Zur Startseite">
+            <LogoMark size={52} />
+          </Link>
         </div>
         <h1 className="text-xl font-semibold text-center mb-1">Neues Passwort</h1>
 

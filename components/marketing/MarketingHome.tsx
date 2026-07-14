@@ -217,10 +217,10 @@ export function MarketingHome() {
         }`}
       >
         <div className="flex items-center justify-between mb-8">
-          <span className="flex items-center gap-2">
+          <a href="#top" className="flex items-center gap-2">
             <LogoMark size={28} />
             <span className="font-semibold text-lg tracking-tight">uVise</span>
-          </span>
+          </a>
           <button
             onClick={() => setMenuOpen(false)}
             className="h-10 w-10 flex items-center justify-center rounded-full border border-border"
@@ -605,10 +605,10 @@ export function MarketingHome() {
 
       <footer className="border-t border-border/60">
         <div className="mx-auto max-w-6xl px-5 sm:px-8 py-10 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-2.5">
+          <a href="#top" className="flex items-center gap-2.5">
             <LogoMark size={26} />
             <span className="font-display text-sm font-semibold">uVise</span>
-          </div>
+          </a>
           <nav aria-label="Rechtliches" className="flex gap-5 text-xs text-foreground/60">
             <Link href="/kontakt" className="hover:text-foreground">Kontakt</Link>
             <a href={`mailto:${SUPPORT_EMAIL}?subject=uVise%20Support`} className="hover:text-foreground">Support</a>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Menu, X } from "lucide-react";
 import { Sidebar } from "@/components/Sidebar";
@@ -36,8 +37,10 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
         >
           <Menu size={22} />
         </button>
-        <LogoMark size={28} />
-        <span className="font-semibold text-sm truncate">{company?.name ?? "uVise"}</span>
+        <Link href="/dashboard" aria-label="Zum Dashboard" className="flex items-center gap-3 min-w-0">
+          <LogoMark size={28} />
+          <span className="font-semibold text-sm truncate">{company?.name ?? "uVise"}</span>
+        </Link>
       </header>
 
       {menuOffen && (

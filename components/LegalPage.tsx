@@ -5,10 +5,10 @@ export function LegalPage({ title, text }: { title: string; text: string }) {
   return (
     <div className="min-h-screen bg-page-bg px-4 py-10">
       <div className="mx-auto max-w-2xl">
-        <div className="flex items-center gap-3 mb-8">
+        <Link href="/" className="flex items-center gap-3 mb-8 w-fit">
           <LogoMark size={40} />
           <span className="text-lg font-semibold">uVise</span>
-        </div>
+        </Link>
 
         <div className="rounded-3xl bg-background border border-border p-6 sm:p-10">
           <h1 className="text-2xl font-semibold mb-6">{title}</h1>
