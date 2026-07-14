@@ -11,6 +11,7 @@ import { exportNachweiseCsv, exportQualifikationenCsv } from "@/lib/exportCsv";
 import { exportGesamtBackupZip } from "@/lib/exportZip";
 import { SUPPORT_EMAIL, CONTACT_EMAIL } from "@/lib/legal";
 import { PLANS } from "@/lib/types";
+import { supabase } from "@/lib/supabase";
 
 export default function EinstellungenPage() {
   const {
@@ -34,6 +35,33 @@ export default function EinstellungenPage() {
   const [sendingTestMail, setSendingTestMail] = useState(false);
   const [zippingBackup, setZippingBackup] = useState(false);
   const [startingCheckout, setStartingCheckout] = useState<string | null>(null);
+  const [deletingCompany, setDeletingCompany] = useState(false);
+
+  // DSGVO + Konsistenz zu den Apps: Firma & Konto endgültig löschbar.
+  // Zwei Sicherheitsabfragen, weil unwiderruflich und weitreichend.
+  async function handleDeleteCompany() {
+    const bestaetigt = window.confirm(
+      `„${company?.name ?? "Deine Firma"}" wird mit ALLEN Mitarbeitern, Unterweisungen, Nachweisen und Logins endgültig gelöscht. Das lässt sich nicht rückgängig machen.\n\nWirklich fortfahren?`,
+    );
+    if (!bestaetigt) return;
+    const wortlaut = window.prompt(
+      'Letzte Sicherheitsabfrage: Tippe LÖSCHEN (in Großbuchstaben), um die Firma endgültig zu löschen.',
+    );
+    if (wortlaut !== "LÖSCHEN") {
+      showToast("Löschung abgebrochen.");
+      return;
+    }
+    setDeletingCompany(true);
+    try {
+      const { error } = await supabase.rpc("delete_own_company_account");
+      if (error) throw error;
+      // Konto ist gelöscht — Abmelden darf keinen Fehler mehr werfen.
+      await supabase.auth.signOut().catch(() => {});
+    } catch {
+      setDeletingCompany(false);
+      showToast("Die Firma konnte nicht gelöscht werden. Bitte später erneut versuchen.");
+    }
+  }
 
   async function startCheckout(planName: string) {
     if (!session?.access_token) {
@@ -395,6 +423,23 @@ export default function EinstellungenPage() {
             gespeichert. Nach dem Klick auf &bdquo;Jetzt abonnieren&ldquo; geht es auf Stripes
             eigener, gesicherter Seite weiter.
           </p>
+        </section>
+
+        <section>
+          <h2 className="font-medium text-red-500">Firma &amp; Konto löschen</h2>
+          <p className="text-sm text-foreground/70 mt-1 mb-3 max-w-xl">
+            Löscht deine Firma mit allen Mitarbeitern, Unterweisungen, Nachweisen und Logins
+            endgültig. Diese Aktion kann nicht rückgängig gemacht werden.
+          </p>
+          <Card className="max-w-lg border-red-500/40">
+            <button
+              onClick={handleDeleteCompany}
+              disabled={deletingCompany}
+              className="w-full rounded-full border border-red-500 py-2.5 text-sm font-semibold text-red-500 hover:bg-red-500/10 disabled:opacity-50"
+            >
+              {deletingCompany ? "Wird gelöscht…" : "🗑 Firma & Konto endgültig löschen"}
+            </button>
+          </Card>
         </section>
       </div>
       <ToastView />
