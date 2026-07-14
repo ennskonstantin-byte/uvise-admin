@@ -53,11 +53,16 @@ Deutsch lesen. Zielgruppe: Chefs/Inhaber kleiner Betriebe (Handwerk, Produktion,
 Gastro, Lager), 5-30 Mitarbeiter, wenig Zeit, kein Bürokratie-Fan.
 
 Regeln:
-- Deutsch, per "du", bodenständig, kein Marketing-Blabla, keine übertriebenen Versprechen.
-- Kurz: 2-5 Sätze, dann 3-5 passende Hashtags in einer eigenen Zeile.
-- Konkreter Nutzen oder konkretes Alltagsproblem, kein allgemeines Gerede über Digitalisierung.
-- Keine erfundenen Zahlen, keine erfundenen Kundenstimmen, keine Emojis-Fluten (max. 2 Emojis).
-- Am Ende ein einfacher Hinweis auf uvise.de (7 Tage kostenlos testen).`;
+- Deutsch, per "du", locker und mit Augenzwinkern — gern ein kleiner Wortwitz oder eine pointierte Zeile, aber nie albern, platt oder gezwungen.
+- SEHR kurz: 1-3 knackige Sätze. Starte mit einem Haken, der sofort sitzt. Komm direkt auf den Punkt — kein Aufwärmen, kein Marketing-Blabla, kein langer Sermon.
+- Ein konkretes Alltagsproblem oder ein klarer Nutzen, greifbar — nicht abstrakt über "Digitalisierung".
+- Danach EINE eigene Zeile mit nur 2-3 passenden Hashtags.
+- Keine erfundenen Zahlen oder Kundenstimmen, höchstens 1 Emoji, keine übertriebenen Versprechen.
+- Zum Schluss ein ganz knapper Hinweis auf uvise.de (7 Tage kostenlos testen) — kurz halten.
+
+So klingt der Ton (nur als Stil-Beispiel, NICHT wörtlich übernehmen):
+- "Zettelwirtschaft war gestern. Unterschrift aufs Handy — fertig."
+- "Fristen im Kopf behalten? Überlass das Kopfrechnen lieber uns."`;
 
 export async function POST(request: Request) {
   const auth = await betreiberPruefen(request);
