@@ -10,7 +10,7 @@ Rossinistraße 11
 
 Kontakt:
 Telefon: 015155274025
-E-Mail: ennskonstantin@gmail.com
+E-Mail: info@ennsmedia.com
 
 Umsatzsteuer-ID:
 Umsatzsteuer-Identifikationsnummer gemäß § 27 a Umsatzsteuergesetz: 76382204194
@@ -47,7 +47,7 @@ Konstantin Enns
 Rossinistraße 11
 93133 Burglengenfeld
 Telefon: 015155274025
-E-Mail: ennskonstantin@gmail.com
+E-Mail: info@ennsmedia.com
 
 4. Die uVise-Anwendung: Verarbeitung von Mitarbeiterdaten
 
