@@ -15,6 +15,7 @@ import {
   BarChart3,
   Megaphone,
   Handshake,
+  Gauge,
 } from "lucide-react";
 import { useAppData } from "@/lib/store";
 import { LogoMark } from "@/components/Logo";
@@ -89,6 +90,7 @@ export function Sidebar() {
           ...NAV_ITEMS,
           ...(istBetreiber
             ? [
+                { label: "Überwachung", href: "/ueberwachung", icon: Gauge },
                 { label: "Statistik", href: "/statistik", icon: BarChart3 },
                 { label: "Marketing", href: "/marketing", icon: Megaphone },
                 { label: "Partner", href: "/partner-verwaltung", icon: Handshake },
