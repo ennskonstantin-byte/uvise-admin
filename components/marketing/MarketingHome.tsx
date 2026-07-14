@@ -25,6 +25,7 @@ import { PLANS } from "@/lib/types";
 import { Reveal } from "@/components/marketing/Reveal";
 import { VorlesenDemo } from "@/components/marketing/VorlesenDemo";
 import { AppPreview } from "@/components/marketing/AppPreview";
+import { SUPPORT_EMAIL } from "@/lib/legal";
 
 const FEATURES = [
   {
@@ -605,6 +606,7 @@ export function MarketingHome() {
             <span className="font-display text-sm font-semibold">uVise</span>
           </div>
           <nav aria-label="Rechtliches" className="flex gap-5 text-xs text-foreground/60">
+            <a href={`mailto:${SUPPORT_EMAIL}?subject=uVise%20Kontakt`} className="hover:text-foreground">Kontakt</a>
             <Link href="/impressum" className="hover:text-foreground">Impressum</Link>
             <Link href="/datenschutz" className="hover:text-foreground">Datenschutz</Link>
             <Link href="/agb" className="hover:text-foreground">AGB</Link>
