@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { LogoMark } from "@/components/Logo";
 import { SUPPORT_EMAIL } from "@/lib/legal";
+import { TrackPageView } from "@/components/TrackPageView";
 
 // Öffentliches Kontaktformular — bewusst ohne Login erreichbar, damit auch
 // Interessenten (noch keine Kunden) Anfragen stellen können.
@@ -39,6 +40,7 @@ export default function KontaktPage() {
 
   return (
     <div className="min-h-screen bg-page-bg px-4 py-10">
+      <TrackPageView path="/kontakt" />
       <div className="mx-auto max-w-2xl">
         <Link href="/" className="flex items-center gap-3 mb-8 w-fit">
           <LogoMark size={40} />

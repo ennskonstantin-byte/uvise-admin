@@ -12,10 +12,12 @@ import {
   Archive,
   Settings,
   LogOut,
+  BarChart3,
 } from "lucide-react";
 import { useAppData } from "@/lib/store";
 import { LogoMark } from "@/components/Logo";
 import { Switch } from "@/components/Switch";
+import { isOwnerEmail } from "@/lib/owner";
 
 const NAV_ITEMS = [
   { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
@@ -30,9 +32,12 @@ const NAV_ITEMS = [
 export function Sidebar() {
   const pathname = usePathname();
   const router = useRouter();
-  const { questions, company, signOut } = useAppData();
+  const { questions, company, session, signOut } = useAppData();
   const openQuestions = questions.filter((q) => q.status === "offen").length;
   const companyName = company?.name ?? "SicherAkte";
+  // Betreiber-Ansichten (Besucherstatistik) nur für die Betreiber-Logins zeigen —
+  // der Server prüft die Berechtigung zusätzlich selbst.
+  const istBetreiber = isOwnerEmail(session?.user?.email);
 
   const [dark, setDark] = useState(false);
   useEffect(() => {
@@ -78,7 +83,7 @@ export function Sidebar() {
       </Link>
 
       <nav className="flex-1 px-3 space-y-1">
-        {NAV_ITEMS.map(({ label, href, icon: Icon }) => {
+        {[...NAV_ITEMS, ...(istBetreiber ? [{ label: "Statistik", href: "/statistik", icon: BarChart3 }] : [])].map(({ label, href, icon: Icon }) => {
           const active = href === "/dashboard" ? pathname === "/dashboard" : pathname.startsWith(href);
           const badge = label === "Rückfragen" ? openQuestions : undefined;
           return (

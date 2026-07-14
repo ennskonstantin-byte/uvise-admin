@@ -92,6 +92,8 @@ Diese Website und die uVise-Apps nutzen aus Sicherheitsgründen eine SSL- bzw. T
 
 Für die Anmeldung wird kein Cookie, sondern eine Speicherung im localStorage Ihres Browsers/Geräts verwendet (technisch notwendig für die Login-Sitzung). Es findet kein Tracking und keine Werbung über Cookies statt.
 
+Zur Reichweitenmessung der öffentlichen Website zählen wir Seitenaufrufe in anonymisierter Form: ohne Cookies, ohne Speicherung der IP-Adresse. Besucher werden ausschließlich über einen täglich wechselnden, nicht zurückrechenbaren Hash-Wert gezählt — eine Wiedererkennung über mehrere Tage oder eine Zuordnung zu einer Person ist damit nicht möglich. Rechtsgrundlage: Art. 6 Abs. 1 lit. f DSGVO (berechtigtes Interesse an der Messung der Reichweite unseres Angebots). Die "Do Not Track"-Einstellung Ihres Browsers wird respektiert.
+
 10. Ihre Rechte
 
 Sie haben jederzeit das Recht auf unentgeltliche Auskunft über Herkunft, Empfänger und Zweck Ihrer gespeicherten personenbezogenen Daten sowie ein Recht auf Berichtigung, Löschung oder Einschränkung der Verarbeitung. Sie können eine erteilte Einwilligung jederzeit widerrufen und haben das Recht auf Datenübertragbarkeit. Sind Sie Mitarbeiter eines uVise-Kunden, wenden Sie sich für Auskunfts- und Löschanfragen zunächst an Ihren Arbeitgeber als datenschutzrechtlich Verantwortlichen (siehe Punkt 4a). Ihnen steht außerdem ein Beschwerderecht bei der zuständigen Aufsichtsbehörde zu.
