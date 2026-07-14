@@ -74,7 +74,7 @@ Vercel Inc. — Hosting der Website (siehe Punkt 2) sowie optional Vercel Analyt
 
 Stripe (Stripe Payments Europe, Ltd.) — Abwicklung der Zahlungen für kostenpflichtige uVise-Abonnements. Bei einer Zahlung übermitteln wir die zur Zahlungsabwicklung erforderlichen Daten (u. a. Name, E-Mail, Zahlungsdaten) an Stripe. Rechtsgrundlage: Art. 6 Abs. 1 lit. b DSGVO (Vertragserfüllung). Es gelten die Datenschutzbestimmungen von Stripe.
 
-DeepSeek — Sofern auf der Website ein Chat-Assistent zur Beantwortung von Besucherfragen eingesetzt wird, werden die eingegebenen Nachrichten zur Erzeugung einer Antwort an DeepSeek übermittelt. Es werden keine Kontodaten oder Mitarbeiterdaten an DeepSeek übertragen, nur der eingegebene Chat-Text. Rechtsgrundlage: Art. 6 Abs. 1 lit. f DSGVO (berechtigtes Interesse an der Beantwortung von Nutzeranfragen).
+Anthropic (Anthropic PBC, USA) — Für den Chat-Assistenten auf der Website und zur Erstellung von Marketing-Textentwürfen setzen wir das KI-Modell "Claude" von Anthropic ein. Dabei werden ausschließlich die eingegebenen Texte (Chat-Nachrichten bzw. Themenvorgaben) zur Erzeugung einer Antwort an Anthropic übermittelt; es werden keine Konto- oder Mitarbeiterdaten übertragen. Für die Übermittlung in die USA gelten die EU-Standardvertragsklauseln. Rechtsgrundlage: Art. 6 Abs. 1 lit. f DSGVO (berechtigtes Interesse an der Beantwortung von Nutzeranfragen und der Erstellung eigener Inhalte).
 
 6. Kontaktformular und Support-Anfragen
 

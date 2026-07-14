@@ -1,10 +1,11 @@
 import { NextResponse } from "next/server";
 import { createClient, SupabaseClient } from "@supabase/supabase-js";
+import Anthropic from "@anthropic-ai/sdk";
 import { isOwnerEmail } from "@/lib/owner";
 
 // Betreiber-Route für Social-Media-Beiträge:
 //   GET             -> alle Beiträge (neueste zuerst)
-//   POST {aktion:"generieren", thema, plattform, anzahl} -> KI-Entwürfe über DeepSeek
+//   POST {aktion:"generieren", thema, plattform, anzahl} -> KI-Entwürfe über Claude (Anthropic)
 //   POST {aktion:"speichern", id, inhalt}                -> Text bearbeiten
 //   POST {aktion:"status", id, status}                   -> freigeben/verwerfen/zurück zu Entwurf
 // Veröffentlichen zu Facebook/Instagram folgt erst mit der Meta-Anbindung.
@@ -66,12 +67,12 @@ export async function POST(request: Request) {
   const body = await request.json();
 
   if (body.aktion === "generieren") {
-    const apiKey = process.env.DEEPSEEK_API_KEY;
+    const apiKey = process.env.ANTHROPIC_API_KEY;
     if (!apiKey) {
       return NextResponse.json(
         {
           error:
-            "DeepSeek ist noch nicht eingerichtet. Konto auf platform.deepseek.com anlegen, kleines Guthaben aufladen, API-Key erzeugen und als DEEPSEEK_API_KEY bei Vercel eintragen.",
+            "Der KI-Textgenerator ist noch nicht eingerichtet. API-Key auf console.anthropic.com erzeugen und als ANTHROPIC_API_KEY bei Vercel eintragen.",
         },
         { status: 503 }
       );
@@ -80,29 +81,28 @@ export async function POST(request: Request) {
     const plattform = ["facebook", "instagram", "beide"].includes(body.plattform) ? body.plattform : "beide";
     const anzahl = Math.min(Math.max(parseInt(body.anzahl, 10) || 3, 1), 5);
 
-    const res = await fetch("https://api.deepseek.com/chat/completions", {
-      method: "POST",
-      headers: { "Content-Type": "application/json", Authorization: `Bearer ${apiKey}` },
-      body: JSON.stringify({
-        model: "deepseek-chat",
+    let antwort = "";
+    try {
+      const client = new Anthropic({ apiKey });
+      const message = await client.messages.create({
+        model: "claude-haiku-4-5",
+        max_tokens: 2048,
+        system: SYSTEM_PROMPT,
         messages: [
-          { role: "system", content: SYSTEM_PROMPT },
           {
             role: "user",
             content: `Schreibe ${anzahl} unterschiedliche Beitragsentwürfe für ${plattform === "beide" ? "Facebook und Instagram" : plattform}. Thema: ${thema}. Antworte NUR mit einem JSON-Array aus Strings, ein String pro Beitrag, ohne Erklärung.`,
           },
         ],
-        temperature: 1.1,
-      }),
-    });
-
-    if (!res.ok) {
-      const detail = await res.text();
-      return NextResponse.json({ error: `DeepSeek-Fehler (${res.status}): ${detail.slice(0, 300)}` }, { status: 502 });
+      });
+      antwort = message.content
+        .filter((block): block is Anthropic.TextBlock => block.type === "text")
+        .map((block) => block.text)
+        .join("\n");
+    } catch (e) {
+      return NextResponse.json({ error: `KI-Fehler: ${(e as Error).message.slice(0, 300)}` }, { status: 502 });
     }
 
-    const completion = await res.json();
-    const antwort: string = completion.choices?.[0]?.message?.content ?? "";
     let entwuerfe: string[];
     try {
       // Antwort kann in ```json ... ``` eingepackt sein — herausschälen.
