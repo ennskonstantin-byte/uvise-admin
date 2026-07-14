@@ -166,6 +166,42 @@ Antworte NUR mit einem JSON-Array aus Objekten, ohne Erklärung und ohne Markdow
     return NextResponse.json({ ok: true });
   }
 
+  if (body.aktion === "plan-setzen") {
+    const datum =
+      body.datum === null
+        ? null
+        : typeof body.datum === "string" && /^\d{4}-\d{2}-\d{2}$/.test(body.datum)
+        ? body.datum
+        : undefined;
+    if (!body.id || datum === undefined) {
+      return NextResponse.json({ error: "Ungültige Anfrage." }, { status: 400 });
+    }
+    const { error } = await db.from("social_posts").update({ geplant_am: datum }).eq("id", body.id);
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ ok: true });
+  }
+
+  if (body.aktion === "plan-verteilen") {
+    const start = typeof body.start === "string" && /^\d{4}-\d{2}-\d{2}$/.test(body.start) ? body.start : null;
+    const schritt = Math.min(Math.max(parseInt(body.schritt, 10) || 1, 1), 30);
+    if (!start) return NextResponse.json({ error: "Ungültiges Startdatum." }, { status: 400 });
+    const { data, error: e1 } = await db
+      .from("social_posts")
+      .select("id")
+      .eq("status", "freigegeben")
+      .order("created_at", { ascending: true });
+    if (e1) return NextResponse.json({ error: e1.message }, { status: 500 });
+    const liste = data ?? [];
+    for (let i = 0; i < liste.length; i++) {
+      const d = new Date(start + "T00:00:00Z");
+      d.setUTCDate(d.getUTCDate() + i * schritt);
+      const iso = d.toISOString().slice(0, 10);
+      const { error } = await db.from("social_posts").update({ geplant_am: iso }).eq("id", liste[i].id);
+      if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+    return NextResponse.json({ ok: true, anzahl: liste.length });
+  }
+
   if (body.aktion === "loeschen") {
     if (!body.id) return NextResponse.json({ error: "Ungültige Anfrage." }, { status: 400 });
     const { error } = await db.from("social_posts").delete().eq("id", body.id);

@@ -13,7 +13,15 @@ type Post = {
   status: "entwurf" | "freigegeben" | "veroeffentlicht" | "verworfen";
   bild_url?: string | null;
   bild_titel?: string | null;
+  geplant_am?: string | null;
 };
+
+// Datum als YYYY-MM-DD (ohne Zeitzonen-Verschiebung).
+function isoDatum(d: Date): string {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
+const MONATE = ["Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", "Dezember"];
+const WOCHENTAGE = ["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"];
 
 // Verkleinert ein hochgeladenes Bild im Browser auf max. 1280px (JPEG),
 // damit der Upload klein und schnell bleibt.
@@ -95,6 +103,13 @@ export default function MarketingPage() {
   const [ladeBildId, setLadeBildId] = useState<string | null>(null);
   const [motiv, setMotiv] = useState("handwerk");
   const [appAn, setAppAn] = useState(true);
+  const [zeigeKalender, setZeigeKalender] = useState(true);
+  const [kalDatum, setKalDatum] = useState(() => {
+    const d = new Date();
+    return new Date(d.getFullYear(), d.getMonth(), 1);
+  });
+  const [planStart, setPlanStart] = useState(() => isoDatum(new Date()));
+  const [planSchritt, setPlanSchritt] = useState(1);
 
   async function bildHochladen(id: string, e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -175,6 +190,21 @@ export default function MarketingPage() {
     { status: "veroeffentlicht", titel: "Veröffentlicht" },
   ];
 
+  // Zellen für das Monatsraster: Leerfelder vor dem 1., dann alle Tage mit
+  // den auf diesen Tag geplanten Beiträgen.
+  const kalenderZellen: ({ tag: number; posts: Post[] } | null)[] = [];
+  {
+    const jahr = kalDatum.getFullYear();
+    const monat = kalDatum.getMonth();
+    const ersterWochentag = (new Date(jahr, monat, 1).getDay() + 6) % 7; // Mo=0
+    const tageImMonat = new Date(jahr, monat + 1, 0).getDate();
+    for (let i = 0; i < ersterWochentag; i++) kalenderZellen.push(null);
+    for (let t = 1; t <= tageImMonat; t++) {
+      const iso = isoDatum(new Date(jahr, monat, t));
+      kalenderZellen.push({ tag: t, posts: posts.filter((p) => p.geplant_am === iso) });
+    }
+  }
+
   return (
     <DashboardShell>
       <h1 className="text-2xl font-semibold">Marketing</h1>
@@ -218,6 +248,117 @@ export default function MarketingPage() {
           </div>
         </div>
       </section>
+
+      {zeigeKalender ? (
+        <section className="rounded-2xl border border-border bg-background p-5 max-w-2xl mb-8">
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="font-medium">📅 Redaktionsplan</h2>
+            <button onClick={() => setZeigeKalender(false)} className="text-xs text-foreground/50">
+              ausblenden
+            </button>
+          </div>
+
+          {/* Automatisch verteilen */}
+          <div className="flex flex-wrap items-end gap-2 mb-2 text-sm">
+            <label className="flex flex-col gap-1">
+              <span className="text-foreground/60 text-xs">Ab</span>
+              <input
+                type="date"
+                value={planStart}
+                onChange={(e) => setPlanStart(e.target.value)}
+                className="rounded-lg border border-border bg-page-bg px-3 py-1.5"
+              />
+            </label>
+            <label className="flex flex-col gap-1">
+              <span className="text-foreground/60 text-xs">Rhythmus</span>
+              <select
+                value={planSchritt}
+                onChange={(e) => setPlanSchritt(parseInt(e.target.value, 10))}
+                className="rounded-lg border border-border bg-page-bg px-3 py-1.5"
+              >
+                <option value={1}>jeden Tag</option>
+                <option value={2}>jeden 2. Tag</option>
+                <option value={3}>jeden 3. Tag</option>
+                <option value={7}>jede Woche</option>
+              </select>
+            </label>
+            <button
+              onClick={() => {
+                if (confirm("Alle freigegebenen Beiträge automatisch auf Tage verteilen?")) {
+                  aktion({ aktion: "plan-verteilen", start: planStart, schritt: planSchritt });
+                }
+              }}
+              className="rounded-full bg-blue-600 px-4 py-2 text-xs font-semibold text-white"
+            >
+              Freigegebene verteilen
+            </button>
+          </div>
+          <p className="text-[11px] text-foreground/40 mb-4">
+            Verteilt alle „freigegebenen" Beiträge der Reihe nach. Automatisch posten geht erst mit der Meta-Anbindung — bis dahin siehst du hier den Plan und postest per Meta Business Suite.
+          </p>
+
+          {/* Monatsnavigation */}
+          <div className="flex items-center justify-between mb-2">
+            <button
+              onClick={() => setKalDatum(new Date(kalDatum.getFullYear(), kalDatum.getMonth() - 1, 1))}
+              className="rounded-full border border-border px-3 py-1 text-sm"
+              aria-label="Vorheriger Monat"
+            >
+              ←
+            </button>
+            <div className="font-medium text-sm">
+              {MONATE[kalDatum.getMonth()]} {kalDatum.getFullYear()}
+            </div>
+            <button
+              onClick={() => setKalDatum(new Date(kalDatum.getFullYear(), kalDatum.getMonth() + 1, 1))}
+              className="rounded-full border border-border px-3 py-1 text-sm"
+              aria-label="Nächster Monat"
+            >
+              →
+            </button>
+          </div>
+
+          {/* Wochentage */}
+          <div className="grid grid-cols-7 gap-1 text-center text-[11px] text-foreground/50 mb-1">
+            {WOCHENTAGE.map((w) => (
+              <div key={w}>{w}</div>
+            ))}
+          </div>
+          {/* Tage */}
+          <div className="grid grid-cols-7 gap-1">
+            {kalenderZellen.map((zelle, i) => (
+              <div
+                key={i}
+                className={`min-h-[64px] rounded-lg border p-1 ${zelle ? "border-border" : "border-transparent"}`}
+              >
+                {zelle && (
+                  <>
+                    <div className="text-[11px] text-foreground/50">{zelle.tag}</div>
+                    <div className="flex flex-col gap-0.5 mt-0.5">
+                      {zelle.posts.map((p) => (
+                        <div
+                          key={p.id}
+                          title={p.inhalt}
+                          className="truncate rounded bg-blue-500/15 px-1 py-0.5 text-[10px] text-blue-600 dark:text-blue-300"
+                        >
+                          {bildText(p)}
+                        </div>
+                      ))}
+                    </div>
+                  </>
+                )}
+              </div>
+            ))}
+          </div>
+        </section>
+      ) : (
+        <button
+          onClick={() => setZeigeKalender(true)}
+          className="max-w-2xl mb-6 rounded-full border border-border px-4 py-1.5 text-xs text-foreground/60"
+        >
+          📅 Redaktionsplan anzeigen
+        </button>
+      )}
 
       {posts.length > 0 && (
         <div className="max-w-2xl mb-6 flex justify-end">
@@ -318,6 +459,13 @@ export default function MarketingPage() {
                               >
                                 📋 Text kopieren
                               </button>
+                              <input
+                                type="date"
+                                value={p.geplant_am ?? ""}
+                                onChange={(e) => aktion({ aktion: "plan-setzen", id: p.id, datum: e.target.value || null })}
+                                title="Geplantes Datum"
+                                className="rounded-full border border-border bg-background px-3 py-1 text-xs"
+                              />
                               <button
                                 onClick={() => aktion({ aktion: "status", id: p.id, status: "entwurf" })}
                                 className="rounded-full border border-border px-4 py-1.5 text-xs text-foreground/60"
