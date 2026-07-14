@@ -28,6 +28,7 @@ import { AppPreview } from "@/components/marketing/AppPreview";
 import { SUPPORT_EMAIL } from "@/lib/legal";
 import { TrackPageView } from "@/components/TrackPageView";
 import { AffiliateRef } from "@/components/AffiliateRef";
+import { ChatWidget } from "@/components/marketing/ChatWidget";
 
 const FEATURES = [
   {
@@ -619,6 +620,8 @@ export function MarketingHome() {
           <p className="text-xs text-foreground/45">© {new Date().getFullYear()} uVise</p>
         </div>
       </footer>
+
+      <ChatWidget />
     </div>
   );
 }
