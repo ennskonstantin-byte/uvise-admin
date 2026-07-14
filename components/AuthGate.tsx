@@ -11,7 +11,7 @@ import { PasswordInput } from "@/components/PasswordInput";
 // Diese Seiten sind gesetzlich ohne Login erreichbar (Impressumspflicht)
 // + die Passwort-zurücksetzen-Seite (E-Mail-Link) + die öffentliche
 // Marketing-Startseite, von der aus man sich anmelden/registrieren kann.
-const PUBLIC_PATHS = ["/", "/impressum", "/datenschutz", "/agb", "/passwort-zuruecksetzen", "/kontakt", "/partner"];
+const PUBLIC_PATHS = ["/", "/impressum", "/datenschutz", "/agb", "/passwort-zuruecksetzen", "/kontakt", "/partner", "/ratgeber/unterweisung-vorlage"];
 
 function AuthForm() {
   const { reload } = useAppData();

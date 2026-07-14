@@ -586,6 +586,7 @@ export function MarketingHome() {
             <span className="font-display text-sm font-semibold">uVise</span>
           </a>
           <nav aria-label="Rechtliches" className="flex gap-5 text-xs text-foreground/60">
+            <Link href="/ratgeber/unterweisung-vorlage" className="hover:text-foreground">Unterweisung-Vorlage</Link>
             <Link href="/kontakt" className="hover:text-foreground">Kontakt</Link>
             <a href={`mailto:${SUPPORT_EMAIL}?subject=uVise%20Support`} className="hover:text-foreground">Support</a>
             <Link href="/impressum" className="hover:text-foreground">Impressum</Link>
