@@ -194,7 +194,7 @@ function appScreen(kind: number, fotos?: (string | null)[], logoUri?: string | n
         <div style={{ fontSize: 17, fontWeight: 700, color: "#18181b" }}>Dashboard</div>
         {zeile("#dbeafe", "Lena Bauer", "Produktion", "#22c55e", fotos?.[0])}
         {zeile("#fce7f3", "Tom Krüger", "Lager", "#f59e0b", fotos?.[1])}
-        {zeile("#dcfce7", "Nina Beispiel", "Leitung", "#22c55e", fotos?.[2])}
+        {zeile("#dcfce7", "Nina Müller", "Leitung", "#22c55e", fotos?.[2])}
         <div
           style={{
             marginTop: 4,

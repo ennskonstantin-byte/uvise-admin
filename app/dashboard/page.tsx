@@ -10,6 +10,7 @@ import { NewEmployeeWizard } from "@/components/NewEmployeeWizard";
 import { NewTrainingWizard } from "@/components/NewTrainingWizard";
 import { PlanModal } from "@/components/PlanModal";
 import { FeedbackCard } from "@/components/FeedbackCard";
+import { SocialOverviewCard } from "@/components/SocialOverviewCard";
 import { ReviewBanner } from "@/components/ReviewBanner";
 import { useAppData } from "@/lib/store";
 
@@ -190,8 +191,9 @@ export default function DashboardPage() {
         )}
       </Card>
 
-      {/* Nur für den Betreiber sichtbar (rendert sich selbst weg, wenn kein Betreiber) */}
-      <div className="mt-6">
+      {/* Nur für den Betreiber sichtbar (rendern sich selbst weg, wenn kein Betreiber) */}
+      <div className="mt-6 flex flex-col gap-6">
+        <SocialOverviewCard />
         <FeedbackCard />
       </div>
 

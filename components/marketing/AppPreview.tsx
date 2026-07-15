@@ -8,7 +8,7 @@ const APPS = [
     key: "chef",
     label: "Chef-App",
     src: "/preview-chef/index.html",
-    hint: "Angemeldet als Nina Beispiel (Beauftragte) — Mitarbeiter, Unterweisungen und Qualifikationen der Demo-Firma \"uVise Demo GmbH\".",
+    hint: "Angemeldet als Nina Müller (Beauftragte) — Mitarbeiter, Unterweisungen und Qualifikationen der Demo-Firma \"uVise Demo GmbH\".",
   },
   {
     key: "ma",
