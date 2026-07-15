@@ -24,6 +24,20 @@ function hash(s: string): number {
   return h;
 }
 
+// Lädt eine Bilddatei (z. B. aus /public) und gibt sie als data-URI zurück,
+// damit sie direkt ins erzeugte Bild eingebettet werden kann.
+async function holeDatei(url: string): Promise<string | null> {
+  try {
+    const res = await fetch(url);
+    if (!res.ok) return null;
+    const buf = Buffer.from(await res.arrayBuffer());
+    const ct = res.headers.get("content-type") || "image/jpeg";
+    return `data:${ct};base64,${buf.toString("base64")}`;
+  } catch {
+    return null;
+  }
+}
+
 async function holeFoto(query: string, quer: boolean, seed: string): Promise<string | null> {
   const key = process.env.PEXELS_API_KEY;
   if (!key) return null;
@@ -53,10 +67,22 @@ async function holeFoto(query: string, quer: boolean, seed: string): Promise<str
 const GRAD = "linear-gradient(135deg, #7c5cfc, #3b82f6, #22d3ee)";
 
 // Eine Zeile in der Mini-App (Avatar + zwei Zeilen + Statuspunkt).
-function zeile(farbe: string, name: string, unter: string, punkt: string) {
+// Mit fotoUri wird ein echtes Mitarbeiterfoto statt einer Farbfläche gezeigt.
+function zeile(farbe: string, name: string, unter: string, punkt: string, fotoUri?: string | null) {
   return (
     <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-      <div style={{ width: 34, height: 34, borderRadius: 999, background: farbe, display: "flex" }} />
+      <div
+        style={{
+          width: 34,
+          height: 34,
+          flexShrink: 0,
+          borderRadius: 999,
+          display: "flex",
+          ...(fotoUri
+            ? { backgroundImage: `url(${fotoUri})`, backgroundSize: "cover", backgroundPosition: "center" }
+            : { background: farbe }),
+        }}
+      />
       <div style={{ display: "flex", flexDirection: "column", flex: 1 }}>
         <div style={{ fontSize: 15, fontWeight: 600, color: "#18181b" }}>{name}</div>
         <div style={{ fontSize: 12, color: "#71717a" }}>{unter}</div>
@@ -67,7 +93,8 @@ function zeile(farbe: string, name: string, unter: string, punkt: string) {
 }
 
 // Der Inhalt des Handy-Bildschirms — drei wechselnde uVise-Ansichten.
-function appScreen(kind: number) {
+// fotos: echte Mitarbeiterfotos für die Dashboard-Ansicht (optional).
+function appScreen(kind: number, fotos?: (string | null)[]) {
   const kopf = (
     <div
       style={{
@@ -160,9 +187,9 @@ function appScreen(kind: number) {
     body = (
       <div style={{ display: "flex", flexDirection: "column", gap: 12, padding: 16 }}>
         <div style={{ fontSize: 17, fontWeight: 700, color: "#18181b" }}>Dashboard</div>
-        {zeile("#dbeafe", "Lena Bauer", "Produktion", "#22c55e")}
-        {zeile("#fce7f3", "Tom Krüger", "Lager", "#f59e0b")}
-        {zeile("#dcfce7", "Nina Beispiel", "Leitung", "#22c55e")}
+        {zeile("#dbeafe", "Lena Bauer", "Produktion", "#22c55e", fotos?.[0])}
+        {zeile("#fce7f3", "Tom Krüger", "Lager", "#f59e0b", fotos?.[1])}
+        {zeile("#dcfce7", "Nina Beispiel", "Leitung", "#22c55e", fotos?.[2])}
         <div
           style={{
             marginTop: 4,
@@ -209,6 +236,18 @@ export async function GET(request: Request) {
   const ph = quer ? 520 : 760;
   const pw = quer ? 250 : 360;
   const screenKind = hash(roh) % 3;
+
+  // Für die Dashboard-Ansicht echte Demo-Mitarbeiterfotos aus /public laden,
+  // damit die Avatare im Handy nicht leer sind.
+  let personenFotos: (string | null)[] | undefined;
+  if (zeigeApp && screenKind === 0) {
+    const origin = new URL(request.url).origin;
+    personenFotos = await Promise.all([
+      holeDatei(`${origin}/marketing/mitarbeiter-buero.jpg`),
+      holeDatei(`${origin}/marketing/mitarbeiter-lager.jpg`),
+      holeDatei(`${origin}/marketing/mitarbeiter-leitung.jpg`),
+    ]);
+  }
 
   // Text schmaler halten, wenn das Handy daneben steht.
   const textBreite = zeigeApp ? (quer ? 620 : 560) : quer ? 1000 : 900;
@@ -271,7 +310,7 @@ export async function GET(request: Request) {
                 boxShadow: "0 40px 80px rgba(0,0,0,0.55)",
               }}
             >
-              {appScreen(screenKind)}
+              {appScreen(screenKind, personenFotos)}
             </div>
           </div>
         )}
