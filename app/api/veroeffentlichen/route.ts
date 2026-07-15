@@ -43,7 +43,6 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Beitrag oder Text fehlt." }, { status: 400 });
   }
 
-  const pageId = process.env.META_PAGE_ID || "61591740459257";
   const pageToken = process.env.META_PAGE_ACCESS_TOKEN;
   if (!pageToken) {
     return NextResponse.json(
@@ -52,6 +51,24 @@ export async function POST(request: Request) {
           "Der Facebook-Zugang ist noch nicht eingerichtet. Bitte den Seiten-Zugriffstoken als META_PAGE_ACCESS_TOKEN bei Vercel eintragen und neu deployen.",
       },
       { status: 503 },
+    );
+  }
+
+  // Die richtige Seiten-Nummer direkt aus dem Seiten-Token auslesen (GET /me).
+  // So kann nie eine falsch konfigurierte META_PAGE_ID dazwischenfunken.
+  // Fällt der Abruf aus, greift die gesetzte META_PAGE_ID als Rückfall.
+  let pageId = process.env.META_PAGE_ID || "";
+  try {
+    const meRes = await fetch(`${GRAPH}/me?fields=id&access_token=${encodeURIComponent(pageToken)}`);
+    const meJson = (await meRes.json()) as { id?: string; error?: { message?: string } };
+    if (meRes.ok && meJson.id) pageId = meJson.id;
+  } catch {
+    // Netzfehler ignorieren — unten wird pageId geprüft.
+  }
+  if (!pageId) {
+    return NextResponse.json(
+      { error: "Die Facebook-Seite konnte nicht bestimmt werden. Bitte den Seiten-Zugriffstoken erneuern." },
+      { status: 502 },
     );
   }
 
