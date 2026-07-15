@@ -75,7 +75,10 @@ async function erzeugeEntwuerfe(
 ): Promise<Entwurf[]> {
   const client = new Anthropic({ apiKey });
   const message = await client.messages.create({
-    model: "claude-haiku-4-5",
+    // Marketing-Texte brauchen echten Wortwitz/Augenzwinkern — das kann das
+    // kleine Haiku-Modell kaum, deshalb hier das stärkste Modell (Opus 4.8).
+    // Der Chatbot bleibt bewusst auf Haiku (dort zählt Tempo/Kosten, nicht Witz).
+    model: "claude-opus-4-8",
     max_tokens: Math.min(1500 + anzahl * 350, 20000),
     system: SYSTEM_PROMPT,
     messages: [
@@ -92,7 +95,12 @@ Antworte NUR mit einem JSON-Array aus Objekten, ohne Erklärung und ohne Markdow
     .map((block) => block.text)
     .join("\n");
   try {
-    const roh = antwort.replace(/^```(json)?/m, "").replace(/```$/m, "").trim();
+    const ohneFence = antwort.replace(/^```(json)?/mi, "").replace(/```$/m, "").trim();
+    // Falls das Modell doch etwas Text um das JSON schreibt: nur den Array-Teil
+    // (von der ersten "[" bis zur letzten "]") herausschneiden und auswerten.
+    const start = ohneFence.indexOf("[");
+    const ende = ohneFence.lastIndexOf("]");
+    const roh = start !== -1 && ende > start ? ohneFence.slice(start, ende + 1) : ohneFence;
     const parsed = JSON.parse(roh);
     if (Array.isArray(parsed)) {
       return parsed
