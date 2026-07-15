@@ -135,3 +135,7 @@ export const SUPPORT_EMAIL = 'info@ennsmedia.com';
 
 // Allgemeiner Kontakt (Anfragen, Geschäftliches) — getrennt von SUPPORT_EMAIL.
 export const CONTACT_EMAIL = 'info@ennsmedia.com';
+
+// Social-Media-Profile (in Footer/Menüs verlinkt).
+export const INSTAGRAM_URL = 'https://instagram.com/uvise_de';
+export const FACEBOOK_URL = 'https://www.facebook.com/profile.php?id=61591740459257';
