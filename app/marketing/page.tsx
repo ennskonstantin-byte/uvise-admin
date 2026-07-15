@@ -14,6 +14,16 @@ type Post = {
   bild_url?: string | null;
   bild_titel?: string | null;
   geplant_am?: string | null;
+  fb_post_id?: string | null;
+};
+
+// Likes/Kommentare eines echten Facebook-Posts (aus /api/fb-engagement).
+type Engagement = {
+  likes: number;
+  kommentareAnzahl: number;
+  kommentare: { name: string; text: string; datum: string }[];
+  permalink?: string;
+  fehler?: boolean;
 };
 
 // Datum als YYYY-MM-DD (ohne Zeitzonen-Verschiebung).
@@ -117,6 +127,12 @@ export default function MarketingPage() {
   const [neuLaeuftId, setNeuLaeuftId] = useState<string | null>(null);
   const [veroeffId, setVeroeffId] = useState<string | null>(null);
 
+  // Galerie „Veröffentlicht": Likes/Kommentare je Facebook-Beitragsnummer.
+  const [engagement, setEngagement] = useState<Record<string, Engagement>>({});
+  const [engagementLaedt, setEngagementLaedt] = useState(false);
+  const [offeneKommentareId, setOffeneKommentareId] = useState<string | null>(null);
+  const [ganzerTextId, setGanzerTextId] = useState<string | null>(null);
+
   async function kampagneErzeugen() {
     setKampLaeuft(true);
     const ok = await aktion({
@@ -192,6 +208,36 @@ export default function MarketingPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Likes/Kommentare für alle veröffentlichten Posts mit Facebook-Nummer holen.
+  async function ladeEngagement(ids: string[]) {
+    if (ids.length === 0) return;
+    const t = await token();
+    if (!t) return;
+    setEngagementLaedt(true);
+    try {
+      const res = await fetch("/api/fb-engagement", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${t}` },
+        body: JSON.stringify({ ids }),
+      });
+      const json = await res.json();
+      if (res.ok && json.engagement) setEngagement(json.engagement);
+    } catch {
+      // Kein harter Fehler — die Galerie zeigt dann einfach keine Zahlen.
+    } finally {
+      setEngagementLaedt(false);
+    }
+  }
+
+  const fbIdsKey = posts
+    .filter((p) => p.status === "veroeffentlicht" && p.fb_post_id)
+    .map((p) => p.fb_post_id as string)
+    .join(",");
+  useEffect(() => {
+    if (fbIdsKey) ladeEngagement(fbIdsKey.split(","));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fbIdsKey]);
+
   async function aktion(body: Record<string, unknown>): Promise<boolean> {
     const t = await token();
     if (!t) return false;
@@ -248,15 +294,18 @@ export default function MarketingPage() {
     setGeneriert(false);
   }
 
+  // „Veröffentlicht" hat eine eigene Galerie rechts — hier nur die Arbeitsschritte.
   const gruppen: { status: Post["status"]; titel: string; hinweis?: string }[] = [
     { status: "entwurf", titel: "Zu prüfen", hinweis: "Von der KI erstellt — bearbeiten und freigeben oder verwerfen." },
     {
       status: "freigegeben",
       titel: "Freigegeben — wartet auf Veröffentlichung",
-      hinweis: "Wird automatisch gepostet, sobald die Facebook/Instagram-Verbindung eingerichtet ist. Bis dahin: Text kopieren und selbst posten.",
+      hinweis: "Mit dem 🚀-Knopf direkt veröffentlichen — oder ein Datum für den Redaktionsplan setzen.",
     },
-    { status: "veroeffentlicht", titel: "Veröffentlicht" },
   ];
+  const veroeffentlichte = posts
+    .filter((p) => p.status === "veroeffentlicht")
+    .sort((a, b) => (a.created_at < b.created_at ? 1 : -1));
 
   // Zellen für das Monatsraster: Leerfelder vor dem 1., dann alle Tage mit
   // den auf diesen Tag geplanten Beiträgen.
@@ -281,6 +330,9 @@ export default function MarketingPage() {
       <p className="text-foreground/60 text-sm mt-1 mb-8">
         KI-Beiträge für Facebook &amp; Instagram — du prüfst jeden Text, bevor er rausgeht. Nur für den Betreiber sichtbar.
       </p>
+
+      <div className="flex flex-col gap-8 xl:flex-row xl:items-start">
+      <div className="min-w-0 flex-1">
 
       <section className="rounded-2xl border border-border bg-background p-5 max-w-2xl mb-8">
         <h2 className="font-medium mb-3">Neue Beitragsentwürfe erstellen</h2>
@@ -700,6 +752,129 @@ export default function MarketingPage() {
             </section>
           );
         })}
+
+      </div>{/* Ende linke Spalte */}
+
+      {/* Galerie „Veröffentlicht" — rechte Spalte mit Vorschau, Likes & Kommentaren */}
+      {!laedt && (
+        <aside className="w-full xl:w-[360px] xl:shrink-0 xl:sticky xl:top-6">
+          <div className="flex items-center justify-between mb-1">
+            <h2 className="font-medium">Veröffentlicht ({veroeffentlichte.length})</h2>
+            <button
+              onClick={() => fbIdsKey && ladeEngagement(fbIdsKey.split(","))}
+              disabled={engagementLaedt || !fbIdsKey}
+              title="Likes & Kommentare neu von Facebook laden"
+              className="rounded-full border border-border px-3 py-1 text-xs text-foreground/60 disabled:opacity-50"
+            >
+              {engagementLaedt ? "Lädt…" : "🔄 Aktualisieren"}
+            </button>
+          </div>
+          <p className="text-xs text-foreground/50 mb-3">Deine Facebook-Posts mit Likes &amp; Kommentaren.</p>
+
+          {veroeffentlichte.length === 0 && (
+            <p className="rounded-2xl border border-dashed border-border p-4 text-sm text-foreground/50">
+              Noch nichts veröffentlicht — links einen freigegebenen Beitrag mit „🚀 Auf Facebook posten" rausschicken.
+            </p>
+          )}
+
+          <div className="flex flex-col gap-4">
+            {veroeffentlichte.map((p) => {
+              const eng = p.fb_post_id ? engagement[p.fb_post_id] : undefined;
+              const bild =
+                p.bild_url ??
+                `/api/beitragsbild?text=${encodeURIComponent(bildText(p))}&format=quadrat&motiv=${motiv}${appAn ? "&app=1" : ""}`;
+              return (
+                <article key={p.id} className="overflow-hidden rounded-2xl border border-border bg-background">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={bild} alt="Beitragsbild" loading="lazy" className="h-40 w-full object-cover" />
+                  <div className="p-3">
+                    <div className="flex items-center gap-2 text-[11px] text-foreground/50 mb-1.5">
+                      <span className="rounded-full border border-border px-2 py-0.5">{PLATTFORM_LABEL[p.plattform]}</span>
+                      <span className="ml-auto">{new Date(p.created_at).toLocaleDateString("de-DE")}</span>
+                    </div>
+                    <p className={`text-xs whitespace-pre-wrap ${ganzerTextId === p.id ? "" : "line-clamp-3"}`}>{p.inhalt}</p>
+                    <button
+                      onClick={() => setGanzerTextId(ganzerTextId === p.id ? null : p.id)}
+                      className="mt-1 text-[11px] text-blue-500"
+                    >
+                      {ganzerTextId === p.id ? "weniger anzeigen ▴" : "ganzen Text anzeigen ▾"}
+                    </button>
+
+                    {/* Likes & Kommentare */}
+                    {p.fb_post_id ? (
+                      <div className="mt-2 border-t border-border pt-2">
+                        <div className="flex flex-wrap items-center gap-3 text-xs">
+                          <span title="Reaktionen (Likes, Herzen …)">👍 {eng ? eng.likes : "…"}</span>
+                          <button
+                            onClick={() => setOffeneKommentareId(offeneKommentareId === p.id ? null : p.id)}
+                            className="text-blue-500"
+                          >
+                            💬 {eng ? eng.kommentareAnzahl : "…"} Kommentar{eng && eng.kommentareAnzahl === 1 ? "" : "e"}{" "}
+                            {offeneKommentareId === p.id ? "▴" : "▾"}
+                          </button>
+                          {eng?.permalink && (
+                            <a
+                              href={eng.permalink}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="ml-auto text-foreground/50 hover:text-foreground"
+                            >
+                              Auf Facebook ↗
+                            </a>
+                          )}
+                        </div>
+                        {eng?.fehler && (
+                          <p className="mt-1 text-[11px] text-foreground/40">
+                            Konnte nicht von Facebook geladen werden — später „Aktualisieren" drücken.
+                          </p>
+                        )}
+                        {offeneKommentareId === p.id && (
+                          <div className="mt-2 flex flex-col gap-2">
+                            {!eng || eng.kommentare.length === 0 ? (
+                              <p className="text-[11px] text-foreground/40">Noch keine Kommentare.</p>
+                            ) : (
+                              eng.kommentare.map((k, i) => (
+                                <div key={i} className="rounded-xl bg-page-bg px-3 py-2">
+                                  <p className="text-[11px] font-medium">
+                                    {k.name}
+                                    {k.datum && (
+                                      <span className="ml-2 font-normal text-foreground/40">
+                                        {new Date(k.datum).toLocaleDateString("de-DE")}
+                                      </span>
+                                    )}
+                                  </p>
+                                  <p className="text-xs whitespace-pre-wrap">{k.text}</p>
+                                </div>
+                              ))
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    ) : (
+                      <p className="mt-2 border-t border-border pt-2 text-[11px] text-foreground/40">
+                        Likes &amp; Kommentare gibt es erst für Beiträge, die ab jetzt gepostet werden.
+                      </p>
+                    )}
+
+                    <div className="mt-2 flex justify-end">
+                      <button
+                        onClick={() => {
+                          if (confirm("Diesen Beitrag aus der Liste löschen? (Der Facebook-Post bleibt bestehen.)"))
+                            aktion({ aktion: "loeschen", id: p.id });
+                        }}
+                        className="text-[11px] text-red-500/70 hover:text-red-500"
+                      >
+                        🗑 Aus Liste entfernen
+                      </button>
+                    </div>
+                  </div>
+                </article>
+              );
+            })}
+          </div>
+        </aside>
+      )}
+      </div>{/* Ende zweispaltiges Layout */}
 
       {/* Tag-Pop-up */}
       {tagModal && (

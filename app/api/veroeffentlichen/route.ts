@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient, SupabaseClient } from "@supabase/supabase-js";
 import { isOwnerEmail } from "@/lib/owner";
+import { GRAPH, resolvePageAuth } from "@/lib/metaGraph";
 
 // Betreiber-Route: veröffentlicht einen Social-Post auf der uVise-Facebook-Seite
 // über die Meta Graph API. Instagram folgt, sobald Metas App-Review durch ist.
@@ -27,7 +28,6 @@ async function betreiberPruefen(request: Request): Promise<{ db: SupabaseClient 
   return { db: createClient(supabaseUrl, serviceKey) };
 }
 
-const GRAPH = "https://graph.facebook.com/v21.0";
 
 export async function POST(request: Request) {
   const auth = await betreiberPruefen(request);
@@ -43,57 +43,12 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Beitrag oder Text fehlt." }, { status: 400 });
   }
 
-  const storedToken = process.env.META_PAGE_ACCESS_TOKEN;
-  if (!storedToken) {
-    return NextResponse.json(
-      {
-        error:
-          "Der Facebook-Zugang ist noch nicht eingerichtet. Bitte den Zugriffstoken als META_PAGE_ACCESS_TOKEN bei Vercel eintragen und neu deployen.",
-      },
-      { status: 503 },
-    );
+  // Seiten-Nummer + Seiten-Token auflösen (gemeinsamer Helfer, lib/metaGraph.ts).
+  const auth2 = await resolvePageAuth();
+  if ("fehler" in auth2) {
+    return NextResponse.json({ error: auth2.fehler }, { status: auth2.status });
   }
-
-  // Seiten-Nummer und Seiten-Token bestimmen. META_PAGE_ACCESS_TOKEN darf ein
-  // langlebiger NUTZER-Token sein: dann liefert /me/accounts den (nicht
-  // ablaufenden) Seiten-Token. Ist es bereits ein Seiten-Token, greift der
-  // /me-Rückfall. So bleibt der Zugang über Monate gültig, statt 1–2 Stunden.
-  const wunschPageId = process.env.META_PAGE_ID || "1248245941695462";
-  let pageId = "";
-  let pageToken = storedToken;
-  try {
-    const accRes = await fetch(
-      `${GRAPH}/me/accounts?fields=id,access_token&access_token=${encodeURIComponent(storedToken)}`,
-    );
-    const accJson = (await accRes.json()) as {
-      data?: { id?: string; access_token?: string }[];
-    };
-    if (accRes.ok && Array.isArray(accJson.data) && accJson.data.length) {
-      const treffer = accJson.data.find((p) => p.id === wunschPageId) || accJson.data[0];
-      if (treffer?.id && treffer?.access_token) {
-        pageId = treffer.id;
-        pageToken = treffer.access_token;
-      }
-    }
-  } catch {
-    // Netzfehler ignorieren — unten folgt der /me-Rückfall.
-  }
-  // Rückfall: gespeicherter Wert ist schon ein Seiten-Token -> ID über /me holen.
-  if (!pageId) {
-    try {
-      const meRes = await fetch(`${GRAPH}/me?fields=id&access_token=${encodeURIComponent(pageToken)}`);
-      const meJson = (await meRes.json()) as { id?: string };
-      if (meRes.ok && meJson.id) pageId = meJson.id;
-    } catch {
-      // ignorieren — pageId-Prüfung folgt.
-    }
-  }
-  if (!pageId) {
-    return NextResponse.json(
-      { error: "Die Facebook-Seite konnte nicht bestimmt werden. Bitte den Zugriffstoken erneuern." },
-      { status: 502 },
-    );
-  }
+  const { pageId, pageToken } = auth2;
 
   // Ein Veröffentlichungs-Versuch an einen Graph-Endpunkt.
   type FbResult = { id?: string; post_id?: string; error?: { message?: string; code?: number } };
@@ -138,10 +93,15 @@ export async function POST(request: Request) {
     );
   }
 
-  const { error: updErr } = await db
-    .from("social_posts")
-    .update({ status: "veroeffentlicht" })
-    .eq("id", id);
+  // Facebook-Beitragsnummer merken (für Likes/Kommentare in der Galerie).
+  // Rückfall ohne fb_post_id, falls die Spalte (Migration 0031) noch fehlt.
+  const fbPostId = fbJson.post_id || fbJson.id || null;
+  let updErr = (
+    await db.from("social_posts").update({ status: "veroeffentlicht", fb_post_id: fbPostId }).eq("id", id)
+  ).error;
+  if (updErr) {
+    updErr = (await db.from("social_posts").update({ status: "veroeffentlicht" }).eq("id", id)).error;
+  }
   if (updErr) {
     // Post ist raus, nur der Status-Vermerk klemmt — nicht als Fehler werten.
     return NextResponse.json({ ok: true, warnung: "Veröffentlicht, aber Status nicht gespeichert." });
