@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Star, X } from "lucide-react";
-import { GOOGLE_REVIEW_URL } from "@/lib/legal";
+import { REVIEW_URL } from "@/lib/legal";
 
 // Dezenter Bewertungs-Banner fürs Web-Dashboard.
 // - Erscheint erst, wenn der Betrieb schon läuft (bereit = 1. Mitarbeiter + 1. Unterweisung).
@@ -34,7 +34,7 @@ export function ReviewBanner({ bereit }: { bereit: boolean }) {
   const [sichtbar, setSichtbar] = useState(false);
 
   useEffect(() => {
-    if (!GOOGLE_REVIEW_URL || !bereit) return;
+    if (!REVIEW_URL || !bereit) return;
     const s = laden();
     if (s.fertig) return;
     const jetzt = Date.now();
@@ -50,12 +50,12 @@ export function ReviewBanner({ bereit }: { bereit: boolean }) {
     <div className="mb-6 flex flex-wrap items-center gap-3 rounded-2xl border border-amber-400/40 bg-amber-500/10 px-4 py-3">
       <Star className="text-amber-500" size={20} />
       <p className="text-sm flex-1 min-w-[200px]">
-        <span className="font-medium">Gefällt dir uVise?</span> Eine kurze Google-Bewertung hilft anderen Betrieben und uns
+        <span className="font-medium">Gefällt dir uVise?</span> Eine kurze Bewertung hilft anderen Betrieben und uns
         enorm. ⭐
       </p>
       <div className="flex items-center gap-2">
         <a
-          href={GOOGLE_REVIEW_URL}
+          href={REVIEW_URL}
           target="_blank"
           rel="noreferrer"
           onClick={() => {
@@ -64,7 +64,7 @@ export function ReviewBanner({ bereit }: { bereit: boolean }) {
           }}
           className="rounded-full bg-amber-500 px-4 py-1.5 text-sm font-semibold text-white"
         >
-          Auf Google bewerten
+          Jetzt bewerten
         </a>
         <button
           onClick={() => setSichtbar(false)}
