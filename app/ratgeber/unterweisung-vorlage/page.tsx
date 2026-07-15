@@ -227,6 +227,11 @@ Unterschrift unterweisende Person: ______________`}
               dem Handy – und Mitarbeiter können sich jede Unterweisung in 41 Sprachen vorlesen
               lassen, bevor sie unterschreiben.
             </p>
+            <p className="mb-4 text-sm text-foreground/70">
+              Wichtig: Die Inhalte deiner Unterweisung bringst du selbst mit – uVise schreibt keine
+              fertigen Unterweisungs-Texte, sondern übernimmt die Verwaltung, die Fristen und die
+              rechtssichere Unterschrift.
+            </p>
             <Link
               href="/login?mode=register"
               className="inline-block rounded-full px-6 py-3 text-sm font-medium text-white"
