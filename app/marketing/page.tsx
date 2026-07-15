@@ -114,6 +114,7 @@ export default function MarketingPage() {
   const [kampLaeuft, setKampLaeuft] = useState(false);
   const [tagModal, setTagModal] = useState<string | null>(null);
   const [neuLaeuftId, setNeuLaeuftId] = useState<string | null>(null);
+  const [veroeffId, setVeroeffId] = useState<string | null>(null);
 
   async function kampagneErzeugen() {
     setKampLaeuft(true);
@@ -206,6 +207,36 @@ export default function MarketingPage() {
     setFehler(null);
     await laden();
     return true;
+  }
+
+  // Postet einen freigegebenen Beitrag über die Meta Graph API auf Facebook.
+  async function veroeffentlichen(p: Post) {
+    const t = await token();
+    if (!t) return;
+    // Bild: hochgeladenes bild_url (schon öffentliche URL) oder das generierte
+    // Beitragsbild von uvise.de (Facebook holt es sich über diese öffentliche URL).
+    const bild =
+      p.bild_url ??
+      `https://www.uvise.de/api/beitragsbild?text=${encodeURIComponent(bildText(p))}&format=quadrat&motiv=${motiv}${appAn ? "&app=1" : ""}`;
+    setVeroeffId(p.id);
+    setFehler(null);
+    try {
+      const res = await fetch("/api/veroeffentlichen", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${t}` },
+        body: JSON.stringify({ id: p.id, text: p.inhalt, bildUrl: bild }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setFehler(data.error ?? "Veröffentlichen fehlgeschlagen.");
+        return;
+      }
+      await laden();
+    } catch {
+      setFehler("Veröffentlichen fehlgeschlagen.");
+    } finally {
+      setVeroeffId(null);
+    }
   }
 
   async function generieren() {
@@ -519,6 +550,15 @@ export default function MarketingPage() {
                           )}
                           {p.status === "freigegeben" && (
                             <>
+                              <button
+                                onClick={() => veroeffentlichen(p)}
+                                disabled={veroeffId === p.id}
+                                className="rounded-full px-4 py-1.5 text-xs font-semibold text-white disabled:opacity-60"
+                                style={{ background: "#1877F2" }}
+                                title="Jetzt auf der uVise-Facebook-Seite veröffentlichen"
+                              >
+                                {veroeffId === p.id ? "Wird gepostet…" : "🚀 Auf Facebook posten"}
+                              </button>
                               <button
                                 onClick={() => navigator.clipboard.writeText(p.inhalt)}
                                 className="rounded-full border border-border px-4 py-1.5 text-xs"
