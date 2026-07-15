@@ -37,7 +37,7 @@ export function Sidebar() {
   const router = useRouter();
   const { questions, company, session, signOut } = useAppData();
   const openQuestions = questions.filter((q) => q.status === "offen").length;
-  const companyName = company?.name ?? "SicherAkte";
+  const companyName = company?.name ?? "uVise";
   // Betreiber-Ansichten (Besucherstatistik) nur für die Betreiber-Logins zeigen —
   // der Server prüft die Berechtigung zusätzlich selbst.
   const istBetreiber = isOwnerEmail(session?.user?.email);

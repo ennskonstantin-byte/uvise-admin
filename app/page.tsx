@@ -41,11 +41,13 @@ export const metadata: Metadata = {
     siteName: "uVise",
     locale: "de_DE",
     type: "website",
+    images: [{ url: "https://www.uvise.de/og-banner.png", width: 1200, height: 630, alt: "uVise — Digitale Unterweisungen" }],
   },
   twitter: {
     card: "summary_large_image",
     title: "uVise — Digitale Unterweisungen, Nachweise & Erinnerungen",
     description: BESCHREIBUNG,
+    images: ["https://www.uvise.de/og-banner.png"],
   },
 };
 
