@@ -139,3 +139,10 @@ export const CONTACT_EMAIL = 'info@ennsmedia.com';
 // Social-Media-Profile (in Footer/Menüs verlinkt).
 export const INSTAGRAM_URL = 'https://instagram.com/uvise_de';
 export const FACEBOOK_URL = 'https://www.facebook.com/profile.php?id=61591740459257';
+
+// Link zum Abgeben einer Google-Bewertung (Google Unternehmensprofil).
+// PLATZHALTER: sobald ein Google-Unternehmensprofil für uVise existiert, hier
+// den echten „Rezension schreiben"-Link eintragen (Form:
+// https://search.google.com/local/writereview?placeid=DEINE_PLACE_ID).
+// Leer lassen ("") blendet den Bewerten-Knopf im Web aus.
+export const GOOGLE_REVIEW_URL = '';

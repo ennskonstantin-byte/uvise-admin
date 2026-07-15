@@ -10,6 +10,7 @@ import { NewEmployeeWizard } from "@/components/NewEmployeeWizard";
 import { NewTrainingWizard } from "@/components/NewTrainingWizard";
 import { PlanModal } from "@/components/PlanModal";
 import { FeedbackCard } from "@/components/FeedbackCard";
+import { ReviewBanner } from "@/components/ReviewBanner";
 import { useAppData } from "@/lib/store";
 
 export default function DashboardPage() {
@@ -114,6 +115,8 @@ export default function DashboardPage() {
           )}
         </div>
       )}
+
+      <ReviewBanner bereit={employees.length > 0 && trainings.length > 0} />
 
       <PageHeader
         title="Dashboard"
