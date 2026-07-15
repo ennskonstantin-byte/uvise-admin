@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
+import { createClient } from "@supabase/supabase-js";
 import { resend, RESEND_FROM } from "@/lib/resend";
 import { CONTACT_EMAIL } from "@/lib/legal";
 
@@ -63,6 +64,15 @@ das **Anliegen**. Rufe das Werkzeug erst auf, wenn du alle drei hast. Bestätige
 Besucher danach kurz, dass die Nachricht beim Team angekommen ist und sich jemand
 per E-Mail meldet. Erfinde niemals Name oder E-Mail – die müssen vom Besucher kommen.
 
+# Feedback melden (Werkzeug "feedback_melden")
+Rufe zusätzlich das Werkzeug "feedback_melden" auf, sobald der Besucher eine
+Meinung zum Produkt äußert — Lob, Kritik, einen Verbesserungs- oder Funktionswunsch
+oder einen Hinweis auf ein Problem/einen Fehler. Das läuft im Hintergrund fürs
+uVise-Team; sprich es dem Besucher gegenüber nicht groß an, antworte einfach
+normal und freundlich weiter. Nutze es NICHT für reine Sachfragen (Preis, wie
+funktioniert X), sondern nur, wenn wirklich eine Bewertung, ein Wunsch oder eine
+Beschwerde dabei ist. Du kannst es zusammen mit einer normalen Antwort aufrufen.
+
 # Regeln für deine Antworten
 - Antworte kurz, freundlich, auf Deutsch, per "du". Meistens 2-5 Sätze.
 - Schreibe reinen Fließtext OHNE Markdown-Formatierung: KEINE Sternchen (** oder *), KEINE Rauten (#), KEINE Aufzählungszeichen wie "-" oder "*" am Zeilenanfang. Wenn du etwas aufzählst, nutze normale kurze Sätze oder eine Nummerierung wie "1)", "2)". Hebe Wörter durch die Wortwahl hervor, nie durch Sternchen – der Chat zeigt Sternchen sonst als sichtbare Zeichen an.
@@ -97,6 +107,54 @@ const TICKET_TOOL: Anthropic.Tool = {
     required: ["name", "email", "anliegen"],
   },
 };
+
+// Werkzeug, mit dem der Assistent Produkt-Feedback fürs Team festhält.
+const FEEDBACK_TOOL: Anthropic.Tool = {
+  name: "feedback_melden",
+  description:
+    "Halte Produkt-Feedback des Besuchers für das uVise-Team fest (Lob, Kritik, " +
+    "Wunsch, Problem/Fehler). Nur bei echter Bewertung/Wunsch/Beschwerde aufrufen, " +
+    "nicht bei reinen Sachfragen.",
+  input_schema: {
+    type: "object",
+    properties: {
+      kategorie: {
+        type: "string",
+        enum: ["lob", "kritik", "wunsch", "problem", "sonstiges"],
+        description: "Art des Feedbacks",
+      },
+      zusammenfassung: {
+        type: "string",
+        description: "Kurze, sachliche Zusammenfassung des Feedbacks in einem Satz (Deutsch)",
+      },
+      original: {
+        type: "string",
+        description: "Der ursprüngliche Wortlaut des Besuchers, so wie er es geschrieben hat",
+      },
+    },
+    required: ["kategorie", "zusammenfassung"],
+  },
+};
+
+// Speichert ein Feedback in der Datenbank (service_role, serverseitig).
+async function speichereFeedback(input: unknown): Promise<boolean> {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!url || !serviceKey) return false;
+  const d = (input ?? {}) as { kategorie?: unknown; zusammenfassung?: unknown; original?: unknown };
+  const erlaubt = ["lob", "kritik", "wunsch", "problem", "sonstiges"];
+  const kategorie = typeof d.kategorie === "string" && erlaubt.includes(d.kategorie) ? d.kategorie : "sonstiges";
+  const zusammenfassung = typeof d.zusammenfassung === "string" ? d.zusammenfassung.trim().slice(0, 500) : "";
+  const original = typeof d.original === "string" ? d.original.trim().slice(0, 1500) : null;
+  if (!zusammenfassung) return false;
+  try {
+    const db = createClient(url, serviceKey);
+    const { error } = await db.from("chat_feedback").insert({ kategorie, zusammenfassung, original });
+    return !error;
+  } catch {
+    return false;
+  }
+}
 
 // Verschickt ein aufgenommenes Ticket per E-Mail an die Kontakt-Adresse.
 // Gibt true zurück, wenn der Versand geklappt hat.
@@ -182,7 +240,7 @@ export async function POST(request: Request) {
       model: "claude-haiku-4-5",
       max_tokens: 1024,
       system: SYSTEM_PROMPT,
-      tools: [TICKET_TOOL],
+      tools: [TICKET_TOOL, FEEDBACK_TOOL],
       messages: verlauf,
     });
 
@@ -202,6 +260,14 @@ export async function POST(request: Request) {
               : "Das Ticket konnte nicht gesendet werden. Bitte den Besucher freundlich auf das Kontaktformular uvise.de/kontakt hinweisen.",
             is_error: !ok,
           });
+        } else if (block.type === "tool_use" && block.name === "feedback_melden") {
+          const ok = await speichereFeedback(block.input);
+          toolErgebnisse.push({
+            type: "tool_result",
+            tool_use_id: block.id,
+            content: ok ? "Feedback wurde für das Team festgehalten." : "Feedback konnte nicht gespeichert werden.",
+            is_error: !ok,
+          });
         }
       }
 
@@ -209,7 +275,7 @@ export async function POST(request: Request) {
         model: "claude-haiku-4-5",
         max_tokens: 1024,
         system: SYSTEM_PROMPT,
-        tools: [TICKET_TOOL],
+        tools: [TICKET_TOOL, FEEDBACK_TOOL],
         messages: [
           ...verlauf,
           { role: "assistant", content: ersteAntwort.content },

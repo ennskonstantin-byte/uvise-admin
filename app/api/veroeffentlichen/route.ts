@@ -93,11 +93,15 @@ export async function POST(request: Request) {
     );
   }
 
-  // Facebook-Beitragsnummer merken (für Likes/Kommentare in der Galerie).
-  // Rückfall ohne fb_post_id, falls die Spalte (Migration 0031) noch fehlt.
+  // Facebook-Beitragsnummer + Veröffentlichungszeitpunkt merken (für die Galerie).
+  // Rückfall ohne die neuen Spalten, falls Migration 0031/0032 noch fehlt.
   const fbPostId = fbJson.post_id || fbJson.id || null;
+  const jetzt = new Date().toISOString();
   let updErr = (
-    await db.from("social_posts").update({ status: "veroeffentlicht", fb_post_id: fbPostId }).eq("id", id)
+    await db
+      .from("social_posts")
+      .update({ status: "veroeffentlicht", fb_post_id: fbPostId, veroeffentlicht_am: jetzt })
+      .eq("id", id)
   ).error;
   if (updErr) {
     updErr = (await db.from("social_posts").update({ status: "veroeffentlicht" }).eq("id", id)).error;

@@ -53,16 +53,22 @@ Deutsch lesen. Zielgruppe: Chefs/Inhaber kleiner Betriebe (Handwerk, Produktion,
 Gastro, Lager), 5-30 Mitarbeiter, wenig Zeit, kein Bürokratie-Fan.
 
 Regeln:
-- Deutsch, per "du", locker und mit Augenzwinkern — gern ein kleiner Wortwitz oder eine pointierte Zeile, aber nie albern, platt oder gezwungen.
-- SEHR kurz: 1-3 knackige Sätze. Starte mit einem Haken, der sofort sitzt. Komm direkt auf den Punkt — kein Aufwärmen, kein Marketing-Blabla, kein langer Sermon.
+- WICHTIGSTE REGEL — Wortwitz: Jeder Beitrag MUSS einen echten sprachlichen Kniff haben: ein Wortspiel, eine überraschende Wendung, eine freche Pointe oder einen ironischen Kontrast. Der erste Satz ist ein Haken, der sofort sitzt und zum Schmunzeln bringt. Lieber frech und pointiert als brav und korrekt. Trotzdem nie albern, platt, kalauerig oder gezwungen — der Witz muss sitzen, nicht bemüht wirken.
+- Deutsch, per "du", locker, Augenzwinkern.
+- SEHR kurz: 1-3 knackige Sätze. Komm direkt auf den Punkt — kein Aufwärmen, kein Marketing-Blabla, kein langer Sermon.
 - Ein konkretes Alltagsproblem oder ein klarer Nutzen, greifbar — nicht abstrakt über "Digitalisierung".
 - Danach EINE eigene Zeile mit nur 2-3 passenden Hashtags.
 - Keine erfundenen Zahlen oder Kundenstimmen, höchstens 1 Emoji, keine übertriebenen Versprechen.
 - Zum Schluss ein ganz knapper Hinweis auf uvise.de (7 Tage kostenlos testen) — kurz halten.
 
-So klingt der Ton (nur als Stil-Beispiel, NICHT wörtlich übernehmen):
+So klingt der Ton — pointiert, mit Kniff (nur Stil-Beispiele, NICHT wörtlich übernehmen):
 - "Zettelwirtschaft war gestern. Unterschrift aufs Handy — fertig."
-- "Fristen im Kopf behalten? Überlass das Kopfrechnen lieber uns."`;
+- "Fristen im Kopf behalten? Überlass das Kopfrechnen lieber uns."
+- "Der Ordner 'Unterweisungen 2019' vermisst dich nicht. Wir auch nicht."
+- "Die Betriebsprüfung kommt bestimmt. Deine Nachweise ab jetzt auch."
+- "Erste Hilfe kann jeder. An die Frist denken – das ist die Kunst."
+
+Wenn du mehrere Beiträge schreibst, nutzt jeder einen ANDEREN Kniff — nicht mehrmals dasselbe Muster.`;
 
 type Entwurf = { inhalt: string; bild_titel: string | null };
 
@@ -286,7 +292,9 @@ export async function POST(request: Request) {
   }
 
   if (body.aktion === "alle-loeschen") {
-    const { error } = await db.from("social_posts").delete().not("id", "is", null);
+    // Veröffentlichte Beiträge bleiben erhalten (Galerie) — nur Entwürfe,
+    // Freigegebene und Verworfene werden entfernt.
+    const { error } = await db.from("social_posts").delete().neq("status", "veroeffentlicht");
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
     return NextResponse.json({ ok: true });
   }

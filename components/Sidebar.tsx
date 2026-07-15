@@ -139,11 +139,6 @@ export function Sidebar() {
         Logout
       </button>
 
-      <div className="p-4 mx-3 mb-2 rounded-2xl bg-white/5 text-xs text-white/70">
-        <p className="font-medium text-white">Testphase: 4 Tage übrig</p>
-        <p className="mt-1">Wähle jetzt dein Abo, um nahtlos weiterzumachen.</p>
-      </div>
-
       <nav aria-label="Rechtliches" className="flex justify-center gap-3 pb-4 text-[11px] text-white/40">
         <Link href="/impressum" className="hover:text-white/80">Impressum</Link>
         <Link href="/datenschutz" className="hover:text-white/80">Datenschutz</Link>

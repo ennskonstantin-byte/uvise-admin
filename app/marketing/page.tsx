@@ -15,6 +15,7 @@ type Post = {
   bild_titel?: string | null;
   geplant_am?: string | null;
   fb_post_id?: string | null;
+  veroeffentlicht_am?: string | null;
 };
 
 // Likes/Kommentare eines echten Facebook-Posts (aus /api/fb-engagement).
@@ -132,6 +133,7 @@ export default function MarketingPage() {
   const [engagementLaedt, setEngagementLaedt] = useState(false);
   const [offeneKommentareId, setOffeneKommentareId] = useState<string | null>(null);
   const [ganzerTextId, setGanzerTextId] = useState<string | null>(null);
+  const [alleZeigen, setAlleZeigen] = useState(false); // Galerie: alle vs. erste 6
 
   async function kampagneErzeugen() {
     setKampLaeuft(true);
@@ -303,9 +305,13 @@ export default function MarketingPage() {
       hinweis: "Mit dem 🚀-Knopf direkt veröffentlichen — oder ein Datum für den Redaktionsplan setzen.",
     },
   ];
+  const veroeffentlichtDatum = (p: Post) => p.veroeffentlicht_am || p.created_at;
   const veroeffentlichte = posts
     .filter((p) => p.status === "veroeffentlicht")
-    .sort((a, b) => (a.created_at < b.created_at ? 1 : -1));
+    .sort((a, b) => (veroeffentlichtDatum(a) < veroeffentlichtDatum(b) ? 1 : -1));
+  // Bei vielen Posts erst 6 zeigen, Rest per Klick ausklappen.
+  const GALERIE_ANFANG = 6;
+  const galerieSichtbar = alleZeigen ? veroeffentlichte : veroeffentlichte.slice(0, GALERIE_ANFANG);
 
   // Zellen für das Monatsraster: Leerfelder vor dem 1., dann alle Tage mit
   // den auf diesen Tag geplanten Beiträgen.
@@ -778,7 +784,7 @@ export default function MarketingPage() {
           )}
 
           <div className="flex flex-col gap-4">
-            {veroeffentlichte.map((p) => {
+            {galerieSichtbar.map((p) => {
               const eng = p.fb_post_id ? engagement[p.fb_post_id] : undefined;
               const bild =
                 p.bild_url ??
@@ -790,7 +796,14 @@ export default function MarketingPage() {
                   <div className="p-3">
                     <div className="flex items-center gap-2 text-[11px] text-foreground/50 mb-1.5">
                       <span className="rounded-full border border-border px-2 py-0.5">{PLATTFORM_LABEL[p.plattform]}</span>
-                      <span className="ml-auto">{new Date(p.created_at).toLocaleDateString("de-DE")}</span>
+                      <span className="ml-auto" title="Veröffentlicht am">
+                        📅{" "}
+                        {new Date(veroeffentlichtDatum(p)).toLocaleDateString("de-DE", {
+                          day: "2-digit",
+                          month: "2-digit",
+                          year: "numeric",
+                        })}
+                      </span>
                     </div>
                     <p className={`text-xs whitespace-pre-wrap ${ganzerTextId === p.id ? "" : "line-clamp-3"}`}>{p.inhalt}</p>
                     <button
@@ -872,6 +885,17 @@ export default function MarketingPage() {
               );
             })}
           </div>
+
+          {veroeffentlichte.length > GALERIE_ANFANG && (
+            <button
+              onClick={() => setAlleZeigen((v) => !v)}
+              className="mt-4 w-full rounded-full border border-border px-4 py-2 text-xs text-foreground/70 hover:bg-surface"
+            >
+              {alleZeigen
+                ? "Weniger anzeigen ▴"
+                : `Alle ${veroeffentlichte.length} anzeigen ▾ (${veroeffentlichte.length - GALERIE_ANFANG} weitere)`}
+            </button>
+          )}
         </aside>
       )}
       </div>{/* Ende zweispaltiges Layout */}

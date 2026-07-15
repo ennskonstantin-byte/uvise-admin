@@ -9,6 +9,7 @@ import { EmployeeCard } from "@/components/EmployeeCard";
 import { NewEmployeeWizard } from "@/components/NewEmployeeWizard";
 import { NewTrainingWizard } from "@/components/NewTrainingWizard";
 import { PlanModal } from "@/components/PlanModal";
+import { FeedbackCard } from "@/components/FeedbackCard";
 import { useAppData } from "@/lib/store";
 
 export default function DashboardPage() {
@@ -185,6 +186,11 @@ export default function DashboardPage() {
           </p>
         )}
       </Card>
+
+      {/* Nur für den Betreiber sichtbar (rendert sich selbst weg, wenn kein Betreiber) */}
+      <div className="mt-6">
+        <FeedbackCard />
+      </div>
 
       {showEmployeeWizard && (
         <NewEmployeeWizard onClose={() => setShowEmployeeWizard(false)} />

@@ -94,7 +94,8 @@ function zeile(farbe: string, name: string, unter: string, punkt: string, fotoUr
 
 // Der Inhalt des Handy-Bildschirms — drei wechselnde uVise-Ansichten.
 // fotos: echte Mitarbeiterfotos für die Dashboard-Ansicht (optional).
-function appScreen(kind: number, fotos?: (string | null)[]) {
+// logoUri: echtes uVise-Logo (data-URI) für den Kopf.
+function appScreen(kind: number, fotos?: (string | null)[], logoUri?: string | null) {
   const kopf = (
     <div
       style={{
@@ -111,16 +112,20 @@ function appScreen(kind: number, fotos?: (string | null)[]) {
           width: 28,
           height: 28,
           borderRadius: 8,
-          background: "rgba(255,255,255,0.25)",
           display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          fontSize: 17,
-          fontWeight: 700,
-          color: "white",
+          ...(logoUri
+            ? { backgroundImage: `url(${logoUri})`, backgroundSize: "cover", backgroundPosition: "center" }
+            : {
+                background: "rgba(255,255,255,0.25)",
+                alignItems: "center",
+                justifyContent: "center",
+                fontSize: 17,
+                fontWeight: 700,
+                color: "white",
+              }),
         }}
       >
-        U
+        {logoUri ? "" : "U"}
       </div>
       <div style={{ fontSize: 18, fontWeight: 700, color: "white" }}>uVise</div>
     </div>
@@ -237,11 +242,14 @@ export async function GET(request: Request) {
   const pw = quer ? 250 : 360;
   const screenKind = hash(roh) % 3;
 
+  const origin = new URL(request.url).origin;
+  // Echtes uVise-Logo laden (für Kopf + Handy-Kopf).
+  const logoUri = await holeDatei(`${origin}/logo-mark.png`);
+
   // Für die Dashboard-Ansicht echte Demo-Mitarbeiterfotos aus /public laden,
   // damit die Avatare im Handy nicht leer sind.
   let personenFotos: (string | null)[] | undefined;
   if (zeigeApp && screenKind === 0) {
-    const origin = new URL(request.url).origin;
     personenFotos = await Promise.all([
       holeDatei(`${origin}/marketing/mitarbeiter-buero.jpg`),
       holeDatei(`${origin}/marketing/mitarbeiter-lager.jpg`),
@@ -310,7 +318,7 @@ export async function GET(request: Request) {
                 boxShadow: "0 40px 80px rgba(0,0,0,0.55)",
               }}
             >
-              {appScreen(screenKind, personenFotos)}
+              {appScreen(screenKind, personenFotos, logoUri)}
             </div>
           </div>
         )}
@@ -334,15 +342,17 @@ export async function GET(request: Request) {
                 width: 76,
                 height: 76,
                 borderRadius: 20,
-                background: GRAD,
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
                 fontSize: 46,
                 fontWeight: 700,
+                ...(logoUri
+                  ? { backgroundImage: `url(${logoUri})`, backgroundSize: "cover", backgroundPosition: "center" }
+                  : { background: GRAD }),
               }}
             >
-              U
+              {logoUri ? "" : "U"}
             </div>
             <div style={{ fontSize: 42, fontWeight: 700 }}>uVise</div>
           </div>
