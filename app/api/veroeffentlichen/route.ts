@@ -55,25 +55,41 @@ export async function POST(request: Request) {
     );
   }
 
-  // Mit Bild -> /photos (Bild aus öffentlicher URL), sonst -> /feed (nur Text).
-  const params = new URLSearchParams({ access_token: pageToken });
-  let endpoint: string;
-  if (bildUrl) {
-    endpoint = `${GRAPH}/${pageId}/photos`;
-    params.set("url", bildUrl);
-    params.set("caption", text);
-  } else {
-    endpoint = `${GRAPH}/${pageId}/feed`;
-    params.set("message", text);
+  // Ein Veröffentlichungs-Versuch an einen Graph-Endpunkt.
+  type FbResult = { id?: string; post_id?: string; error?: { message?: string; code?: number } };
+  async function versuch(endpoint: string, felder: Record<string, string>): Promise<{ ok: boolean; json: FbResult }> {
+    const params = new URLSearchParams({ access_token: pageToken as string, ...felder });
+    const res = await fetch(endpoint, { method: "POST", body: params });
+    const json = (await res.json()) as FbResult;
+    return { ok: res.ok && !json.error, json };
   }
 
-  let fbJson: { id?: string; post_id?: string; error?: { message?: string } };
+  // Mit Bild zuerst /photos versuchen. Fehlt die Bild-Berechtigung
+  // (z. B. pages_manage_metadata), fällt es automatisch auf einen reinen
+  // Text-Beitrag (/feed) zurück, damit der Beitrag trotzdem rausgeht.
+  let fbJson: FbResult;
+  let ohneBild = false;
   try {
-    const fbRes = await fetch(endpoint, { method: "POST", body: params });
-    fbJson = await fbRes.json();
-    if (!fbRes.ok || fbJson.error) {
-      const msg = fbJson.error?.message || "Facebook hat die Veröffentlichung abgelehnt.";
-      return NextResponse.json({ error: `Facebook: ${msg}` }, { status: 502 });
+    if (bildUrl) {
+      const mitBild = await versuch(`${GRAPH}/${pageId}/photos`, { url: bildUrl, caption: text });
+      if (mitBild.ok) {
+        fbJson = mitBild.json;
+      } else {
+        const textNur = await versuch(`${GRAPH}/${pageId}/feed`, { message: text });
+        if (!textNur.ok) {
+          const msg = textNur.json.error?.message || mitBild.json.error?.message || "Facebook hat die Veröffentlichung abgelehnt.";
+          return NextResponse.json({ error: `Facebook: ${msg}` }, { status: 502 });
+        }
+        fbJson = textNur.json;
+        ohneBild = true;
+      }
+    } else {
+      const textNur = await versuch(`${GRAPH}/${pageId}/feed`, { message: text });
+      if (!textNur.ok) {
+        const msg = textNur.json.error?.message || "Facebook hat die Veröffentlichung abgelehnt.";
+        return NextResponse.json({ error: `Facebook: ${msg}` }, { status: 502 });
+      }
+      fbJson = textNur.json;
     }
   } catch {
     return NextResponse.json(
@@ -91,5 +107,9 @@ export async function POST(request: Request) {
     return NextResponse.json({ ok: true, warnung: "Veröffentlicht, aber Status nicht gespeichert." });
   }
 
-  return NextResponse.json({ ok: true, fbPostId: fbJson.post_id || fbJson.id });
+  return NextResponse.json({
+    ok: true,
+    fbPostId: fbJson.post_id || fbJson.id,
+    ...(ohneBild ? { warnung: "Als Text veröffentlicht — das Bild braucht noch eine zusätzliche Facebook-Berechtigung." } : {}),
+  });
 }

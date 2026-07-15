@@ -91,6 +91,7 @@ function bildText(p: Post): string {
 export default function MarketingPage() {
   const [posts, setPosts] = useState<Post[]>([]);
   const [fehler, setFehler] = useState<string | null>(null);
+  const [hinweis, setHinweis] = useState<string | null>(null);
   const [laedt, setLaedt] = useState(true);
 
   const [thema, setThema] = useState("");
@@ -220,6 +221,7 @@ export default function MarketingPage() {
       `https://www.uvise.de/api/beitragsbild?text=${encodeURIComponent(bildText(p))}&format=quadrat&motiv=${motiv}${appAn ? "&app=1" : ""}`;
     setVeroeffId(p.id);
     setFehler(null);
+    setHinweis(null);
     try {
       const res = await fetch("/api/veroeffentlichen", {
         method: "POST",
@@ -231,6 +233,7 @@ export default function MarketingPage() {
         setFehler(data.error ?? "Veröffentlichen fehlgeschlagen.");
         return;
       }
+      setHinweis(data.warnung ?? "Auf Facebook veröffentlicht. 🎉");
       await laden();
     } catch {
       setFehler("Veröffentlichen fehlgeschlagen.");
@@ -474,6 +477,10 @@ export default function MarketingPage() {
 
       {fehler && (
         <div className="rounded-2xl border border-red-500/40 bg-red-500/10 p-4 text-sm max-w-2xl mb-8 whitespace-pre-wrap">{fehler}</div>
+      )}
+
+      {hinweis && (
+        <div className="rounded-2xl border border-green-500/40 bg-green-500/10 p-4 text-sm max-w-2xl mb-8 whitespace-pre-wrap">{hinweis}</div>
       )}
 
       {laedt && <p className="text-sm text-foreground/50">Lädt…</p>}
