@@ -121,20 +121,23 @@ export function AppPreview() {
         {current.hint}
       </motion.p>
 
-      <div className="flex items-center gap-3 mt-5">
+      {/* Offizielle Apple-/Google-Play-Buttons (schwarz mit hellem Keyline-Rand,
+          damit sie auch auf dunklem Hintergrund gut sichtbar sind). flex-wrap:
+          bricht auf schmalen Handy-Ansichten sauber um. */}
+      <div className="flex flex-wrap items-center justify-center gap-3 mt-6">
         {[
-          { Logo: AppleLogo, line1: "Bald verfügbar im", line2: "App Store" },
-          { Logo: GooglePlayLogo, line1: "Bald verfügbar bei", line2: "Google Play" },
+          { Logo: AppleLogo, line1: "Laden im", line2: "App Store" },
+          { Logo: GooglePlayLogo, line1: "Jetzt bei", line2: "Google Play" },
         ].map(({ Logo, line1, line2 }) => (
           <div
             key={line2}
-            className="flex items-center gap-2.5 rounded-xl bg-neutral-900 px-3.5 py-2 opacity-80"
+            className="flex items-center gap-2.5 rounded-[11px] border border-white/50 bg-black px-4 py-2 text-white shadow-lg"
             title={`${line2} — bald verfügbar`}
           >
-            <Logo size={20} />
-            <div className="leading-tight text-white">
-              <p className="text-[9px] text-white/60">{line1}</p>
-              <p className="text-xs font-semibold">{line2}</p>
+            <Logo size={24} />
+            <div className="text-left leading-none">
+              <p className="text-[10px] font-normal tracking-wide text-white/85">{line1}</p>
+              <p className="mt-0.5 text-[17px] font-semibold">{line2}</p>
             </div>
           </div>
         ))}
