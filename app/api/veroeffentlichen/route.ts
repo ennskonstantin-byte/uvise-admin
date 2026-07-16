@@ -38,11 +38,17 @@ export async function POST(request: Request) {
 
   const body = await request.json();
   const id = typeof body.id === "string" ? body.id : null;
-  const text = typeof body.text === "string" ? body.text.trim() : "";
+  let text = typeof body.text === "string" ? body.text.trim() : "";
   const bildUrl = typeof body.bildUrl === "string" && body.bildUrl.trim() ? body.bildUrl.trim() : null;
 
   if (!id || !text) {
     return NextResponse.json({ error: "Beitrag oder Text fehlt." }, { status: 400 });
+  }
+
+  // Website-Link immer in den Beitragstext (Facebook macht ihn klickbar; bei
+  // Instagram steht er als Text). Nicht doppelt anhängen, wenn schon enthalten.
+  if (!/uvise\.de/i.test(text)) {
+    text = `${text}\n\n👉 www.uvise.de`;
   }
 
   // Seiten-Nummer + Seiten-Token auflösen (gemeinsamer Helfer, lib/metaGraph.ts).
