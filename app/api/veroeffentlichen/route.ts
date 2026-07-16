@@ -105,7 +105,10 @@ export async function POST(request: Request) {
     if (!igId) {
       igHinweis = "Instagram noch nicht verbunden — dort wurde nichts gepostet.";
     } else {
-      const ig = await postToInstagram(igId, pageToken, text, bildUrl);
+      // Instagram akzeptiert nur JPG. Bild über den JPG-Umwandler (/api/jpg)
+      // leiten, damit auch unser PNG-Beitragsbild funktioniert.
+      const igBildUrl = `https://www.uvise.de/api/jpg?url=${encodeURIComponent(bildUrl)}`;
+      const ig = await postToInstagram(igId, pageToken, text, igBildUrl);
       if (ig.ok) igOk = true;
       else igHinweis = `Instagram: ${ig.fehler}`;
     }
