@@ -39,7 +39,7 @@ Wir hosten die Inhalte unserer Website bei folgendem Anbieter:
 
 Vercel Inc., 340 S Lemon Ave #4133, Walnut, CA 91789, USA
 
-Das externe Hosting erfolgt zum Zwecke der Vertragserfüllung gegenüber unseren Kunden (Art. 6 Abs. 1 lit. b DSGVO) und im Interesse einer sicheren, schnellen und effizienten Bereitstellung unseres Online-Angebots (Art. 6 Abs. 1 lit. f DSGVO). Mit Vercel besteht ein Vertrag über Auftragsverarbeitung (AVV).
+Die serverseitige Verarbeitung (Serverless-Funktionen, z. B. E-Mail-Erinnerungen) ist auf die Region Frankfurt (EU) festgelegt; personenbezogene Daten werden dort innerhalb der Europäischen Union verarbeitet. Vercel Inc. ist ein US-Unternehmen; für etwaige Übermittlungen in die USA (z. B. Support- oder Verwaltungszugriffe) gelten die EU-Standardvertragsklauseln. Das externe Hosting erfolgt zum Zwecke der Vertragserfüllung gegenüber unseren Kunden (Art. 6 Abs. 1 lit. b DSGVO) und im Interesse einer sicheren, schnellen und effizienten Bereitstellung unseres Online-Angebots (Art. 6 Abs. 1 lit. f DSGVO). Mit Vercel besteht ein Vertrag über Auftragsverarbeitung (AVV).
 
 3. Verantwortliche Stelle
 
@@ -70,11 +70,17 @@ Supabase Inc. (c/o Incorporating Services, Ltd., Dover, Delaware, USA) — Daten
 
 Resend (Plus Five Five, Inc.) — Versand von Transaktions-E-Mails (Erinnerungen an ablaufende Unterweisungen/Qualifikationen, Passwort-Zurücksetzen). Rechtsgrundlage: Art. 6 Abs. 1 lit. b und f DSGVO.
 
-Vercel Inc. — Hosting der Website (siehe Punkt 2) sowie optional Vercel Analytics zur anonymisierten Analyse der Websitenutzung, ohne Cookies und ohne personenbezogene Profile. Rechtsgrundlage: Art. 6 Abs. 1 lit. f DSGVO (berechtigtes Interesse an der Verbesserung des Angebots).
+Vercel Inc. — Hosting der Website (siehe Punkt 2) sowie optional Vercel Analytics zur anonymisierten Analyse der Websitenutzung, ohne Cookies und ohne personenbezogene Profile. Die serverseitigen Funktionen sind auf die Region Frankfurt (EU) festgelegt. Rechtsgrundlage: Art. 6 Abs. 1 lit. f DSGVO (berechtigtes Interesse an der Verbesserung des Angebots).
 
 Stripe (Stripe Payments Europe, Ltd.) — Abwicklung der Zahlungen für kostenpflichtige uVise-Abonnements. Bei einer Zahlung übermitteln wir die zur Zahlungsabwicklung erforderlichen Daten (u. a. Name, E-Mail, Zahlungsdaten) an Stripe. Rechtsgrundlage: Art. 6 Abs. 1 lit. b DSGVO (Vertragserfüllung). Es gelten die Datenschutzbestimmungen von Stripe.
 
-Anthropic (Anthropic PBC, USA) — Für den Chat-Assistenten auf der Website und zur Erstellung von Marketing-Textentwürfen setzen wir das KI-Modell "Claude" von Anthropic ein. Dabei werden ausschließlich die eingegebenen Texte (Chat-Nachrichten bzw. Themenvorgaben) zur Erzeugung einer Antwort an Anthropic übermittelt; es werden keine Konto- oder Mitarbeiterdaten übertragen. Für die Übermittlung in die USA gelten die EU-Standardvertragsklauseln. Rechtsgrundlage: Art. 6 Abs. 1 lit. f DSGVO (berechtigtes Interesse an der Beantwortung von Nutzeranfragen und der Erstellung eigener Inhalte).
+Anthropic (Anthropic PBC, USA) — Für den Chat-Assistenten auf der Website, zur Erstellung von Marketing-Textentwürfen sowie zur Übersetzung von Unterweisungstexten setzen wir das KI-Modell "Claude" von Anthropic ein. Dabei werden ausschließlich die eingegebenen bzw. zu übersetzenden Texte zur Erzeugung einer Antwort an Anthropic übermittelt; es werden keine Konto- oder Mitarbeiterstammdaten übertragen. Für die Übermittlung in die USA gelten die EU-Standardvertragsklauseln. Rechtsgrundlage: Art. 6 Abs. 1 lit. f DSGVO (berechtigtes Interesse an der Beantwortung von Nutzeranfragen, der Erstellung eigener Inhalte und der Bereitstellung mehrsprachiger Unterweisungen).
+
+Google (Google Ireland Limited, Irland, bzw. Google LLC, USA) — Für die Vorlese-Funktion („Text-to-Speech") wandeln wir Unterweisungstexte in natürlich klingende Sprache um. Übermittelt wird ausschließlich der vorzulesende Text, keine personenbezogenen Stammdaten. Für etwaige Übermittlungen in die USA gelten das EU-US Data Privacy Framework bzw. die EU-Standardvertragsklauseln. Rechtsgrundlage: Art. 6 Abs. 1 lit. f DSGVO (berechtigtes Interesse an barrierearmer, mehrsprachiger Bereitstellung der Unterweisungen).
+
+Pexels (Pexels GmbH, Deutschland) — Abruf lizenzfreier Stockfotos für die Gestaltung von Marketing-Beitragsbildern. Es werden ausschließlich Suchbegriffe übermittelt, keine personenbezogenen Daten. Rechtsgrundlage: Art. 6 Abs. 1 lit. f DSGVO.
+
+Meta (Meta Platforms Ireland Ltd., Irland) — uVise betreibt eigene Profile bei Facebook und Instagram und veröffentlicht dort über die Meta Graph API selbst erstellte Marketing-Beiträge. Dabei werden keine Kunden- oder Mitarbeiterdaten übermittelt, sondern ausschließlich die vom Betreiber erstellten Inhalte. Beim Aufruf unserer Social-Media-Profile gelten die Datenschutzbestimmungen von Meta. Rechtsgrundlage: Art. 6 Abs. 1 lit. f DSGVO (berechtigtes Interesse an Öffentlichkeitsarbeit).
 
 6. Kontaktformular und Support-Anfragen
 
@@ -121,13 +127,16 @@ Das Abonnement läuft auf unbestimmte Zeit und ist monatlich, jeweils zum Ende d
 6. Pflichten des Kunden
 Der Kunde ist verantwortlich für die Richtigkeit der von ihm eingegebenen Daten (u. a. Mitarbeiterdaten) sowie dafür, seine Mitarbeiter im erforderlichen Umfang gemäß DSGVO über die Verarbeitung ihrer Daten zu informieren (siehe Datenschutzerklärung). Zugangsdaten sind vom Kunden vertraulich zu behandeln und nicht an Dritte weiterzugeben.
 
-7. Verfügbarkeit
+7. Datenschutz und Auftragsverarbeitung
+Soweit der Anbieter im Rahmen der Nutzung von uVise personenbezogene Daten der Mitarbeiter des Kunden verarbeitet, geschieht dies ausschließlich im Auftrag und nach Weisung des Kunden als Auftragsverarbeiter im Sinne von Art. 28 DSGVO. Der Kunde bleibt für diese Daten datenschutzrechtlich Verantwortlicher. Die Bestimmungen zur Auftragsverarbeitung (u. a. Gegenstand, Art und Zweck der Verarbeitung, technisch-organisatorische Maßnahmen sowie die eingesetzten Unterauftragsverarbeiter) sind in der Datenschutzerklärung geregelt und werden mit Vertragsschluss verbindlicher Bestandteil dieses Vertrags. Die personenbezogenen Daten werden in einem Rechenzentrum innerhalb der Europäischen Union (Irland) gespeichert; die serverseitige Verarbeitung erfolgt in der EU. Die vom Anbieter eingesetzten Unterauftragsverarbeiter sind in der Datenschutzerklärung benannt; über Änderungen wird der Kunde informiert. Der Kunde ist verpflichtet, seine Mitarbeiter im gesetzlich erforderlichen Umfang über die Verarbeitung ihrer Daten zu informieren.
+
+8. Verfügbarkeit
 Der Anbieter bemüht sich um eine Verfügbarkeit der Software von 99 % im Jahresmittel. Hiervon ausgenommen sind Zeiten, in denen die Software aufgrund von Wartungsarbeiten, die dem Kunden nach Möglichkeit vorab angekündigt werden, oder aufgrund von Umständen, die der Anbieter nicht zu vertreten hat (z. B. Ausfälle bei Hosting- oder Infrastrukturanbietern), nicht erreichbar ist.
 
-8. Haftung
+9. Haftung
 Der Anbieter haftet unbeschränkt für Vorsatz und grobe Fahrlässigkeit sowie nach Maßgabe des Produkthaftungsgesetzes. Für Schäden aus der Verletzung des Lebens, des Körpers oder der Gesundheit haftet der Anbieter ebenfalls unbeschränkt. Bei leicht fahrlässiger Verletzung wesentlicher Vertragspflichten (Kardinalpflichten) ist die Haftung auf den bei Vertragsschluss vorhersehbaren, vertragstypischen Schaden begrenzt. Im Übrigen ist die Haftung für leichte Fahrlässigkeit ausgeschlossen. Für den Verlust von Daten haftet der Anbieter nur in Höhe des Aufwands, der bei ordnungsgemäßer regelmäßiger Datensicherung durch den Kunden zur Wiederherstellung der Daten erforderlich gewesen wäre.
 
-9. Schlussbestimmungen
+10. Schlussbestimmungen
 Es gilt das Recht der Bundesrepublik Deutschland unter Ausschluss des UN-Kaufrechts. Gerichtsstand für alle Streitigkeiten aus oder im Zusammenhang mit diesem Vertrag ist, soweit gesetzlich zulässig, der Sitz des Anbieters. Sollten einzelne Bestimmungen dieser AGB unwirksam sein, bleibt die Wirksamkeit der übrigen Bestimmungen davon unberührt.`;
 
 // Support-Kontakt — später durch echte Support-Adresse (z.B. support@uvise.de) ersetzen.
