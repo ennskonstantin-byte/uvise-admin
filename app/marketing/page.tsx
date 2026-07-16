@@ -281,7 +281,7 @@ export default function MarketingPage() {
         setFehler(data.error ?? "Veröffentlichen fehlgeschlagen.");
         return;
       }
-      setHinweis(data.warnung ?? "Auf Facebook veröffentlicht. 🎉");
+      setHinweis(data.warnung ?? "Auf Facebook und Instagram veröffentlicht. 🎉");
       await laden();
     } catch {
       setFehler("Veröffentlichen fehlgeschlagen.");
@@ -620,9 +620,9 @@ export default function MarketingPage() {
                                 disabled={veroeffId === p.id}
                                 className="rounded-full px-4 py-1.5 text-xs font-semibold text-white disabled:opacity-60"
                                 style={{ background: "#1877F2" }}
-                                title="Jetzt auf der uVise-Facebook-Seite veröffentlichen"
+                                title="Jetzt auf Facebook und Instagram (mit Bild) veröffentlichen"
                               >
-                                {veroeffId === p.id ? "Wird gepostet…" : "🚀 Auf Facebook posten"}
+                                {veroeffId === p.id ? "Wird gepostet…" : "🚀 Auf Facebook + Instagram posten"}
                               </button>
                               <button
                                 onClick={() => navigator.clipboard.writeText(p.inhalt)}
@@ -779,7 +779,7 @@ export default function MarketingPage() {
 
           {veroeffentlichte.length === 0 && (
             <p className="rounded-2xl border border-dashed border-border p-4 text-sm text-foreground/50">
-              Noch nichts veröffentlicht — links einen freigegebenen Beitrag mit „🚀 Auf Facebook posten" rausschicken.
+              Noch nichts veröffentlicht — links einen freigegebenen Beitrag mit „🚀 Auf Facebook + Instagram posten" rausschicken.
             </p>
           )}
 
