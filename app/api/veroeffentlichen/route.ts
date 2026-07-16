@@ -1,11 +1,13 @@
 import { NextResponse } from "next/server";
 import { createClient, SupabaseClient } from "@supabase/supabase-js";
 import { isOwnerEmail } from "@/lib/owner";
-import { GRAPH, resolvePageAuth } from "@/lib/metaGraph";
+import { GRAPH, resolvePageAuth, resolveInstagramAccountId, postToInstagram } from "@/lib/metaGraph";
 
 // Betreiber-Route: veröffentlicht einen Social-Post auf der uVise-Facebook-Seite
-// über die Meta Graph API. Instagram folgt, sobald Metas App-Review durch ist.
-//   POST { id, text, bildUrl } -> postet auf Facebook, setzt Status "veroeffentlicht"
+// über die Meta Graph API und versucht zusätzlich Instagram (nur mit Bild und
+// wenn ein Instagram-Business-Konto verbunden + freigeschaltet ist). Instagram
+// schlägt NIE auf Facebook durch — es gibt dann nur einen Hinweis.
+//   POST { id, text, bildUrl } -> postet auf Facebook (+ Instagram), setzt Status "veroeffentlicht"
 
 async function betreiberPruefen(request: Request): Promise<{ db: SupabaseClient } | NextResponse> {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -93,6 +95,24 @@ export async function POST(request: Request) {
     );
   }
 
+  // --- Instagram (zusätzlich, best effort) ---------------------------------
+  // Instagram verlangt IMMER ein Bild. Fehlt das Konto/die Berechtigung, bleibt
+  // Facebook trotzdem erfolgreich; wir merken uns nur einen ehrlichen Hinweis.
+  let igHinweis: string | null = null;
+  let igOk = false;
+  if (bildUrl) {
+    const igId = await resolveInstagramAccountId(pageId, pageToken);
+    if (!igId) {
+      igHinweis = "Instagram noch nicht verbunden — dort wurde nichts gepostet.";
+    } else {
+      const ig = await postToInstagram(igId, pageToken, text, bildUrl);
+      if (ig.ok) igOk = true;
+      else igHinweis = `Instagram: ${ig.fehler}`;
+    }
+  } else {
+    igHinweis = "Instagram übersprungen — dort sind nur Beiträge mit Bild möglich.";
+  }
+
   // Facebook-Beitragsnummer + Veröffentlichungszeitpunkt merken (für die Galerie).
   // Rückfall ohne die neuen Spalten, falls Migration 0031/0032 noch fehlt.
   const fbPostId = fbJson.post_id || fbJson.id || null;
@@ -111,9 +131,15 @@ export async function POST(request: Request) {
     return NextResponse.json({ ok: true, warnung: "Veröffentlicht, aber Status nicht gespeichert." });
   }
 
+  // Ehrliche Sammel-Meldung aus allen Teilschritten zusammensetzen.
+  const teile: string[] = [igOk ? "Auf Facebook und Instagram veröffentlicht. 🎉" : "Auf Facebook veröffentlicht. 🎉"];
+  if (ohneBild) teile.push("Als Text — das Bild braucht noch eine zusätzliche Facebook-Berechtigung.");
+  if (igHinweis) teile.push(igHinweis);
+
   return NextResponse.json({
     ok: true,
     fbPostId: fbJson.post_id || fbJson.id,
-    ...(ohneBild ? { warnung: "Als Text veröffentlicht — das Bild braucht noch eine zusätzliche Facebook-Berechtigung." } : {}),
+    igVeroeffentlicht: igOk,
+    warnung: teile.join(" "),
   });
 }

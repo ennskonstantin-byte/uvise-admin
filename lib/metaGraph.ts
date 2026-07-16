@@ -52,3 +52,48 @@ export async function resolvePageAuth(): Promise<PageAuth | { fehler: string; st
   }
   return { pageId, pageToken };
 }
+
+// Ermittelt die mit der Facebook-Seite verbundene Instagram-Business-Konto-Nummer.
+// Gibt null zurück, wenn (noch) kein Instagram-Konto verknüpft ist oder die
+// Berechtigung (instagram_basic) fehlt. Bricht das Facebook-Posten NIE ab.
+export async function resolveInstagramAccountId(pageId: string, pageToken: string): Promise<string | null> {
+  try {
+    const res = await fetch(
+      `${GRAPH}/${pageId}?fields=instagram_business_account&access_token=${encodeURIComponent(pageToken)}`,
+    );
+    const json = (await res.json()) as { instagram_business_account?: { id?: string } };
+    return json?.instagram_business_account?.id ?? null;
+  } catch {
+    return null;
+  }
+}
+
+// Veröffentlicht EIN Bild mit Text auf Instagram (Graph API, zweistufig:
+// erst Medien-Container anlegen, dann veröffentlichen).
+// Instagram verlangt IMMER ein Bild — reine Text-Beiträge sind nicht möglich.
+export async function postToInstagram(
+  igUserId: string,
+  token: string,
+  text: string,
+  bildUrl: string,
+): Promise<{ ok: true; id: string } | { ok: false; fehler: string }> {
+  try {
+    // Schritt 1: Medien-Container mit Bild + Beschriftung anlegen.
+    const createParams = new URLSearchParams({ access_token: token, image_url: bildUrl, caption: text });
+    const createRes = await fetch(`${GRAPH}/${igUserId}/media`, { method: "POST", body: createParams });
+    const createJson = (await createRes.json()) as { id?: string; error?: { message?: string } };
+    if (!createRes.ok || createJson.error || !createJson.id) {
+      return { ok: false, fehler: createJson.error?.message || "Instagram hat das Bild abgelehnt." };
+    }
+    // Schritt 2: den Container tatsächlich veröffentlichen.
+    const pubParams = new URLSearchParams({ access_token: token, creation_id: createJson.id });
+    const pubRes = await fetch(`${GRAPH}/${igUserId}/media_publish`, { method: "POST", body: pubParams });
+    const pubJson = (await pubRes.json()) as { id?: string; error?: { message?: string } };
+    if (!pubRes.ok || pubJson.error || !pubJson.id) {
+      return { ok: false, fehler: pubJson.error?.message || "Instagram konnte nicht veröffentlichen." };
+    }
+    return { ok: true, id: pubJson.id };
+  } catch {
+    return { ok: false, fehler: "Verbindung zu Instagram fehlgeschlagen." };
+  }
+}
