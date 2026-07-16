@@ -43,6 +43,17 @@ export function ArchiveDocumentModal({
             <p className="font-medium">{entry.geraet ?? "Nicht erfasst"}</p>
           </div>
 
+          {entry.signaturHash && (
+            <div>
+              <p className="text-xs text-foreground/65">Siegel (Prüfsumme SHA-256)</p>
+              <p className="font-mono text-[11px] break-all leading-snug">{entry.signaturHash}</p>
+              <p className="text-[11px] text-foreground/55 mt-1">
+                Fälschungssicherer Fingerabdruck über Unterweisung, Unterschrift, Zeitpunkt,
+                Mitarbeiter und Gerät — belegt, dass der Nachweis nachträglich nicht verändert wurde.
+              </p>
+            </div>
+          )}
+
           <div>
             <p className="text-xs text-foreground/65 mb-1">Unterschrift</p>
             {entry.signaturBildUrl ? (

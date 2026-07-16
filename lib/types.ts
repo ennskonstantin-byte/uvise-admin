@@ -101,6 +101,7 @@ export type EmployeeTraining = {
   signiertAm: string | null;
   signaturBildUrl: string | null;
   geraet: string | null;
+  signaturHash: string | null;
 };
 
 export type Bundle = {

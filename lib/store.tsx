@@ -196,6 +196,7 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
       signiertAm: et.signiert_am ? formatDate(et.signiert_am) : null,
       signaturBildUrl: et.signatur_bild_url ?? null,
       geraet: et.geraet ?? null,
+      signaturHash: et.signatur_hash ?? null,
     }));
 
     const quals = (qualificationRows ?? []).map((q) => ({
