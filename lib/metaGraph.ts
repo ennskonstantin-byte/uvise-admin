@@ -20,33 +20,50 @@ export async function resolvePageAuth(): Promise<PageAuth | { fehler: string; st
   const wunschPageId = process.env.META_PAGE_ID || "1248245941695462";
   let pageId = "";
   let pageToken = storedToken;
+  // Echten Grund von Facebook merken — sonst steht man bei Fehlern im Dunkeln
+  // und muss raten, ob der Token abgelaufen, ungültig oder nur Meta kurz weg ist.
+  let metaGrund = "";
   try {
     const accRes = await fetch(
       `${GRAPH}/me/accounts?fields=id,access_token&access_token=${encodeURIComponent(storedToken)}`,
     );
-    const accJson = (await accRes.json()) as { data?: { id?: string; access_token?: string }[] };
+    const accJson = (await accRes.json()) as {
+      data?: { id?: string; access_token?: string }[];
+      error?: { message?: string; type?: string; code?: number };
+    };
     if (accRes.ok && Array.isArray(accJson.data) && accJson.data.length) {
       const treffer = accJson.data.find((p) => p.id === wunschPageId) || accJson.data[0];
       if (treffer?.id && treffer?.access_token) {
         pageId = treffer.id;
         pageToken = treffer.access_token;
+      } else {
+        metaGrund = "Der Zugang listet keine Facebook-Seite (fehlende Seiten-Berechtigung?).";
       }
+    } else if (accJson.error?.message) {
+      metaGrund = `${accJson.error.message}${accJson.error.code ? ` (Code ${accJson.error.code})` : ""}`;
+    } else if (accRes.ok) {
+      metaGrund = "Der Zugang gehört zu keiner Facebook-Seite.";
     }
   } catch {
-    // Netzfehler ignorieren — unten folgt der /me-Rückfall.
+    metaGrund = "Facebook war nicht erreichbar (Netzwerkfehler).";
   }
   if (!pageId) {
     try {
       const meRes = await fetch(`${GRAPH}/me?fields=id&access_token=${encodeURIComponent(pageToken)}`);
-      const meJson = (await meRes.json()) as { id?: string };
+      const meJson = (await meRes.json()) as { id?: string; error?: { message?: string; code?: number } };
       if (meRes.ok && meJson.id) pageId = meJson.id;
+      else if (meJson.error?.message && !metaGrund) {
+        metaGrund = `${meJson.error.message}${meJson.error.code ? ` (Code ${meJson.error.code})` : ""}`;
+      }
     } catch {
-      // ignorieren — Prüfung folgt.
+      if (!metaGrund) metaGrund = "Facebook war nicht erreichbar (Netzwerkfehler).";
     }
   }
   if (!pageId) {
     return {
-      fehler: "Die Facebook-Seite konnte nicht bestimmt werden. Bitte den Zugriffstoken erneuern.",
+      fehler: metaGrund
+        ? `Facebook meldet: „${metaGrund}" — bitte den Zugriffstoken erneuern.`
+        : "Die Facebook-Seite konnte nicht bestimmt werden. Bitte den Zugriffstoken erneuern.",
       status: 502,
     };
   }
