@@ -26,6 +26,7 @@ type Company = {
   plan: string | null;
   billing: string | null;
   subscriptionStatus: string | null;
+  createdAt: string;
 };
 
 type NewEmployeeInput = Omit<
@@ -281,6 +282,7 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
         plan: companies[0].plan,
         billing: companies[0].billing,
         subscriptionStatus: companies[0].subscription_status,
+        createdAt: companies[0].created_at,
       });
     }
     setEmployees(mappedEmployees);

@@ -56,6 +56,19 @@ export default function DashboardPage() {
   const [showPlanModal, setShowPlanModal] = useState(false);
   const [remindersOpen, setRemindersOpen] = useState(false);
 
+  // Echte Resttage der Testphase (7 Tage ab Firmen-Anlage) statt eines
+  // festen Textes — sonst zeigt der Banner auch nach Ablauf oder bei
+  // gekündigtem Abo weiter "noch X Tage kostenlos" an.
+  const trialDaysLeft = useMemo(() => {
+    if (!company?.createdAt) return null;
+    const msLeft =
+      new Date(company.createdAt).getTime() + 7 * 24 * 60 * 60 * 1000 - Date.now();
+    return Math.ceil(msLeft / (24 * 60 * 60 * 1000));
+  }, [company?.createdAt]);
+  const isActivePlan = company?.subscriptionStatus === "active";
+  const isCanceledPlan =
+    !!company?.subscriptionStatus && company.subscriptionStatus !== "active";
+
   const filtered = useMemo(() => {
     return employees.filter((e) => {
       if (e.archiviert) return false;
@@ -69,18 +82,26 @@ export default function DashboardPage() {
 
   return (
     <DashboardShell>
-      <div
-        className="rounded-2xl px-5 py-3 mb-6 flex items-center justify-between text-sm text-white"
-        style={{ background: "var(--accent-gradient)" }}
-      >
-        <span>Testphase: noch 4 Tage kostenlos.</span>
-        <button
-          onClick={() => setShowPlanModal(true)}
-          className="rounded-full bg-white/20 px-4 py-1.5 font-medium hover:bg-white/30 transition-colors"
+      {!isActivePlan && (
+        <div
+          className="rounded-2xl px-5 py-3 mb-6 flex items-center justify-between text-sm text-white"
+          style={{ background: "var(--accent-gradient)" }}
         >
-          Abo wählen
-        </button>
-      </div>
+          <span>
+            {isCanceledPlan
+              ? "Dein Abo ist derzeit nicht aktiv."
+              : trialDaysLeft !== null && trialDaysLeft > 0
+                ? `Testphase: noch ${trialDaysLeft} ${trialDaysLeft === 1 ? "Tag" : "Tage"} kostenlos.`
+                : "Deine kostenlose Testphase ist abgelaufen."}
+          </span>
+          <button
+            onClick={() => setShowPlanModal(true)}
+            className="rounded-full bg-white/20 px-4 py-1.5 font-medium hover:bg-white/30 transition-colors"
+          >
+            Abo wählen
+          </button>
+        </div>
+      )}
 
       {showPlanModal && <PlanModal onClose={() => setShowPlanModal(false)} />}
 

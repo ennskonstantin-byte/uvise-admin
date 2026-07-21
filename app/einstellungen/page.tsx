@@ -13,6 +13,16 @@ import { SUPPORT_EMAIL, CONTACT_EMAIL } from "@/lib/legal";
 import { PLANS } from "@/lib/types";
 import { supabase } from "@/lib/supabase";
 
+const ABO_STATUS_LABELS: Record<string, string> = {
+  canceled: "gekündigt",
+  past_due: "Zahlung überfällig",
+  unpaid: "nicht bezahlt",
+  incomplete: "nicht abgeschlossen",
+  incomplete_expired: "abgelaufen (nicht abgeschlossen)",
+  trialing: "in der Testphase",
+  paused: "pausiert",
+};
+
 export default function EinstellungenPage() {
   const {
     company,
@@ -330,7 +340,8 @@ export default function EinstellungenPage() {
           <h2 className="font-medium">Preise & Abo</h2>
           <p className="text-foreground/60 text-sm mb-4 max-w-xl">
             7 Tage kostenlos testen. Danach automatische Umstellung auf das gewählte Paket.
-            Bezahlung per Apple Pay, Google Pay, Visa, Lastschrift, PayPal oder Klarna.
+            Bezahlung per Apple Pay, Google Pay, Visa, Lastschrift, PayPal oder Klarna — echte
+            Bezahlung wird aktiv, sobald Stripe angebunden ist.
           </p>
 
           {company?.subscriptionStatus === "active" && company.plan && (
@@ -341,7 +352,7 @@ export default function EinstellungenPage() {
           )}
           {company?.subscriptionStatus && company.subscriptionStatus !== "active" && (
             <p className="text-sm mb-4 rounded-2xl bg-amber-500/10 text-amber-700 dark:text-amber-400 px-4 py-2.5 max-w-xl">
-              ⚠️ Abo-Status: {company.subscriptionStatus}
+              ⚠️ Abo-Status: {ABO_STATUS_LABELS[company.subscriptionStatus] ?? company.subscriptionStatus}
             </p>
           )}
 
