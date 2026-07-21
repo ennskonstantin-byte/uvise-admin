@@ -105,6 +105,118 @@ h1, h2, h3, h4 {
   font-family: var(--font-body), system-ui, sans-serif;
 }
 
+/* ---------------------------------------------------------------------
+   Landingpage-eigenes Design (nur unter .uv-mk aktiv) — eigenständige
+   Farb- und Typo-Sprache angelehnt an echte Arbeitsschutz-Kennzeichnung
+   (Gebotszeichen=Blau, Rettungszeichen=Grün, Verbotszeichen=Rot,
+   Warnzeichen=Gelb), passend zum Ampel-System-Feature der App. Bewusst
+   getrennt von den globalen --accent-* Variablen, damit das
+   Chef-Dashboard und die Apps unverändert bleiben.
+   --------------------------------------------------------------------- */
+.uv-mk {
+  --mk-ink: #14171a;
+  --mk-paper: #f1f3ee;
+  --mk-panel: #ffffff;
+  --mk-line: #d9dcd3;
+  --mk-line-strong: #14171a;
+
+  --mk-blue: #0b5fa5;
+  --mk-green: #0f8a5f;
+  --mk-red: #c81e2c;
+  --mk-yellow: #f5b400;
+
+  /* Flächenfarben für Buttons/Karten mit weißem Text: bleiben auch im
+     Dark Mode dunkel genug für ausreichenden Kontrast (die normalen
+     --mk-blue/--mk-green werden dort aufgehellt, weil sie als Akzent
+     AUF dunklem Grund stehen müssen). */
+  --mk-blue-strong: #0b5fa5;
+  --mk-green-strong: #0f8a5f;
+
+  --mk-ink-70: color-mix(in srgb, var(--mk-ink) 70%, transparent);
+  --mk-ink-65: color-mix(in srgb, var(--mk-ink) 65%, transparent);
+  --mk-ink-60: color-mix(in srgb, var(--mk-ink) 60%, transparent);
+  --mk-ink-55: color-mix(in srgb, var(--mk-ink) 55%, transparent);
+  --mk-ink-50: color-mix(in srgb, var(--mk-ink) 50%, transparent);
+  --mk-ink-45: color-mix(in srgb, var(--mk-ink) 45%, transparent);
+  --mk-ink-30: color-mix(in srgb, var(--mk-ink) 30%, transparent);
+}
+
+:root.dark .uv-mk {
+  --mk-ink: #edf0ea;
+  --mk-paper: #121513;
+  --mk-panel: #1a1e1c;
+  --mk-line: #2d322e;
+  --mk-line-strong: #edf0ea;
+
+  --mk-blue: #5ea3dd;
+  --mk-green: #4bc191;
+  --mk-red: #f0616f;
+  --mk-yellow: #f5c343;
+
+  --mk-blue-strong: #135a95;
+  --mk-green-strong: #0f7a55;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not(.light) .uv-mk {
+    --mk-ink: #edf0ea;
+    --mk-paper: #121513;
+    --mk-panel: #1a1e1c;
+    --mk-line: #2d322e;
+    --mk-line-strong: #edf0ea;
+
+    --mk-blue: #5ea3dd;
+    --mk-green: #4bc191;
+    --mk-red: #f0616f;
+    --mk-yellow: #f5c343;
+
+    --mk-blue-strong: #135a95;
+    --mk-green-strong: #0f7a55;
+  }
+}
+
+.uv-mk {
+  background: var(--mk-paper);
+  color: var(--mk-ink);
+}
+.uv-mk .mk-display {
+  font-family: var(--font-mk-display), var(--font-body), system-ui, sans-serif;
+}
+.uv-mk .mk-mono {
+  font-family: var(--font-mk-mono), ui-monospace, monospace;
+}
+
+/* Die Ampel-Leiste: durchgehendes Signatur-Element der Seite, ersetzt
+   generische Trennlinien zwischen Abschnitten durch die drei echten
+   Ampel-Farben des Produkts. */
+.uv-mk .mk-rule {
+  display: flex;
+  width: 100%;
+  height: 3px;
+}
+.uv-mk .mk-rule span {
+  flex: 1;
+  transform-origin: left;
+}
+.uv-mk .mk-rule span:nth-child(1) { background: var(--mk-red); }
+.uv-mk .mk-rule span:nth-child(2) { background: var(--mk-yellow); }
+.uv-mk .mk-rule span:nth-child(3) { background: var(--mk-green); }
+
+@keyframes mkRuleOn {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+.uv-mk .mk-rule.mk-rule-animate span {
+  animation: mkRuleOn 0.5s ease-out both;
+}
+.uv-mk .mk-rule.mk-rule-animate span:nth-child(1) { animation-delay: 0s; }
+.uv-mk .mk-rule.mk-rule-animate span:nth-child(2) { animation-delay: 0.15s; }
+.uv-mk .mk-rule.mk-rule-animate span:nth-child(3) { animation-delay: 0.3s; }
+
+@media (prefers-reduced-motion: reduce) {
+  .uv-mk .mk-rule.mk-rule-animate span { animation: none; }
+}
+
 /* Animationen für den Redaktionsplan (Pop-up + Aktionen) */
 @keyframes uvFadeIn {
   from { opacity: 0; }

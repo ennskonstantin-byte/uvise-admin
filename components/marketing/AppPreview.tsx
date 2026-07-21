@@ -77,15 +77,15 @@ export function AppPreview() {
 
   return (
     <div className="flex flex-col items-center">
-      <div className="inline-flex rounded-full border border-border bg-surface p-1 mb-6">
+      <div className="inline-flex rounded-[10px] border p-1 mb-6" style={{ borderColor: "var(--mk-line)", background: "var(--mk-panel)" }}>
         {APPS.map((a) => (
           <button
             key={a.key}
             onClick={() => handleSelect(a.key)}
-            className={`rounded-full px-4 py-2 text-sm font-medium transition-colors ${
-              active === a.key ? "text-white" : "text-foreground/60 hover:text-foreground"
+            className={`rounded-[8px] px-4 py-2 text-sm font-medium transition-colors ${
+              active === a.key ? "text-white" : "text-[var(--mk-ink-60)] hover:text-[var(--mk-ink)]"
             }`}
-            style={active === a.key ? { background: "var(--accent-gradient)" } : undefined}
+            style={active === a.key ? { background: "var(--mk-blue-strong)" } : undefined}
           >
             {a.label}
           </button>
@@ -95,8 +95,8 @@ export function AppPreview() {
       <div className="relative w-[330px] sm:w-[360px] rounded-[2.5rem] border-[10px] border-neutral-900 bg-neutral-900 shadow-2xl overflow-hidden" style={{ aspectRatio: "375 / 812" }}>
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-28 h-5 bg-neutral-900 rounded-b-2xl z-10" />
         {!loaded[active] && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-page-bg text-xs text-foreground/50">
-            <div className="h-6 w-6 rounded-full border-2 border-foreground/20 border-t-accent-blue animate-spin" />
+          <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 text-xs" style={{ background: "var(--mk-paper)", color: "var(--mk-ink-50)" }}>
+            <div className="h-6 w-6 rounded-full border-2 animate-spin" style={{ borderColor: "var(--mk-line)", borderTopColor: "var(--mk-blue)" }} />
             Lädt Vorschau …
           </div>
         )}
@@ -116,7 +116,8 @@ export function AppPreview() {
         key={current.key}
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        className="text-xs text-foreground/55 text-center mt-5 max-w-xs"
+        className="text-xs text-center mt-5 max-w-xs"
+        style={{ color: "var(--mk-ink-55)" }}
       >
         {current.hint}
       </motion.p>

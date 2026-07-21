@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Inter } from "next/font/google";
+import { Inter, Archivo, IBM_Plex_Mono } from "next/font/google";
 import { AppDataProvider } from "@/lib/store";
 import { AuthGate } from "@/components/AuthGate";
 import "./globals.css";
@@ -8,6 +8,20 @@ const inter = Inter({
   variable: "--font-body",
   subsets: ["latin"],
   weight: ["400", "500", "600", "700"],
+});
+
+// Nur von der öffentlichen Landingpage genutzt (siehe globals.css, .mk-display
+// / .mk-mono) — eigene, kräftigere Typografie für die Marketing-Seite, ohne
+// das Dashboard anzufassen, das weiterhin durchgängig Inter verwendet.
+const archivo = Archivo({
+  variable: "--font-mk-display",
+  subsets: ["latin"],
+  weight: ["600", "700", "800"],
+});
+const plexMono = IBM_Plex_Mono({
+  variable: "--font-mk-mono",
+  subsets: ["latin"],
+  weight: ["500", "600"],
 });
 
 export const metadata: Metadata = {
@@ -29,7 +43,7 @@ export default function RootLayout({
   return (
     <html
       lang="de"
-      className={`${inter.variable} h-full antialiased`}
+      className={`${inter.variable} ${archivo.variable} ${plexMono.variable} h-full antialiased`}
       suppressHydrationWarning
     >
       <head>
