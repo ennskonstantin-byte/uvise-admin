@@ -44,7 +44,14 @@ export function Sidebar() {
 
   const [dark, setDark] = useState(false);
   useEffect(() => {
-    setDark(document.documentElement.classList.contains("dark"));
+    const el = document.documentElement;
+    const systemPrefersDark = window.matchMedia(
+      "(prefers-color-scheme: dark)"
+    ).matches;
+    setDark(
+      el.classList.contains("dark") ||
+        (!el.classList.contains("light") && systemPrefersDark)
+    );
   }, []);
 
   function toggleTheme(nextDark: boolean) {

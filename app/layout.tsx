@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import { AppDataProvider } from "@/lib/store";
 import { AuthGate } from "@/components/AuthGate";
@@ -14,6 +14,11 @@ export const metadata: Metadata = {
   metadataBase: new URL("https://www.uvise.de"),
   title: "uVise Admin",
   description: "Verwaltung von Mitarbeiter-Unterweisungen und Qualifikationen",
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
 };
 
 export default function RootLayout({
