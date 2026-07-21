@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Check } from "lucide-react";
+import { Button as MovingBorderButton } from "@/components/ui/moving-border";
 import { PLANS } from "@/lib/types";
 import { useToast } from "@/components/Toast";
 import { useEscapeClose } from "@/lib/useEscapeClose";
@@ -124,14 +125,16 @@ export function PlanModal({ onClose }: { onClose: () => void }) {
           })}
         </div>
 
-        <button
+        <MovingBorderButton
           onClick={startCheckout}
           disabled={starting}
-          className="w-full rounded-full px-6 py-3 text-sm font-medium text-white disabled:opacity-50"
-          style={{ background: "var(--accent-gradient)" }}
+          borderRadius="9999px"
+          duration={3000}
+          containerClassName="w-full h-12 disabled:opacity-50"
+          className="font-medium text-white border-transparent bg-[image:var(--accent-gradient)]"
         >
           {starting ? "Leitet weiter…" : `${selectedPlan}-Abo starten`}
-        </button>
+        </MovingBorderButton>
         <ToastView />
       </div>
     </div>

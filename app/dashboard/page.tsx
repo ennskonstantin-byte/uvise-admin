@@ -9,6 +9,7 @@ import { EmployeeCard } from "@/components/EmployeeCard";
 import { NewEmployeeWizard } from "@/components/NewEmployeeWizard";
 import { NewTrainingWizard } from "@/components/NewTrainingWizard";
 import { PlanModal } from "@/components/PlanModal";
+import { Button as MovingBorderButton } from "@/components/ui/moving-border";
 import { FeedbackCard } from "@/components/FeedbackCard";
 import { SocialOverviewCard } from "@/components/SocialOverviewCard";
 import { ReviewBanner } from "@/components/ReviewBanner";
@@ -94,12 +95,16 @@ export default function DashboardPage() {
                 ? `Testphase: noch ${trialDaysLeft} ${trialDaysLeft === 1 ? "Tag" : "Tage"} kostenlos.`
                 : "Deine kostenlose Testphase ist abgelaufen."}
           </span>
-          <button
+          <MovingBorderButton
             onClick={() => setShowPlanModal(true)}
-            className="rounded-full bg-white/20 px-4 py-1.5 font-medium hover:bg-white/30 transition-colors"
+            borderRadius="9999px"
+            duration={3000}
+            containerClassName="h-9 w-auto shrink-0"
+            borderClassName="bg-[radial-gradient(#ffffff_40%,transparent_60%)]"
+            className="px-4 font-medium text-white bg-white/20 hover:bg-white/30 transition-colors border-white/30"
           >
             Abo wählen
-          </button>
+          </MovingBorderButton>
         </div>
       )}
 

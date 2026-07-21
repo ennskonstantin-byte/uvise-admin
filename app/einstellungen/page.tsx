@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Check } from "lucide-react";
+import { Button as MovingBorderButton } from "@/components/ui/moving-border";
 import { DashboardShell } from "@/components/DashboardShell";
 import { PageHeader } from "@/components/PageHeader";
 import { Card } from "@/components/Card";
@@ -410,20 +411,24 @@ export default function EinstellungenPage() {
                       </li>
                     ))}
                   </ul>
-                  <button
+                  <MovingBorderButton
                     onClick={() => startCheckout(plan.name)}
                     disabled={startingCheckout !== null}
-                    className={`w-full rounded-full py-2.5 text-sm font-medium disabled:opacity-50 ${
-                      active ? "text-white" : "border border-border"
+                    borderRadius="9999px"
+                    duration={3000}
+                    containerClassName="w-full h-11 disabled:opacity-50"
+                    className={`font-medium ${
+                      active
+                        ? "text-white border-transparent bg-[image:var(--accent-gradient)]"
+                        : ""
                     }`}
-                    style={active ? { background: "var(--accent-gradient)" } : undefined}
                   >
                     {startingCheckout === plan.name
                       ? "Leitet weiter…"
                       : active
                         ? "Erneut abonnieren"
                         : "Jetzt abonnieren"}
-                  </button>
+                  </MovingBorderButton>
                 </Card>
               );
             })}
