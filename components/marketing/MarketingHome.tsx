@@ -25,6 +25,7 @@ import { Reveal } from "@/components/marketing/Reveal";
 import { VorlesenDemo } from "@/components/marketing/VorlesenDemo";
 import { AppPreview } from "@/components/marketing/AppPreview";
 import { SignalRule } from "@/components/marketing/SignalRule";
+import { Button as MovingBorderButton } from "@/components/ui/moving-border";
 import { AmpelDots } from "@/components/marketing/AmpelDots";
 import { SUPPORT_EMAIL, FACEBOOK_URL, INSTAGRAM_URL } from "@/lib/legal";
 import { TrackPageView } from "@/components/TrackPageView";
@@ -311,14 +312,20 @@ export function MarketingHome() {
                 Papierkram.
               </p>
               <div className="flex flex-wrap gap-3">
-                <Link
+                {/* Haupt-CTA mit umlaufendem Leuchtpunkt in Warngelb —
+                    Text und App-Vorschau daneben bleiben unverändert. */}
+                <MovingBorderButton
+                  as={Link}
                   href="/login?mode=register"
                   rel="nofollow"
-                  className="btn-feedback rounded-[10px] px-6 py-3 text-sm font-semibold text-white"
-                  style={{ background: "var(--mk-blue-strong)" }}
+                  borderRadius="10px"
+                  duration={3500}
+                  containerClassName="btn-feedback h-12 w-auto"
+                  borderClassName="bg-[radial-gradient(var(--mk-yellow)_40%,transparent_60%)]"
+                  className="px-6 text-sm font-semibold text-white border-transparent bg-[var(--mk-blue-strong)]"
                 >
                   7 Tage kostenlos testen
-                </Link>
+                </MovingBorderButton>
               </div>
               <p className="text-xs text-[var(--mk-ink-50)] mt-4">
                 Keine Kreditkarte nötig · jederzeit kündbar
