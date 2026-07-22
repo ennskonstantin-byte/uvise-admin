@@ -93,9 +93,9 @@ async function main() {
 
   console.log("4/8 Mitarbeiter anlegen …");
   const employeesInput = [
-    { vorname: "Lena", nachname: "Bauer", personalnummer: "P-101", kategorie: "Küche", email: MA_EMAIL, photo: "marketing/mitarbeiter-kueche.jpg" },
+    { vorname: "Julia", nachname: "Braun", personalnummer: "P-101", kategorie: "Büro", email: MA_EMAIL, photo: "marketing/mitarbeiter-buero.jpg" },
     { vorname: "Tom", nachname: "Krüger", personalnummer: "P-102", kategorie: "Lager", email: null, photo: "marketing/mitarbeiter-lager.jpg" },
-    { vorname: "Aylin", nachname: "Sarı", personalnummer: "P-103", kategorie: "Büro", email: null, photo: "marketing/mitarbeiter-buero.jpg" },
+    { vorname: "Aylin", nachname: "Sarı", personalnummer: "P-103", kategorie: "Küche", email: null, photo: "marketing/mitarbeiter-kueche.jpg" },
   ];
   const employees = {};
   for (const e of employeesInput) {
@@ -155,20 +155,20 @@ async function main() {
 
   console.log("6/8 Qualifikationen anlegen …");
   await chefClient.from("qualifications").insert([
-    { employee_id: employees["Lena"].id, name: "Ersthelfer", ablaufdatum: heute(20), status: "laeuft_ab" },
+    { employee_id: employees["Julia"].id, name: "Ersthelfer", ablaufdatum: heute(20), status: "laeuft_ab" },
     { employee_id: employees["Tom"].id, name: "Staplerschein", ablaufdatum: heute(400), status: "gueltig" },
   ]);
 
-  console.log("7/8 Unterweisungen zuweisen (Lena: 1 signiert, Rest offen) …");
+  console.log("7/8 Unterweisungen zuweisen (Julia: 1 signiert, Rest offen) …");
   for (const emp of Object.values(employees)) {
     for (const t of trainings) {
-      const isLenaFirstTraining = emp.vorname === "Lena" && t === trainings[0];
+      const isJuliaFirstTraining = emp.vorname === "Julia" && t === trainings[0];
       await chefClient.from("employee_trainings").insert({
         employee_id: emp.id,
         training_id: t.id,
-        status: isLenaFirstTraining ? "signiert" : "offen",
-        signiert_am: isLenaFirstTraining ? new Date().toISOString() : null,
-        geraet: isLenaFirstTraining ? "iOS 18.2" : null,
+        status: isJuliaFirstTraining ? "signiert" : "offen",
+        signiert_am: isJuliaFirstTraining ? new Date().toISOString() : null,
+        geraet: isJuliaFirstTraining ? "iOS 18.2" : null,
       });
     }
   }
