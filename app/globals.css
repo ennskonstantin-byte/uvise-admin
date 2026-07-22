@@ -183,8 +183,10 @@ h1, h2, h3, h4 {
 .uv-mk .mk-display {
   font-family: var(--font-mk-display), var(--font-body), system-ui, sans-serif;
 }
+/* Etiketten/Labels: Space Grotesk in Versalien mit weiter Laufweite
+   (die Brand kennt nur Space Grotesk + Inter — keine Monospace-Schrift). */
 .uv-mk .mk-mono {
-  font-family: var(--font-mk-mono), ui-monospace, monospace;
+  font-family: var(--font-mk-display), var(--font-body), system-ui, sans-serif;
 }
 
 /* Die Ampel-Leiste: durchgehendes Signatur-Element der Seite, ersetzt

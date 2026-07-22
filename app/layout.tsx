@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Inter, Space_Grotesk, IBM_Plex_Mono } from "next/font/google";
+import { Inter, Space_Grotesk } from "next/font/google";
 import { AppDataProvider } from "@/lib/store";
 import { AuthGate } from "@/components/AuthGate";
 import "./globals.css";
@@ -10,18 +10,13 @@ const inter = Inter({
   weight: ["400", "500", "600", "700"],
 });
 
-// Nur von der öffentlichen Landingpage genutzt (siehe globals.css, .mk-display
-// / .mk-mono) — eigene, kräftigere Typografie für die Marketing-Seite, ohne
-// das Dashboard anzufassen, das weiterhin durchgängig Inter verwendet.
+// Brand-Display-Schrift (Space Grotesk) für Überschriften und Etiketten der
+// Landingpage. Zusammen mit Inter (Text/UI) sind das die einzigen beiden
+// Schriften der uVise-Marke. Das Dashboard nutzt weiterhin durchgängig Inter.
 const spaceGrotesk = Space_Grotesk({
   variable: "--font-mk-display",
   subsets: ["latin"],
   weight: ["500", "600", "700"],
-});
-const plexMono = IBM_Plex_Mono({
-  variable: "--font-mk-mono",
-  subsets: ["latin"],
-  weight: ["500", "600"],
 });
 
 export const metadata: Metadata = {
@@ -43,7 +38,7 @@ export default function RootLayout({
   return (
     <html
       lang="de"
-      className={`${inter.variable} ${spaceGrotesk.variable} ${plexMono.variable} h-full antialiased`}
+      className={`${inter.variable} ${spaceGrotesk.variable} h-full antialiased`}
       suppressHydrationWarning
     >
       <head>
