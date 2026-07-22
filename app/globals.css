@@ -102,6 +102,19 @@ button:not(:disabled):active {
   }
 }
 
+/* Wer weniger Transparenz eingestellt hat: Glas-Effekte blickdicht statt
+   durchscheinend machen (mobile Dashboard-Kopfzeile + Landingpage-Header). */
+@media (prefers-reduced-transparency: reduce) {
+  header.backdrop-blur-md {
+    backdrop-filter: none !important;
+    background: linear-gradient(90deg, var(--sidebar-from), var(--sidebar-to)) !important;
+  }
+  .uv-mk header.backdrop-blur {
+    backdrop-filter: none !important;
+    background: var(--mk-panel) !important;
+  }
+}
+
 h1, h2, h3, h4 {
   font-family: var(--font-mk-display), var(--font-body), system-ui, sans-serif;
 }

@@ -28,8 +28,11 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
 
       {/* Schmale Bildschirme (Handy/Tablet hochkant): Kopfzeile mit ☰ */}
       <header
-        className="lg:hidden fixed inset-x-0 top-0 z-40 flex items-center gap-3 px-4 h-14 text-white"
-        style={{ background: "linear-gradient(90deg, var(--sidebar-from), var(--sidebar-to))" }}
+        className="lg:hidden fixed inset-x-0 top-0 z-40 flex items-center gap-3 px-4 h-14 text-white backdrop-blur-md"
+        style={{
+          background:
+            "linear-gradient(90deg, color-mix(in srgb, var(--sidebar-from) 88%, transparent), color-mix(in srgb, var(--sidebar-to) 88%, transparent))",
+        }}
       >
         <button
           onClick={() => setMenuOffen(true)}
