@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import {
   LayoutDashboard,
   Users,
@@ -34,7 +34,6 @@ const NAV_ITEMS = [
 
 export function Sidebar() {
   const pathname = usePathname();
-  const router = useRouter();
   const { questions, company, session, signOut } = useAppData();
   const openQuestions = questions.filter((q) => q.status === "offen").length;
   const companyName = company?.name ?? "uVise";
@@ -137,8 +136,14 @@ export function Sidebar() {
 
       <button
         onClick={async () => {
+          // Harte Navigation statt router.push: sobald signOut() die Sitzung
+          // beendet, würde die noch aktive Dashboard-Seite kurz das
+          // Login-Formular zeigen, BEVOR die Weiterleitung zur Startseite
+          // greift ("erst Anmelde-Feld, dann rausgeschmissen"). Ein voller
+          // Seitenwechsel reißt den alten Baum sofort ab, ohne diesen
+          // Zwischenzustand jemals zu rendern.
           await signOut();
-          router.push("/");
+          window.location.assign("/");
         }}
         className="flex items-center gap-3 mx-3 mb-2 rounded-full px-4 py-2.5 text-sm text-white/70 hover:bg-white/5 hover:text-white"
       >

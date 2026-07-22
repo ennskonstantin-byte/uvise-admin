@@ -1,9 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { Search } from "lucide-react";
+import { Search, Check } from "lucide-react";
 import { useAppData } from "@/lib/store";
 import { useEscapeClose } from "@/lib/useEscapeClose";
+import { EmployeeAvatar } from "@/components/EmployeeAvatar";
 import type { Training } from "@/lib/types";
 
 // Spiegelt die "Verteilen"-Funktion aus der Chef-App — bisher gab es auf der
@@ -24,6 +25,8 @@ export function AssignTrainingModal({
   const [selected, setSelected] = useState<string[]>([]);
   const [saving, setSaving] = useState(false);
   const [query, setQuery] = useState("");
+  const [sentCount, setSentCount] = useState<number | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const activeEmployees = employees
     .filter((e) => !e.archiviert)
     .filter((e) => `${e.vorname} ${e.nachname}`.toLowerCase().includes(query.toLowerCase()));
@@ -35,12 +38,40 @@ export function AssignTrainingModal({
 
   async function handleSave() {
     setSaving(true);
+    setError(null);
     try {
       await assignTraining(training.id, selected);
-      onClose();
+      // Kurze Bestätigung ("1 Unterweisung verschickt an 3 MA"), bevor das
+      // Fenster sich schließt -- vorher schloss es sofort ohne Rückmeldung,
+      // ob der Versand überhaupt angekommen ist.
+      setSentCount(selected.length);
+      setTimeout(onClose, 1400);
+    } catch {
+      // Vorher gab es hier kein catch -- ein Fehler (z.B. RLS-Sperre der
+      // schreibgeschützten Demo-Firma) landete als rohes Fehlerobjekt im
+      // Next.js-Runtime-Error-Overlay statt einer verständlichen Meldung.
+      setError("Verteilen fehlgeschlagen. Bitte erneut versuchen.");
     } finally {
       setSaving(false);
     }
+  }
+
+  if (sentCount !== null) {
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
+        <div className="w-full max-w-sm rounded-3xl bg-background border border-border p-8 flex flex-col items-center text-center gap-3">
+          <div
+            className="h-12 w-12 rounded-full flex items-center justify-center text-white"
+            style={{ background: "var(--ampel-green)" }}
+          >
+            <Check size={26} />
+          </div>
+          <p className="font-medium">
+            „{training.name}" verschickt an {sentCount} {sentCount === 1 ? "Mitarbeiter" : "Mitarbeiter"}
+          </p>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -52,6 +83,10 @@ export function AssignTrainingModal({
             Abbrechen
           </button>
         </div>
+
+        {error && (
+          <p className="text-sm text-red-600 mb-4 rounded-2xl bg-red-500/10 px-4 py-2">{error}</p>
+        )}
 
         <p className="text-xs text-foreground/65 mb-3">An welche Mitarbeiter?</p>
         <div className="relative mb-3">
@@ -80,6 +115,7 @@ export function AssignTrainingModal({
                   disabled={has}
                   onChange={() => toggle(e.id)}
                 />
+                <EmployeeAvatar vorname={e.vorname} nachname={e.nachname} fotoUrl={e.fotoUrl} size={36} />
                 <span className="text-sm">
                   {e.vorname} {e.nachname}
                   {has && <span className="text-foreground/65"> (bereits zugewiesen)</span>}

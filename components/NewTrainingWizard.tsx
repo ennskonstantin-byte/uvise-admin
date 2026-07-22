@@ -1,10 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { Search } from "lucide-react";
+import { Search, Check } from "lucide-react";
 import { DateSelect } from "@/components/DateSelect";
 import { useAppData } from "@/lib/store";
 import { useEscapeClose } from "@/lib/useEscapeClose";
+import { EmployeeAvatar } from "@/components/EmployeeAvatar";
 import { TRAINING_ICON_OPTIONS, BUNDLE_ICONS, type Training } from "@/lib/types";
 
 function DistributionDialog({
@@ -23,6 +24,8 @@ function DistributionDialog({
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [sending, setSending] = useState(false);
   const [memberQuery, setMemberQuery] = useState("");
+  const [sentCount, setSentCount] = useState<number | null>(null);
+  const [distributionError, setDistributionError] = useState<string | null>(null);
 
   function toggleEmployee(id: string) {
     setSelectedEmployees((prev) =>
@@ -38,16 +41,42 @@ function DistributionDialog({
 
   async function handleSend() {
     setSending(true);
+    setDistributionError(null);
     try {
       const targetIds =
         tab === "mitarbeiter"
           ? selectedEmployees
           : employees.filter((e) => selectedCategories.includes(e.kategorie)).map((e) => e.id);
       await assignTraining(training.id, targetIds);
-      onClose();
+      // Kurze Bestätigung, bevor das Fenster sich schließt -- vorher schloss
+      // es sofort ohne Rückmeldung, an wie viele MA tatsächlich verschickt wurde.
+      setSentCount(targetIds.length);
+      setTimeout(onClose, 1400);
+    } catch {
+      setDistributionError("Versenden fehlgeschlagen. Bitte erneut versuchen.");
     } finally {
       setSending(false);
     }
+  }
+
+  if (sentCount !== null) {
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
+        <div className="w-full max-w-sm rounded-3xl bg-background border border-border p-8 flex flex-col items-center text-center gap-3">
+          <div
+            className="h-12 w-12 rounded-full flex items-center justify-center text-white"
+            style={{ background: "var(--ampel-green)" }}
+          >
+            <Check size={26} />
+          </div>
+          <p className="font-medium">
+            {sentCount === 0
+              ? `„${training.name}“ noch an niemanden verschickt`
+              : `„${training.name}“ verschickt an ${sentCount} Mitarbeiter`}
+          </p>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -58,6 +87,12 @@ function DistributionDialog({
           An einzelne Mitarbeiter oder ganze Abteilungen senden — kann auch später über die
           Mitarbeiter-Seite nachgeholt werden.
         </p>
+
+        {distributionError && (
+          <p className="text-sm text-red-600 mb-4 rounded-2xl bg-red-500/10 px-4 py-2">
+            {distributionError}
+          </p>
+        )}
 
         <div className="flex gap-2 mb-4">
           <button
@@ -97,14 +132,20 @@ function DistributionDialog({
                   `${e.vorname} ${e.nachname}`.toLowerCase().includes(memberQuery.toLowerCase())
                 )
                 .map((e) => (
-                  <label key={e.id} className="flex items-center gap-2 text-sm">
+                  <label
+                    key={e.id}
+                    className="flex items-center gap-3 rounded-2xl border border-border px-3 py-2 text-sm cursor-pointer hover:border-foreground/30"
+                  >
                     <input
                       type="checkbox"
                       checked={selectedEmployees.includes(e.id)}
                       onChange={() => toggleEmployee(e.id)}
                     />
-                    {e.vorname} {e.nachname}{" "}
-                    <span className="text-foreground/65">({e.kategorie})</span>
+                    <EmployeeAvatar vorname={e.vorname} nachname={e.nachname} fotoUrl={e.fotoUrl} size={32} />
+                    <span>
+                      {e.vorname} {e.nachname}{" "}
+                      <span className="text-foreground/65">({e.kategorie})</span>
+                    </span>
                   </label>
                 ))
             : categories.map((c) => (
@@ -146,6 +187,7 @@ export function NewTrainingWizard({ onClose }: { onClose: () => void }) {
   const [methode, setMethode] = useState<"upload" | "text">("text");
   const [fileName, setFileName] = useState<string | null>(null);
   const [isPdf, setIsPdf] = useState(false);
+  const [pdfFile, setPdfFile] = useState<File | null>(null);
   const [inhalt, setInhalt] = useState("");
   const [name, setName] = useState("");
   const [icon, setIcon] = useState<string | null>(null);
@@ -179,8 +221,12 @@ export function NewTrainingWizard({ onClose }: { onClose: () => void }) {
   function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
+    const pdf = file.type === "application/pdf" || file.name.toLowerCase().endsWith(".pdf");
     setFileName(file.name);
-    setIsPdf(file.type === "application/pdf" || file.name.toLowerCase().endsWith(".pdf"));
+    setIsPdf(pdf);
+    // Nur echte PDFs tatsächlich hochladen — für Bilder gibt es (noch) keine
+    // Anzeige in der App, dort bleibt es beim von Hand eingetippten Text.
+    setPdfFile(pdf ? file : null);
   }
 
   async function handleFinish() {
@@ -196,6 +242,7 @@ export function NewTrainingWizard({ onClose }: { onClose: () => void }) {
         ablaufdatum: ablaufdatum || "—",
         status: "aktuell",
         bundleId: bundleId || null,
+        pdfFile,
       });
       setSavedTraining(training);
       setShowDistribution(true);
@@ -302,13 +349,18 @@ export function NewTrainingWizard({ onClose }: { onClose: () => void }) {
                   </span>
                   {fileName && <span className="text-sm text-foreground/60">📎 {fileName}</span>}
                 </label>
+                {isPdf && (
+                  <p className="text-xs text-foreground/60 mb-2">
+                    Die PDF wird 1:1 in der App angezeigt — Mitarbeiter sehen das Original.
+                  </p>
+                )}
                 {fileName && (
                   <textarea
                     value={inhalt}
                     onChange={(e) => setInhalt(e.target.value)}
                     placeholder={
                       isPdf
-                        ? "Automatische Texterkennung ist für PDFs im Prototyp nicht verfügbar — bitte den Text hier manuell einfügen."
+                        ? "Optional: Text für die Vorlese-Stimme hier einfügen (die PDF selbst wird trotzdem angezeigt)."
                         : "Erkannter Text erscheint hier, editierbar…"
                     }
                     className="w-full h-24 rounded-2xl border border-border bg-surface px-4 py-3 text-sm outline-none"

@@ -311,7 +311,6 @@ function AuthForm() {
 export function AuthGate({ children }: { children: React.ReactNode }) {
   const { session, loading } = useAppData();
   const pathname = usePathname();
-  const router = useRouter();
   // Anmelde-Weiche: nur Beauftragte dürfen ins Admin — normale Mitarbeiter
   // bekommen einen freundlichen Hinweis auf die uVise-App.
   // null = Rolle wird noch geprüft
@@ -390,8 +389,11 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
           </p>
           <button
             onClick={async () => {
+              // Harte Navigation statt router.push, siehe Sidebar.tsx: sonst
+              // rendert diese noch aktive Seite kurz das Login-Formular,
+              // bevor die Weiterleitung zur Startseite greift.
               await supabase.auth.signOut();
-              router.push("/");
+              window.location.assign("/");
             }}
             className="w-full rounded-full px-5 py-2.5 text-sm font-medium text-white"
             style={{ background: "var(--accent-gradient)" }}
