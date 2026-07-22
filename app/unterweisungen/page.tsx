@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { AlertTriangle, Pencil, Printer, Send, Trash2 } from "lucide-react";
+import { AlertTriangle, FileText, Pencil, Printer, Send, Trash2 } from "lucide-react";
+import { supabase } from "@/lib/supabase";
 import { DashboardShell } from "@/components/DashboardShell";
 import { PageHeader } from "@/components/PageHeader";
 import { Card } from "@/components/Card";
@@ -26,6 +27,17 @@ export default function UnterweisungenPage() {
   const expiringSoon = trainings.filter(
     (t) => t.status === "laeuft_ab" || t.status === "abgelaufen"
   );
+
+  async function openPdf(path: string) {
+    const { data, error } = await supabase.storage
+      .from("training-documents")
+      .createSignedUrl(path, 3600);
+    if (error || !data?.signedUrl) {
+      alert("PDF konnte nicht geöffnet werden.");
+      return;
+    }
+    window.open(data.signedUrl, "_blank", "noopener,noreferrer");
+  }
 
   async function handleDeleteTraining(id: string, name: string) {
     if (!confirm(`"${name}" wirklich löschen?`)) return;
@@ -120,6 +132,16 @@ export default function UnterweisungenPage() {
                     <span className="text-xs rounded-full bg-red-500/15 text-red-700 px-3 py-1">
                       Abgelaufen
                     </span>
+                  )}
+                  {t.pdfPath && (
+                    <button
+                      onClick={() => openPdf(t.pdfPath!)}
+                      className="h-8 w-8 rounded-full border border-border flex items-center justify-center text-blue-500 hover:border-foreground/30"
+                      aria-label="Hochgeladene PDF ansehen"
+                      title="Hochgeladene PDF ansehen"
+                    >
+                      <FileText size={14} />
+                    </button>
                   )}
                   <button
                     onClick={() => printTraining(t)}

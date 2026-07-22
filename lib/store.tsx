@@ -41,7 +41,10 @@ type NewEmployeeInput = Omit<
   | "inviteToken"
   | "registriert"
 >;
-type NewTrainingInput = Omit<Training, "id"> & { bundleId?: string | null };
+type NewTrainingInput = Omit<Training, "id" | "pdfPath"> & {
+  bundleId?: string | null;
+  pdfFile?: File | null;
+};
 type NewBundleInput = Omit<Bundle, "id">;
 
 type AppDataContextValue = {
@@ -247,6 +250,7 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
       typ: t.typ === "hochgeladen" ? "hochgeladen" : "online",
       icon: t.icon ?? (t.typ === "hochgeladen" ? "📄" : "✍️"),
       inhalt: t.inhalt,
+      pdfPath: t.pdf_path ?? null,
       erstelltAm: formatDate(t.erstellt_am),
       ablaufdatum: formatDate(t.ablaufdatum),
       status: trainingStatus(t.ablaufdatum),
@@ -451,6 +455,22 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
         .from("bundle_trainings")
         .insert({ bundle_id: input.bundleId, training_id: data.id });
     }
+
+    // Die echte PDF hochladen (statt sie zu verwerfen und nur den von Hand
+    // eingetippten Text zu behalten). Pfad-Präfix "<company_id>/..." wie bei
+    // employee-photos, damit die Storage-Regeln greifen. pdf_path speichert
+    // nur den PFAD (Bucket ist privat) — die anzeigende Stelle erzeugt beim
+    // Öffnen eine zeitlich begrenzte signierte URL.
+    let pdfPath: string | null = null;
+    if (input.pdfFile && data) {
+      pdfPath = `${company.id}/training-${data.id}.pdf`;
+      const { error: uploadErr } = await supabase.storage
+        .from("training-documents")
+        .upload(pdfPath, input.pdfFile, { upsert: true, contentType: "application/pdf" });
+      if (uploadErr) throw uploadErr;
+      await supabase.from("trainings").update({ pdf_path: pdfPath }).eq("id", data.id);
+    }
+
     await loadData();
     return {
       id: data.id,
@@ -458,6 +478,7 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
       typ: data.typ === "hochgeladen" ? "hochgeladen" : "online",
       icon: data.icon ?? (data.typ === "hochgeladen" ? "📄" : "✍️"),
       inhalt: data.inhalt,
+      pdfPath,
       erstelltAm: formatDate(data.erstellt_am),
       ablaufdatum: formatDate(data.ablaufdatum),
       status: trainingStatus(data.ablaufdatum),

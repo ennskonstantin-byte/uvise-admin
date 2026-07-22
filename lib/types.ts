@@ -54,6 +54,9 @@ export type Training = {
   typ: "hochgeladen" | "online";
   icon: string;
   inhalt: string | null;
+  // Pfad im privaten "training-documents"-Bucket (nicht die fertige URL —
+  // die App erzeugt beim Anzeigen eine zeitlich begrenzte signierte URL).
+  pdfPath: string | null;
   erstelltAm: string;
   ablaufdatum: string;
   status: "aktuell" | "laeuft_ab" | "abgelaufen";
