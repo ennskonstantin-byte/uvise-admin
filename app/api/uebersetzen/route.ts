@@ -48,15 +48,24 @@ export async function POST(request: Request) {
     const message = await client.messages.create({
       model: "claude-haiku-4-5",
       max_tokens: 4000,
+      // temperature 0: maximal deterministisch statt kreativ -- bei einer
+      // rechtlich relevanten Unterweisung soll dieselbe Anfrage immer
+      // dieselbe, vorhersagbare Übersetzung liefern (weniger Spielraum,
+      // versehentlich in eine andere Sprache abzudriften).
+      temperature: 0,
       system:
-        "Du bist ein professioneller Übersetzer für Arbeitsschutz-Unterweisungen. " +
-        "Übersetze den Text des Nutzers originalgetreu und vollständig in die gewünschte Sprache. " +
-        "Behalte Absätze und Aufzählungen bei. Übersetze fachlich korrekt und gut verständlich. " +
-        "Antworte AUSSCHLIESSLICH mit der reinen Übersetzung — ohne Vorbemerkung, ohne Anführungszeichen, ohne Erklärung.",
+        `Du bist ein professioneller Übersetzer für Arbeitsschutz-Unterweisungen. ` +
+        `Deine EINZIGE Zielsprache für diese Anfrage ist: ${zielSprache}. Übersetze ` +
+        `ausschließlich nach ${zielSprache} -- in KEINE andere Sprache, auch wenn der ` +
+        `Ausgangstext Wörter aus einer anderen Sprache enthält. Übersetze den Text ` +
+        `originalgetreu und vollständig. Behalte Absätze und Aufzählungen bei. ` +
+        `Übersetze fachlich korrekt und gut verständlich. ` +
+        `Antworte AUSSCHLIESSLICH mit der reinen Übersetzung auf ${zielSprache} -- ` +
+        `ohne Vorbemerkung, ohne Anführungszeichen, ohne Erklärung, ohne den Namen der Zielsprache zu nennen.`,
       messages: [
         {
           role: "user",
-          content: `Zielsprache: ${zielSprache}\n\nText:\n${text}`,
+          content: `Übersetze den folgenden Text vollständig nach ${zielSprache}:\n\n${text}`,
         },
       ],
     });
