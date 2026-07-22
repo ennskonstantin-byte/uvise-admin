@@ -294,19 +294,21 @@ export function MarketingHome() {
             </svg>
           </div>
 
-          <div className="relative mx-auto max-w-6xl px-5 sm:px-8 pt-16 sm:pt-24 pb-20 grid lg:grid-cols-2 gap-14 items-center">
+          <div className="relative mx-auto max-w-6xl px-5 sm:px-8 pt-20 sm:pt-28 pb-24 sm:pb-32 grid lg:grid-cols-2 gap-14 items-center">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
             >
               <PlacardTag>🇩🇪 Gemacht für deutsche Betriebe</PlacardTag>
-              <h1 className="mk-display text-4xl sm:text-5xl font-bold tracking-tight leading-[1.08] mt-6 mb-5">
-                Digitale Unterweisungen & Nachweise,
-                <br />
-                die sich von selbst erledigen.
+              <h1
+                className="mk-display font-bold tracking-[-0.03em] leading-[1.04] mt-7 mb-6"
+                style={{ fontSize: "clamp(2.25rem, 3.8vw, 3.25rem)" }}
+              >
+                Unterweisungen, die sich{" "}
+                <span style={{ color: "var(--mk-blue)" }}>von selbst erledigen.</span>
               </h1>
-              <p className="text-lg text-[var(--mk-ink-65)] mb-8 max-w-md">
+              <p className="text-lg text-[var(--mk-ink-65)] mb-9 max-w-md leading-relaxed">
                 Die digitale Unterweisungs-Software für den Arbeitsschutz kümmert sich selbst um
                 Fristen, Erinnerungen und rechtssichere Unterschriften — mehrsprachig und ohne
                 Papierkram.
@@ -349,7 +351,7 @@ export function MarketingHome() {
         {/* Vorlesen & Übersetzen — zentrales Feature, eigener Bereich */}
         <section id="vorlesen" className="scroll-mt-16">
           <SignalRule />
-          <div className="mx-auto max-w-6xl px-5 sm:px-8 grid lg:grid-cols-2 gap-14 items-center py-20">
+          <div className="mx-auto max-w-6xl px-5 sm:px-8 grid lg:grid-cols-2 gap-14 items-center py-28 sm:py-32">
             <Reveal>
               <PlacardTag>
                 <Languages size={13} /> Verstanden wird jeder
@@ -386,7 +388,7 @@ export function MarketingHome() {
         {/* Funktionen */}
         <section id="funktionen" className="scroll-mt-16">
           <SignalRule />
-          <div className="mx-auto max-w-6xl px-5 sm:px-8 py-20">
+          <div className="mx-auto max-w-6xl px-5 sm:px-8 py-28 sm:py-32">
             <Reveal className="max-w-xl mb-12">
               <h2 className="mk-display text-3xl font-bold mb-3">Alles, was eine Unterweisung braucht</h2>
               <p className="text-[var(--mk-ink-65)]">
@@ -428,7 +430,7 @@ export function MarketingHome() {
         {/* Die App / Produkte */}
         <section id="app" className="scroll-mt-16">
           <SignalRule />
-          <div className="mx-auto max-w-6xl px-5 sm:px-8 py-20">
+          <div className="mx-auto max-w-6xl px-5 sm:px-8 py-28 sm:py-32">
             <Reveal className="max-w-xl mb-12">
               <h2 className="mk-display text-3xl font-bold mb-3">Ein System, drei Oberflächen</h2>
               <p className="text-[var(--mk-ink-65)]">
@@ -463,7 +465,7 @@ export function MarketingHome() {
         {/* Preise */}
         <section id="preise" className="scroll-mt-16">
           <SignalRule />
-          <div className="mx-auto max-w-6xl px-5 sm:px-8 py-20">
+          <div className="mx-auto max-w-6xl px-5 sm:px-8 py-28 sm:py-32">
             <Reveal className="max-w-xl mb-8">
               <h2 className="mk-display text-3xl font-bold mb-3">Ein Preis pro Team-Größe</h2>
               <p className="text-[var(--mk-ink-65)]">
@@ -565,7 +567,7 @@ export function MarketingHome() {
         {/* Häufige Fragen */}
         <section id="faq" className="scroll-mt-16">
           <SignalRule />
-          <div className="mx-auto max-w-3xl px-5 sm:px-8 py-20">
+          <div className="mx-auto max-w-3xl px-5 sm:px-8 py-28 sm:py-32">
             <Reveal className="mb-10">
               <h2 className="mk-display text-3xl font-bold mb-3">Häufige Fragen</h2>
               <p className="text-[var(--mk-ink-65)]">Was uVise-Kunden uns am häufigsten fragen.</p>
@@ -616,7 +618,7 @@ export function MarketingHome() {
         {/* Abschluss-CTA */}
         <section>
           <SignalRule />
-          <Reveal className="mx-auto max-w-3xl px-5 sm:px-8 py-20 text-center">
+          <Reveal className="mx-auto max-w-3xl px-5 sm:px-8 py-28 sm:py-32 text-center">
             <h2 className="mk-display text-3xl font-bold mb-4">Bereit, das Ordner-Chaos zu beenden?</h2>
             <p className="text-[var(--mk-ink-65)] mb-8">
               In wenigen Minuten eingerichtet — leg direkt los, keine Kreditkarte nötig.
