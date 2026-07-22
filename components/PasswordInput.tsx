@@ -22,6 +22,18 @@ export function PasswordInput({
       <input
         value={value}
         onChange={(e) => onChange(e.target.value)}
+        onPaste={(e) => {
+          // Mobile Safari übernimmt beim Einfügen in ein type="password"-Feld
+          // manchmal nur das erste Zeichen (bekannter WebKit-Eigenheit bei
+          // React-kontrollierten Eingaben). Der eingefügte Text wird deshalb
+          // hier direkt aus der Zwischenablage gelesen und komplett gesetzt,
+          // statt dem nativen Einfüge-Verhalten des Browsers zu vertrauen.
+          const pasted = e.clipboardData.getData("text");
+          if (pasted) {
+            e.preventDefault();
+            onChange(pasted);
+          }
+        }}
         type={sichtbar ? "text" : "password"}
         placeholder={placeholder}
         autoComplete={autoComplete}
