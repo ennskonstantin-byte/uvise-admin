@@ -33,12 +33,15 @@ export default function DashboardPage() {
         overdue: q.status === "abgelaufen",
       })),
     ...trainings
-      .filter((t) => t.status === "laeuft_ab")
+      .filter((t) => t.status === "laeuft_ab" || t.status === "abgelaufen")
       .map((t) => ({
         key: "t" + t.id,
         text: `${t.name} (Unterweisung)`,
-        sub: "Jährliche Kontrolle: noch aktuell? / läuft ab",
-        overdue: false,
+        sub:
+          t.status === "abgelaufen"
+            ? "Jährliche Kontrolle überfällig — bitte prüfen"
+            : "Jährliche Kontrolle: noch aktuell? / läuft ab",
+        overdue: t.status === "abgelaufen",
       })),
     ...employees
       .filter((e) => !e.archiviert && e.minderjaehrig)

@@ -116,9 +116,10 @@ function qualStatus(ablaufdatum: string | null): "gueltig" | "laeuft_ab" | "abge
   return "gueltig";
 }
 
-function trainingStatus(ablaufdatum: string | null): "aktuell" | "laeuft_ab" {
+function trainingStatus(ablaufdatum: string | null): "aktuell" | "laeuft_ab" | "abgelaufen" {
   if (!ablaufdatum) return "aktuell";
   const daysLeft = (new Date(ablaufdatum).getTime() - Date.now()) / 86_400_000;
+  if (daysLeft < 0) return "abgelaufen";
   return daysLeft < 30 ? "laeuft_ab" : "aktuell";
 }
 
@@ -198,6 +199,10 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
       signaturBildUrl: et.signatur_bild_url ?? null,
       geraet: et.geraet ?? null,
       signaturHash: et.signatur_hash ?? null,
+      // Rohes ISO-Datum (nicht das deutsch formatierte Training.ablaufdatum!)
+      // für Ampel-Berechnungen in der UI — new Date("22.7.2026") lässt sich
+      // nicht zuverlässig parsen, new Date("2026-07-22") schon.
+      ablaufdatumIso: (trainingRows ?? []).find((t) => t.id === et.training_id)?.ablaufdatum ?? null,
     }));
 
     const quals = (qualificationRows ?? []).map((q) => ({

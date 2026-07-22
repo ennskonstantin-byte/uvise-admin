@@ -23,7 +23,9 @@ export default function UnterweisungenPage() {
   const [editingBundle, setEditingBundle] = useState<Bundle | null>(null);
   const [assigningTraining, setAssigningTraining] = useState<Training | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
-  const expiringSoon = trainings.filter((t) => t.status === "laeuft_ab");
+  const expiringSoon = trainings.filter(
+    (t) => t.status === "laeuft_ab" || t.status === "abgelaufen"
+  );
 
   async function handleDeleteTraining(id: string, name: string) {
     if (!confirm(`"${name}" wirklich löschen?`)) return;
@@ -112,6 +114,11 @@ export default function UnterweisungenPage() {
                   {t.status === "laeuft_ab" && (
                     <span className="text-xs rounded-full bg-amber-500/15 text-amber-700 px-3 py-1">
                       Läuft bald ab
+                    </span>
+                  )}
+                  {t.status === "abgelaufen" && (
+                    <span className="text-xs rounded-full bg-red-500/15 text-red-700 px-3 py-1">
+                      Abgelaufen
                     </span>
                   )}
                   <button

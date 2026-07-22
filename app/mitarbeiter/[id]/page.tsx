@@ -17,11 +17,22 @@ import { useAppData } from "@/lib/store";
 const REMINDER_HINT =
   "Erinnerung vorgemerkt. Der automatische E-Mail-Versand wird aktiv, sobald Resend eingerichtet ist.";
 
-const STATUS_LABEL: Record<string, string> = {
-  offen: "Offen",
-  signiert: "Signiert",
-  abgelehnt: "Abgelehnt",
-};
+// Zeigt pro zugewiesener Unterweisung denselben Ampel-Status wie die
+// Mitarbeiter-App (siehe sicherakte/App.tsx isOverdue): ein offener Punkt
+// nach Ablaufdatum ist "Überfällig" (rot), davor "Ausstehend" (gelb) —
+// vorher stand hier immer nur neutral "Offen", ohne Ablauf-Hinweis, was
+// zu Verwirrung führte, wenn die App bereits Rot/Überfällig anzeigte.
+function trainingRowStatus(
+  status: "offen" | "signiert" | "abgelehnt",
+  ablaufdatum: string | undefined
+): { label: string; color: string } {
+  if (status === "signiert") return { label: "Signiert", color: "var(--ampel-green)" };
+  if (status === "abgelehnt") return { label: "Abgelehnt", color: "var(--ampel-red)" };
+  const overdue = !!ablaufdatum && new Date(ablaufdatum).getTime() < Date.now();
+  return overdue
+    ? { label: "Überfällig", color: "var(--ampel-red)" }
+    : { label: "Ausstehend", color: "#f59e0b" };
+}
 
 const QUALIFICATION_STATUS_COLOR: Record<string, string> = {
   gueltig: "var(--ampel-green)",
@@ -135,12 +146,18 @@ export default function EmployeeDetailPage() {
         </div>
 
         <div className="rounded-3xl border border-border divide-y divide-border overflow-hidden mb-8">
-          {empTrainings.map((et) => (
+          {empTrainings.map((et) => {
+            const rowStatus = trainingRowStatus(et.status, et.ablaufdatumIso ?? undefined);
+            return (
             <div key={et.id} className="flex items-center gap-4 px-5 py-3">
               <div className="flex-1 min-w-0">
                 <p className="font-medium truncate">{trainingName(trainings, et.trainingId)}</p>
-                <p className="text-xs text-foreground/65">
-                  {STATUS_LABEL[et.status]}
+                <p className="text-xs text-foreground/65 flex items-center gap-1.5">
+                  <span
+                    className="inline-block h-2 w-2 rounded-full shrink-0"
+                    style={{ background: rowStatus.color }}
+                  />
+                  {rowStatus.label}
                   {et.signiertAm ? ` · signiert am ${et.signiertAm}` : ""}
                 </p>
               </div>
@@ -154,7 +171,8 @@ export default function EmployeeDetailPage() {
                 </button>
               )}
             </div>
-          ))}
+            );
+          })}
           {empTrainings.length === 0 && (
             <p className="px-5 py-4 text-sm text-foreground/65">
               Keine Unterweisungen zugewiesen.

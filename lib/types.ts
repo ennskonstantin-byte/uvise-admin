@@ -56,7 +56,7 @@ export type Training = {
   inhalt: string | null;
   erstelltAm: string;
   ablaufdatum: string;
-  status: "aktuell" | "laeuft_ab";
+  status: "aktuell" | "laeuft_ab" | "abgelaufen";
 };
 
 // 30 gängige Icon-Vorschläge für Unterweisungen/Schulungen
@@ -102,6 +102,7 @@ export type EmployeeTraining = {
   signaturBildUrl: string | null;
   geraet: string | null;
   signaturHash: string | null;
+  ablaufdatumIso: string | null;
 };
 
 export type Bundle = {
