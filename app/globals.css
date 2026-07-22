@@ -2,26 +2,25 @@
 
 :root {
   --background: #ffffff;
-  --foreground: #171717;
+  --foreground: #14161b;
   --surface: #f4f4f5;
   --border: #e4e4e7;
-  --page-bg: #f3f2f8;
+  --page-bg: #f2f1ec;
 
-  --accent-violet: #7c5cfc;
-  --accent-blue: #3b82f6;
-  --accent-cyan: #22d3ee;
-  --accent-gradient: linear-gradient(
-    90deg,
-    var(--accent-violet),
-    var(--accent-blue),
-    var(--accent-cyan)
-  );
+  /* uVise-Markenfarben (brand/uvise-brand.css in der Cloude-Wurzel):
+     Verlauf 150° von Tiefblau nach Hellblau, Signal-Cyan, Ampel-Werte.
+     Die alten Variablennamen bleiben bestehen, damit alle Komponenten
+     ohne Umbau weiter funktionieren — nur die Werte sind jetzt Marke. */
+  --accent-violet: #0a5bff;
+  --accent-blue: #0a6cff;
+  --accent-cyan: #17c1fe;
+  --accent-gradient: linear-gradient(150deg, #0a5bff 0%, #18a8ff 100%);
 
-  --ampel-red: #ef4444;
-  --ampel-green: #22c55e;
+  --ampel-red: #e5484d;
+  --ampel-green: #17b26a;
 
-  --sidebar-from: #1c1130;
-  --sidebar-to: #0a0a0f;
+  --sidebar-from: #12307e;
+  --sidebar-to: #0a1233;
 }
 
 :root.dark {
@@ -60,7 +59,9 @@
   --color-sidebar-from: var(--sidebar-from);
   --color-sidebar-to: var(--sidebar-to);
 
-  --font-display: var(--font-body);
+  /* Marke: Space Grotesk für Überschriften (--font-mk-display wird im
+     Root-Layout gesetzt), Inter für Fließtext/UI. */
+  --font-display: var(--font-mk-display);
   --font-body: var(--font-body);
 }
 
@@ -102,35 +103,35 @@ button:not(:disabled):active {
 }
 
 h1, h2, h3, h4 {
-  font-family: var(--font-body), system-ui, sans-serif;
+  font-family: var(--font-mk-display), var(--font-body), system-ui, sans-serif;
 }
 
 /* ---------------------------------------------------------------------
-   Landingpage-eigenes Design (nur unter .uv-mk aktiv) — eigenständige
-   Farb- und Typo-Sprache angelehnt an echte Arbeitsschutz-Kennzeichnung
-   (Gebotszeichen=Blau, Rettungszeichen=Grün, Verbotszeichen=Rot,
-   Warnzeichen=Gelb), passend zum Ampel-System-Feature der App. Bewusst
-   getrennt von den globalen --accent-* Variablen, damit das
-   Chef-Dashboard und die Apps unverändert bleiben.
+   Landingpage-Design (nur unter .uv-mk aktiv) — trägt die uVise-Marke
+   (brand/uvise-brand.css): Marken-Blau + Verlauf, Signal-Cyan, Ampel-
+   Farben, Space Grotesk als Display-Schrift. Die mk-Tokens spiegeln die
+   --uv-*-Markenwerte, damit die Seite lokal (mit .uv-mk-Scope) und im
+   restlichen Dashboard konsistent bleibt.
    --------------------------------------------------------------------- */
 .uv-mk {
-  --mk-ink: #14171a;
-  --mk-paper: #f1f3ee;
+  --mk-ink: #14161b;
+  --mk-paper: #f2f1ec;
   --mk-panel: #ffffff;
   --mk-line: #d9dcd3;
-  --mk-line-strong: #14171a;
+  --mk-line-strong: #14161b;
 
-  --mk-blue: #0b5fa5;
-  --mk-green: #0f8a5f;
-  --mk-red: #c81e2c;
-  --mk-yellow: #f5b400;
+  /* uVise-Markenfarben (brand/uvise-brand.css) */
+  --mk-blue: #0a6cff;
+  --mk-green: #17b26a;
+  --mk-red: #e5484d;
+  --mk-yellow: #f5b301;
 
   /* Flächenfarben für Buttons/Karten mit weißem Text: bleiben auch im
      Dark Mode dunkel genug für ausreichenden Kontrast (die normalen
      --mk-blue/--mk-green werden dort aufgehellt, weil sie als Akzent
      AUF dunklem Grund stehen müssen). */
-  --mk-blue-strong: #0b5fa5;
-  --mk-green-strong: #0f8a5f;
+  --mk-blue-strong: #0a6cff;
+  --mk-green-strong: #17b26a;
 
   --mk-ink-70: color-mix(in srgb, var(--mk-ink) 70%, transparent);
   --mk-ink-65: color-mix(in srgb, var(--mk-ink) 65%, transparent);
@@ -143,35 +144,35 @@ h1, h2, h3, h4 {
 
 :root.dark .uv-mk {
   --mk-ink: #edf0ea;
-  --mk-paper: #121513;
-  --mk-panel: #1a1e1c;
-  --mk-line: #2d322e;
+  --mk-paper: #101319;
+  --mk-panel: #1a1e26;
+  --mk-line: #2b303a;
   --mk-line-strong: #edf0ea;
 
-  --mk-blue: #5ea3dd;
-  --mk-green: #4bc191;
+  --mk-blue: #4d9bff;
+  --mk-green: #3ec98a;
   --mk-red: #f0616f;
   --mk-yellow: #f5c343;
 
-  --mk-blue-strong: #135a95;
-  --mk-green-strong: #0f7a55;
+  --mk-blue-strong: #0a6cff;
+  --mk-green-strong: #17b26a;
 }
 
 @media (prefers-color-scheme: dark) {
   :root:not(.light) .uv-mk {
     --mk-ink: #edf0ea;
-    --mk-paper: #121513;
-    --mk-panel: #1a1e1c;
-    --mk-line: #2d322e;
+    --mk-paper: #101319;
+    --mk-panel: #1a1e26;
+    --mk-line: #2b303a;
     --mk-line-strong: #edf0ea;
 
-    --mk-blue: #5ea3dd;
-    --mk-green: #4bc191;
+    --mk-blue: #4d9bff;
+    --mk-green: #3ec98a;
     --mk-red: #f0616f;
     --mk-yellow: #f5c343;
 
-    --mk-blue-strong: #135a95;
-    --mk-green-strong: #0f7a55;
+    --mk-blue-strong: #0a6cff;
+    --mk-green-strong: #17b26a;
   }
 }
 

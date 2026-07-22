@@ -64,7 +64,7 @@ async function holeFoto(query: string, quer: boolean, seed: string): Promise<str
   }
 }
 
-const GRAD = "linear-gradient(135deg, #7c5cfc, #3b82f6, #22d3ee)";
+const GRAD = "linear-gradient(150deg, #0a5bff, #18a8ff)";
 
 // Eine Zeile in der Mini-App (Avatar + zwei Zeilen + Statuspunkt).
 // Mit fotoUri wird ein echtes Mitarbeiterfoto statt einer Farbfläche gezeigt.
@@ -100,7 +100,7 @@ function appScreen(kind: number, fotos?: (string | null)[], logoUri?: string | n
     <div
       style={{
         height: 58,
-        background: "linear-gradient(90deg, #7c5cfc, #3b82f6)",
+        background: "linear-gradient(90deg, #0a5bff, #18a8ff)",
         display: "flex",
         alignItems: "center",
         gap: 8,
@@ -274,7 +274,7 @@ export async function GET(request: Request) {
             display: "flex",
             ...(foto
               ? { backgroundImage: `url(${foto})`, backgroundSize: "cover", backgroundPosition: "center" }
-              : { background: "linear-gradient(150deg, #1c1130, #0a0a0f)" }),
+              : { background: "linear-gradient(150deg, #12307e, #0a1233)" }),
           }}
         />
         {/* Dunkler Verlauf für Lesbarkeit (bei App-Ansicht links dunkler) */}
@@ -364,7 +364,7 @@ export async function GET(request: Request) {
                 height: 8,
                 borderRadius: 999,
                 marginBottom: 24,
-                background: "linear-gradient(90deg, #7c5cfc, #22d3ee)",
+                background: "linear-gradient(90deg, #0a5bff, #17c1fe)",
                 display: "flex",
               }}
             />
