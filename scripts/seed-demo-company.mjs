@@ -137,8 +137,51 @@ async function main() {
     {
       name: "Elektrische Arbeitsmittel",
       icon: "⚡",
-      inhalt:
-        "Vor jeder Nutzung Sichtprüfung auf Beschädigungen. Defekte Geräte sofort aus dem Verkehr ziehen und melden. Prüffristen nach DGUV V3 beachten.",
+      inhalt: `Vor jeder Nutzung Sichtprüfung auf Beschädigungen. Defekte Geräte sofort aus dem Verkehr ziehen und melden. Prüffristen nach DGUV V3 beachten.
+
+BETRIEBSANWEISUNG — SCHWEISSGERÄT ELEKTRISCH
+
+1. ANWENDUNGSBEREICH
+Durchführung von Elektro-Schweißarbeiten.
+
+2. GEFAHREN FÜR MENSCH UND UMWELT
+– Schweißrauche
+– Gesundheitsgefahr bei Schweißarbeiten an hochlegierten Werkstücken, metallischen Überzügen oder Farbanstrichen, Kunststoffbeschichtungen, Verunreinigungen durch Öle, Fette oder Lösemittelreste etc.
+– Infrarote oder ultraviolette Strahlung (Lichtbogen)
+– Funkenflug, Brandgefahr
+– Stromschlag
+– Schweißen an Behältern: Gefahr durch Reste der Inhaltsstoffe!
+
+3. SCHUTZMASSNAHMEN UND VERHALTENSREGELN
+– Beim Betrieb die Betriebsanleitung des Herstellers beachten.
+– Schweißrauchabsaugung verwenden, für ausreichende Belüftung sorgen.
+– Bei Schweißarbeiten in Bereichen mit Brand- und Explosionsgefahr Schweißerlaubnis einholen.
+– Brennbare Teile aus der Umgebung entfernen oder abdecken.
+– Während und nach Schweißarbeiten Brandwache stellen.
+– Schweißdrahtrollen und Schutzgasschweißbrenner nicht unter dem Arm halten und nur auf isolierende Ablagen ablegen.
+– Schutzgasflasche sicher aufstellen und gegen Umfallen sichern.
+– Beim Schweißen unter erhöhter elektrischer Gefährdung (z. B. in engen Räumen, Silos, feuchte Arbeitsplätze) nur besonders gekennzeichnete Schweißstromquellen benutzen (z. B. Trenntrafo), isolierende Zwischenlagen verwenden.
+– Schweißstromquellen nicht in engen Räumen aufstellen.
+– Beim Arbeiten an Behältern mit brennbaren Flüssigkeiten Behälter vollständig entleeren und mit Wasser auffüllen.
+– Schutzschirm oder Schutzschild mit Schweißschutzfilter benutzen.
+– Schweißschutzhandschuhe und schwer entflammbare, trockene Schweißerschutzkleidung tragen — auch für Schweißhelfer.
+
+4. VERHALTEN BEI STÖRUNGEN
+– Für Brandschutz sorgen, geeigneten Feuerlöscher bereithalten.
+– Regelmäßige Kontrolle der Elektrodenhalter und der elektrischen Leitungen.
+– Schäden und Störungen dem Vorgesetzten mitteilen.
+
+5. ERSTE HILFE
+– Ersthelfer heranziehen
+– Notruf: 112
+– Unfall melden
+– Durchgeführte Erste-Hilfe-Leistungen immer im Verbandsbuch eintragen
+
+6. INSTANDHALTUNG
+– Instandhaltung (Wartung, Reparatur) nur von qualifizierten und beauftragten Personen durchführen lassen.
+– Nach Instandhaltung sind die Schutzeinrichtungen zu überprüfen.
+– Bei der Instandhaltung die Betriebsanleitung des Herstellers beachten.
+– Regelmäßige Prüfungen (z. B. elektrisch, mechanisch) durch befähigte Personen.`,
       ablaufdatum: heute(180),
     },
   ];
