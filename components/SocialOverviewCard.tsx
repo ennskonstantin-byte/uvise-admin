@@ -47,6 +47,14 @@ export function SocialOverviewCard() {
 
   if (!istBetreiber || laedt || !data) return null;
 
+  // "Code 10" / pages_read_user_content ist eine bekannte, von Meta bewusst
+  // gesperrte Berechtigung -- die braucht eine offizielle App-Prüfung durch
+  // Meta (Tage bis Wochen), ist also kein Fehler, den man selbst schnell
+  // beheben kann. Dafür lieber ein ruhiger Hinweis statt eines Alarm-Banners;
+  // andere Fehler (z.B. abgelaufener Token) bleiben als echte Warnung sichtbar,
+  // weil die tatsächlich behebbar sind.
+  const berechtigungsLuecke = !!data.apiFehler && /pages_read_user_content|Code 10/i.test(data.apiFehler);
+
   return (
     <Card>
       <div className="flex items-center justify-between mb-4">
@@ -62,13 +70,13 @@ export function SocialOverviewCard() {
             Sobald der Facebook-Zugang eingerichtet ist und Beiträge veröffentlicht wurden, siehst du hier Follower,
             Likes und Kommentare.
           </p>
-          {data.apiFehler && (
+          {data.apiFehler && !berechtigungsLuecke && (
             <p className="mt-2 text-sm text-red-500">Grund: {data.apiFehler}</p>
           )}
         </div>
       ) : (
         <>
-          {data.apiFehler && (
+          {data.apiFehler && !berechtigungsLuecke && (
             <p className="mb-3 text-sm text-red-500">
               ⚠️ Nicht alle Zahlen konnten abgerufen werden: {data.apiFehler}
             </p>
@@ -76,8 +84,8 @@ export function SocialOverviewCard() {
           <div className="grid grid-cols-3 gap-3">
             {[
               { label: "Follower", wert: data.followers ?? 0, icon: "👥" },
-              { label: "Likes", wert: data.likesGesamt ?? 0, icon: "👍" },
-              { label: "Kommentare", wert: data.kommentareGesamt ?? 0, icon: "💬" },
+              { label: "Likes", wert: berechtigungsLuecke ? "–" : data.likesGesamt ?? 0, icon: "👍" },
+              { label: "Kommentare", wert: berechtigungsLuecke ? "–" : data.kommentareGesamt ?? 0, icon: "💬" },
             ].map((s) => (
               <div key={s.label} className="rounded-2xl border border-border bg-page-bg p-4 text-center">
                 <div className="text-2xl font-bold">{s.wert}</div>
@@ -87,6 +95,12 @@ export function SocialOverviewCard() {
               </div>
             ))}
           </div>
+          {berechtigungsLuecke && (
+            <p className="mt-3 text-xs text-foreground/50">
+              Likes &amp; Kommentare brauchen noch eine zusätzliche Freigabe von Meta (offizielle App-Prüfung) —
+              das ist normal für eine neue Seite und kein Fehler bei dir.
+            </p>
+          )}
 
           {data.letzteKommentare && data.letzteKommentare.length > 0 && (
             <div className="mt-5">
@@ -111,7 +125,8 @@ export function SocialOverviewCard() {
 
           <p className="mt-4 text-[11px] text-foreground/40">
             Facebook-Nachrichten (Postfach) brauchen eine zusätzliche Meta-Berechtigung — sag Bescheid, wenn du die
-            auch hier haben möchtest. Likes &amp; Kommentare zählen Facebook und Instagram zusammen.
+            auch hier haben möchtest.
+            {!berechtigungsLuecke && " Likes & Kommentare zählen Facebook und Instagram zusammen."}
           </p>
         </>
       )}
