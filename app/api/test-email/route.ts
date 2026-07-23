@@ -1,10 +1,22 @@
 import { NextResponse } from "next/server";
 import { resend, RESEND_FROM } from "@/lib/resend";
 
+// CORS nötig, weil die native Chef-App (sicherakte/) diese Route von einem
+// anderen Origin aus aufruft (im Web-Build der App bzw. lokal beim Testen).
+const CORS_HEADERS = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type",
+};
+
+export async function OPTIONS() {
+  return new NextResponse(null, { status: 204, headers: CORS_HEADERS });
+}
+
 export async function POST(request: Request) {
   const { to } = await request.json();
   if (!to || typeof to !== "string") {
-    return NextResponse.json({ error: "Fehlende E-Mail-Adresse" }, { status: 400 });
+    return NextResponse.json({ error: "Fehlende E-Mail-Adresse" }, { status: 400, headers: CORS_HEADERS });
   }
 
   const { error } = await resend.emails.send({
@@ -24,7 +36,7 @@ export async function POST(request: Request) {
   });
 
   if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: error.message }, { status: 500, headers: CORS_HEADERS });
   }
-  return NextResponse.json({ ok: true });
+  return NextResponse.json({ ok: true }, { headers: CORS_HEADERS });
 }
