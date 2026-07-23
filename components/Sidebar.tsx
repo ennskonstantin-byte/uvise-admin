@@ -146,6 +146,9 @@ export function Sidebar() {
 
       <button
         onClick={async () => {
+          // Immer erst fragen — ein versehentlicher Klick soll niemanden
+          // aus dem Dashboard werfen.
+          if (!confirm("Möchtest du dich wirklich abmelden?")) return;
           // Harte Navigation statt router.push: sobald signOut() die Sitzung
           // beendet, würde die noch aktive Dashboard-Seite kurz das
           // Login-Formular zeigen, BEVOR die Weiterleitung zur Startseite

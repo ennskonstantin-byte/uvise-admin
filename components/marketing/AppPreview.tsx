@@ -3,17 +3,22 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 
+// Versions-Stempel gegen hartnäckigen Browser-Cache (v.a. Safari/iPhone):
+// wird vom Demo-Neubau-Skript automatisch hochgezählt — dadurch bekommt die
+// iframe-URL bei jedem Neubau eine neue Adresse und niemand sieht alte Builds.
+const DEMO_VERSION = "2026-07-24-0129";
+
 const APPS = [
   {
     key: "chef",
     label: "Chef-App",
-    src: "/preview-chef/index.html",
+    src: `/preview-chef/index.html?v=${DEMO_VERSION}`,
     hint: "Angemeldet als Nina Müller (Beauftragte) — Mitarbeiter, Unterweisungen und Qualifikationen der Demo-Firma \"uVise Demo GmbH\".",
   },
   {
     key: "ma",
     label: "Mitarbeiter-App",
-    src: "/preview-ma/index.html",
+    src: `/preview-ma/index.html?v=${DEMO_VERSION}`,
     hint: "Angemeldet als Lena Bauer (Mitarbeiterin) — probier ruhig \"Jetzt signieren\" und die Vorlese-/Übersetzungsfunktion aus.",
   },
 ] as const;
