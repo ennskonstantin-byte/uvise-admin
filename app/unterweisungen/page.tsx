@@ -1,8 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { AlertTriangle, Download, Pencil, Printer, Send, Trash2 } from "lucide-react";
-import { supabase } from "@/lib/supabase";
+import { AlertTriangle, Pencil, Printer, Send, Trash2 } from "lucide-react";
 import { DashboardShell } from "@/components/DashboardShell";
 import { PageHeader } from "@/components/PageHeader";
 import { Card } from "@/components/Card";
@@ -27,28 +26,6 @@ export default function UnterweisungenPage() {
   const expiringSoon = trainings.filter(
     (t) => t.status === "laeuft_ab" || t.status === "abgelaufen"
   );
-
-  // Speichert die hochgeladene PDF wirklich auf dem Gerät (statt nur in einem
-  // neuen Tab zu öffnen) -- für den Fall, dass die Original-Datei verloren geht.
-  async function downloadPdf(path: string, trainingName: string) {
-    const { data, error } = await supabase.storage
-      .from("training-documents")
-      .createSignedUrl(path, 3600);
-    if (error || !data?.signedUrl) {
-      alert("PDF konnte nicht heruntergeladen werden.");
-      return;
-    }
-    const res = await fetch(data.signedUrl);
-    const blob = await res.blob();
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `${trainingName}.pdf`;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    URL.revokeObjectURL(url);
-  }
 
   async function handleDeleteTraining(id: string, name: string) {
     if (!confirm(`"${name}" wirklich löschen?`)) return;
@@ -143,16 +120,6 @@ export default function UnterweisungenPage() {
                     <span className="text-xs rounded-full bg-red-500/15 text-red-700 px-3 py-1">
                       Abgelaufen
                     </span>
-                  )}
-                  {t.pdfPath && (
-                    <button
-                      onClick={() => downloadPdf(t.pdfPath!, t.name)}
-                      className="h-8 w-8 rounded-full border border-border flex items-center justify-center text-blue-500 hover:border-foreground/30"
-                      aria-label={`${t.name} — hochgeladene PDF speichern`}
-                      title={`${t.name} — hochgeladene PDF speichern`}
-                    >
-                      <Download size={14} />
-                    </button>
                   )}
                   <button
                     onClick={() => printTraining(t)}
