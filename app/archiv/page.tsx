@@ -23,6 +23,8 @@ export default function ArchivPage() {
   const [year, setYear] = useState<string | null>(null);
   const [viewingEntry, setViewingEntry] = useState<EmployeeTraining | null>(null);
   const [showArchived, setShowArchived] = useState(false);
+  // Suche nach Unterweisungsart in der Dokument-Liste eines Mitarbeiters
+  const [docQuery, setDocQuery] = useState("");
 
   function matchesFilters(e: (typeof employees)[number]) {
     const matchesCategory = !category || e.kategorie === category;
@@ -50,6 +52,7 @@ export default function ArchivPage() {
     setEmployeeId(null);
     setTrainingId(null);
     setYear(null);
+    setDocQuery("");
   }
 
   const modeToggle = (
@@ -223,7 +226,11 @@ export default function ArchivPage() {
   // -------------------------------------------------------------------------
   const selectedEmployee = employees.find((e) => e.id === employeeId);
   const entries = employeeTrainings.filter(
-    (et) => et.employeeId === employeeId && (!year || (et.signiertAm ?? "").endsWith(year))
+    (et) =>
+      et.employeeId === employeeId &&
+      (!year || (et.signiertAm ?? "").endsWith(year)) &&
+      // Suche nach Unterweisungsart, damit lange Listen übersichtlich bleiben
+      trainingName(trainings, et.trainingId).toLowerCase().includes(docQuery.toLowerCase())
   );
 
   if (selectedEmployee && year) {
@@ -251,6 +258,14 @@ export default function ArchivPage() {
             </button>
           </div>
 
+          <input
+            type="search"
+            value={docQuery}
+            onChange={(e) => setDocQuery(e.target.value)}
+            placeholder="Nach Unterweisung suchen…"
+            className="w-full rounded-full border border-border bg-surface px-5 py-2.5 text-sm mb-4 outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+          />
+
           <div className="rounded-3xl border border-border divide-y divide-border overflow-hidden">
             {entries.map((et) => (
               <div key={et.id} className="flex items-center gap-4 px-5 py-4">
@@ -274,7 +289,7 @@ export default function ArchivPage() {
             ))}
             {entries.length === 0 && (
               <p className="px-5 py-4 text-sm text-foreground/65">
-                Keine Einträge für dieses Jahr.
+                {docQuery ? "Keine Einträge zu dieser Suche." : "Keine Einträge für dieses Jahr."}
               </p>
             )}
           </div>

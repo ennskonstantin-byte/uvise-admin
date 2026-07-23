@@ -176,12 +176,13 @@ export const BUNDLE_ICONS: string[] = [
   "5️⃣",
 ];
 
-// 20 gängige Qualifikationen mit bunten, gut erkennbaren Symbolen
+// Gängige Qualifikationen mit bunten, gut erkennbaren Symbolen.
+// Bewusst NUR Qualifikationen, die ablaufen bzw. regelmäßig aufgefrischt
+// werden müssen — Abschlüsse ohne Ablaufdatum (Meister, AEVO, SiFa …) sind
+// raus, weil das Produkt mit Fristen und Erinnerungen arbeitet.
 export const QUALIFICATION_PRESETS: { name: string; icon: string }[] = [
   { name: "Ersthelfer", icon: "⛑️" },
   { name: "Brandschutzhelfer", icon: "🧯" },
-  { name: "Sicherheitsbeauftragter", icon: "🦺" },
-  { name: "Sicherheitsfachkraft (SiFa)", icon: "🛡️" },
   { name: "Staplerschein", icon: "🚜" },
   { name: "Kranführer", icon: "🏗️" },
   { name: "LKW-Führerschein (C/CE)", icon: "🚛" },
@@ -189,15 +190,14 @@ export const QUALIFICATION_PRESETS: { name: string; icon: string }[] = [
   { name: "Hubarbeitsbühne", icon: "🪜" },
   { name: "Motorsägenschein", icon: "🪚" },
   { name: "Schweißerprüfung", icon: "🔥" },
-  { name: "Elektrofachkraft", icon: "⚡" },
   { name: "Gefahrgut (ADR)", icon: "☣️" },
   { name: "Hygieneschulung (§43)", icon: "🧼" },
   { name: "Ladungssicherung", icon: "📦" },
   { name: "Höhentauglichkeit (G41)", icon: "🧗" },
   { name: "Atemschutz (G26)", icon: "😷" },
+  { name: "Fahrtauglichkeit (G25)", icon: "🚦" },
+  { name: "Atemwege-Vorsorge (G23)", icon: "🫁" },
   { name: "Betriebssanitäter", icon: "🚑" },
-  { name: "Meister/Fachwirt", icon: "🏅" },
-  { name: "Ausbilderschein (AEVO)", icon: "🎓" },
 ];
 
 export function qualIcon(name: string): string {

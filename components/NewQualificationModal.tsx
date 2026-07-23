@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useAppData } from "@/lib/store";
-import { QUALIFICATION_PRESETS } from "@/lib/types";
+import { QUALIFICATION_PRESETS, qualIcon } from "@/lib/types";
 import { DateSelect } from "@/components/DateSelect";
 import { EmployeeSearchPicker } from "@/components/EmployeeSearchPicker";
 import { useEscapeClose } from "@/lib/useEscapeClose";
@@ -23,6 +23,8 @@ export function NewQualificationModal({
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [done, setDone] = useState(false);
+  // Vorschlagsliste als eigenes Popup statt langer Knopf-Liste im Formular
+  const [presetsOpen, setPresetsOpen] = useState(false);
 
   async function handleSave() {
     setSaving(true);
@@ -78,22 +80,15 @@ export function NewQualificationModal({
               placeholder="Eigene Qualifikation frei eingeben…"
               className="w-full rounded-full border border-border bg-surface px-4 py-2.5 text-sm outline-none"
             />
-            <p className="text-[11px] text-foreground/65 mt-2 mb-2">oder aus 20 gängigen wählen:</p>
-            <div className="flex flex-wrap gap-2 max-h-40 overflow-y-auto">
-              {QUALIFICATION_PRESETS.map((preset) => (
-                <button
-                  key={preset.name}
-                  type="button"
-                  onClick={() => setName(preset.name)}
-                  className={`rounded-full px-3 py-1.5 text-xs ${
-                    name === preset.name ? "text-white" : "border border-border text-foreground/70"
-                  }`}
-                  style={name === preset.name ? { background: "var(--accent-gradient)" } : undefined}
-                >
-                  <span className="font-mono">{preset.icon}</span> {preset.name}
-                </button>
-              ))}
-            </div>
+            <button
+              type="button"
+              onClick={() => setPresetsOpen(true)}
+              className="mt-2 w-full rounded-full border border-border px-4 py-2.5 text-sm text-left text-foreground/80 hover:border-foreground/30"
+            >
+              {name && QUALIFICATION_PRESETS.some((q) => q.name === name)
+                ? `${qualIcon(name)} ${name} — ändern`
+                : "📋 Aus gängigen Qualifikationen wählen"}
+            </button>
           </div>
 
           <div>
@@ -111,6 +106,43 @@ export function NewQualificationModal({
           {saving ? "Speichert…" : "Speichern"}
         </button>
       </div>
+
+      {/* Vorschläge als eigenes Popup — wie in der App, damit das Formular
+          kurz und übersichtlich bleibt. */}
+      {presetsOpen && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/40 px-4">
+          <div className="w-full max-w-md rounded-3xl bg-background border border-border p-6 max-h-[80vh] flex flex-col">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold">Gängige Qualifikationen</h3>
+              <button
+                onClick={() => setPresetsOpen(false)}
+                className="text-foreground/65 hover:text-foreground text-sm"
+              >
+                Schließen
+              </button>
+            </div>
+            <div className="overflow-y-auto divide-y divide-border rounded-2xl border border-border">
+              {QUALIFICATION_PRESETS.map((preset) => (
+                <button
+                  key={preset.name}
+                  type="button"
+                  onClick={() => {
+                    setName(preset.name);
+                    setPresetsOpen(false);
+                  }}
+                  className={`flex w-full items-center gap-3 px-4 py-3 text-left text-sm hover:bg-surface ${
+                    name === preset.name ? "font-semibold text-blue-600" : ""
+                  }`}
+                >
+                  <span className="text-xl">{preset.icon}</span>
+                  <span className="flex-1">{preset.name}</span>
+                  {name === preset.name && <span>✓</span>}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
