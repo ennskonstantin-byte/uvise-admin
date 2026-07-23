@@ -6,6 +6,7 @@ import { QUALIFICATION_PRESETS } from "@/lib/types";
 import { DateSelect } from "@/components/DateSelect";
 import { EmployeeSearchPicker } from "@/components/EmployeeSearchPicker";
 import { useEscapeClose } from "@/lib/useEscapeClose";
+import { SuccessOverlay, SUCCESS_OVERLAY_MS } from "@/components/SuccessOverlay";
 
 export function NewQualificationModal({
   onClose,
@@ -21,6 +22,7 @@ export function NewQualificationModal({
   const [ablaufdatum, setAblaufdatum] = useState("");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [done, setDone] = useState(false);
 
   async function handleSave() {
     setSaving(true);
@@ -31,12 +33,17 @@ export function NewQualificationModal({
         name,
         ablaufdatum: ablaufdatum || null,
       });
-      onClose();
+      setDone(true);
+      setTimeout(onClose, SUCCESS_OVERLAY_MS);
     } catch {
       setError("Speichern fehlgeschlagen. Bist du als Beauftragte/r eingeloggt?");
     } finally {
       setSaving(false);
     }
+  }
+
+  if (done) {
+    return <SuccessOverlay message={`„${name}" hinzugefügt.`} />;
   }
 
   return (

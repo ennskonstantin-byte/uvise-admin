@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useAppData } from "@/lib/store";
 import { useEscapeClose } from "@/lib/useEscapeClose";
+import { SuccessOverlay, SUCCESS_OVERLAY_MS } from "@/components/SuccessOverlay";
 import type { Employee } from "@/lib/types";
 
 // Umgekehrte Blickrichtung zu AssignTrainingModal: hier startet man beim
@@ -23,6 +24,7 @@ export function AssignTrainingToEmployeeModal({
   const available = trainings.filter((t) => !alreadyIds.has(t.id));
   const [selected, setSelected] = useState<string[]>([]);
   const [saving, setSaving] = useState(false);
+  const [done, setDone] = useState(false);
 
   function toggle(id: string) {
     setSelected((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
@@ -34,10 +36,19 @@ export function AssignTrainingToEmployeeModal({
       for (const trainingId of selected) {
         await assignTraining(trainingId, [employee.id]);
       }
-      onClose();
+      setDone(true);
+      setTimeout(onClose, SUCCESS_OVERLAY_MS);
     } finally {
       setSaving(false);
     }
+  }
+
+  if (done) {
+    return (
+      <SuccessOverlay
+        message={`${selected.length} Unterweisung(en) für ${employee.vorname} zugewiesen.`}
+      />
+    );
   }
 
   return (

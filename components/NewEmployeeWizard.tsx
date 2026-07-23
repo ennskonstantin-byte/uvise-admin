@@ -119,6 +119,10 @@ export function NewEmployeeWizard({ onClose }: { onClose: () => void }) {
       }
 
       setDone(true);
+      // Schließt automatisch, damit man nach dem Anlegen nicht extra klicken
+      // muss, um zu sehen, dass es geklappt hat -- der Knopf unten bleibt als
+      // Möglichkeit, sofort zu schließen.
+      setTimeout(onClose, 1400);
     } catch {
       setError("Anlegen fehlgeschlagen. Bitte prüfe, ob du als Beauftragte/r eingeloggt bist.");
     } finally {
