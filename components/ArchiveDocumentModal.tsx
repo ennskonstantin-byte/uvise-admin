@@ -1,7 +1,9 @@
 "use client";
 
+import { useState } from "react";
 import type { EmployeeTraining } from "@/lib/types";
 import { useEscapeClose } from "@/lib/useEscapeClose";
+import { saveArchiveDocumentPdf } from "@/lib/exportArchiveDocument";
 
 export function ArchiveDocumentModal({
   entry,
@@ -15,6 +17,17 @@ export function ArchiveDocumentModal({
   onClose: () => void;
 }) {
   useEscapeClose(onClose);
+  const [saving, setSaving] = useState(false);
+
+  async function handleSave() {
+    setSaving(true);
+    try {
+      await saveArchiveDocumentPdf(entry, trainingName, employeeName);
+    } finally {
+      setSaving(false);
+    }
+  }
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
       <div className="w-full max-w-md rounded-3xl bg-background border border-border p-6 sm:p-8">
@@ -71,13 +84,22 @@ export function ArchiveDocumentModal({
           </div>
         </div>
 
-        <button
-          onClick={() => window.print()}
-          className="mt-6 w-full rounded-full px-5 py-2.5 text-sm font-medium text-white"
-          style={{ background: "var(--accent-gradient)" }}
-        >
-          Als PDF drucken
-        </button>
+        <div className="mt-6 flex gap-3">
+          <button
+            onClick={() => window.print()}
+            className="flex-1 rounded-full px-5 py-2.5 text-sm font-medium text-white"
+            style={{ background: "var(--accent-gradient)" }}
+          >
+            Drucken
+          </button>
+          <button
+            onClick={handleSave}
+            disabled={saving}
+            className="flex-1 rounded-full border border-border px-5 py-2.5 text-sm font-medium hover:border-foreground/30 disabled:opacity-50"
+          >
+            {saving ? "Speichert…" : "Als PDF speichern"}
+          </button>
+        </div>
       </div>
     </div>
   );
