@@ -25,6 +25,7 @@ export function AssignTrainingToEmployeeModal({
   const [selected, setSelected] = useState<string[]>([]);
   const [saving, setSaving] = useState(false);
   const [done, setDone] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   function toggle(id: string) {
     setSelected((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
@@ -32,12 +33,15 @@ export function AssignTrainingToEmployeeModal({
 
   async function handleSave() {
     setSaving(true);
+    setError(null);
     try {
       for (const trainingId of selected) {
         await assignTraining(trainingId, [employee.id]);
       }
       setDone(true);
       setTimeout(onClose, SUCCESS_OVERLAY_MS);
+    } catch {
+      setError("Zuweisen fehlgeschlagen. Bitte erneut versuchen.");
     } finally {
       setSaving(false);
     }
@@ -62,6 +66,10 @@ export function AssignTrainingToEmployeeModal({
             Abbrechen
           </button>
         </div>
+
+        {error && (
+          <p className="text-sm text-red-600 mb-4 rounded-2xl bg-red-500/10 px-4 py-2">{error}</p>
+        )}
 
         <div className="space-y-2 max-h-80 overflow-y-auto mb-6">
           {available.map((t) => (
