@@ -385,8 +385,7 @@ export default function EinstellungenPage() {
           <h2 className="font-medium">Preise & Abo</h2>
           <p className="text-foreground/60 text-sm mb-4 max-w-xl">
             7 Tage kostenlos testen. Danach automatische Umstellung auf das gewählte Paket.
-            Bezahlung per Apple Pay, Google Pay, Visa, Lastschrift, PayPal oder Klarna — echte
-            Bezahlung wird aktiv, sobald Stripe angebunden ist.
+            Bezahlung per Apple Pay, Google Pay, Visa, Lastschrift, PayPal oder Klarna.
           </p>
 
           {company?.subscriptionStatus === "active" && company.plan && (

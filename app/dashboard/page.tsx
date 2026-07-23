@@ -137,10 +137,13 @@ export default function DashboardPage() {
             <>
               <ul className="space-y-1 mt-3">
                 {reminders.map((r) => (
-                  <li key={r.key} className="flex items-center gap-2 text-sm text-foreground/80">
+                  // Feste dunkle Amber-Töne statt text-foreground: das Band
+                  // bleibt auch im dunklen Design hellgelb — mit der globalen
+                  // (dann fast weißen) Schriftfarbe war die Liste unlesbar.
+                  <li key={r.key} className="flex items-center gap-2 text-sm text-amber-950">
                     <span className={`h-2 w-2 rounded-full ${r.overdue ? "bg-red-500" : "bg-amber-500"}`} />
                     <span className="font-medium">{r.text}</span>
-                    <span className="text-foreground/65">· {r.sub}</span>
+                    <span className="text-amber-900/70">· {r.sub}</span>
                   </li>
                 ))}
               </ul>

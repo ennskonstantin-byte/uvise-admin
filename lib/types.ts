@@ -198,6 +198,13 @@ export const QUALIFICATION_PRESETS: { name: string; icon: string }[] = [
   { name: "Fahrtauglichkeit (G25)", icon: "🚦" },
   { name: "Atemwege-Vorsorge (G23)", icon: "🫁" },
   { name: "Betriebssanitäter", icon: "🚑" },
+  // Neutrale Nummern-Einträge: falls nichts Passendes dabei ist, wählt man
+  // eine Nummer und schreibt den echten Namen ins Freitextfeld.
+  { name: "Eigene Qualifikation 1", icon: "1️⃣" },
+  { name: "Eigene Qualifikation 2", icon: "2️⃣" },
+  { name: "Eigene Qualifikation 3", icon: "3️⃣" },
+  { name: "Eigene Qualifikation 4", icon: "4️⃣" },
+  { name: "Eigene Qualifikation 5", icon: "5️⃣" },
 ];
 
 export function qualIcon(name: string): string {
