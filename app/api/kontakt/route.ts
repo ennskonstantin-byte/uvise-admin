@@ -2,6 +2,18 @@ import { NextResponse } from "next/server";
 import { resend, RESEND_FROM } from "@/lib/resend";
 import { CONTACT_EMAIL } from "@/lib/legal";
 
+// CORS nötig, weil die native Chef-App (sicherakte/) diese Route von einem
+// anderen Origin aus aufruft (im Web-Build der App bzw. lokal beim Testen).
+const CORS_HEADERS = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type",
+};
+
+export async function OPTIONS() {
+  return new NextResponse(null, { status: 204, headers: CORS_HEADERS });
+}
+
 // Nimmt das öffentliche Kontaktformular entgegen und schickt den Inhalt
 // per E-Mail an die Kontakt-Adresse. Reply-To ist die Absender-Adresse,
 // damit man im Postfach direkt auf die Anfrage antworten kann.
@@ -11,7 +23,7 @@ export async function POST(request: Request) {
   // "firma" ist ein unsichtbares Honeypot-Feld: Menschen lassen es leer,
   // Spam-Bots füllen es aus — dann tun wir so, als wäre alles ok, ohne zu senden.
   if (firma) {
-    return NextResponse.json({ ok: true });
+    return NextResponse.json({ ok: true }, { headers: CORS_HEADERS });
   }
 
   if (
@@ -19,7 +31,7 @@ export async function POST(request: Request) {
     !email || typeof email !== "string" || !email.includes("@") || email.length > 200 ||
     !nachricht || typeof nachricht !== "string" || nachricht.length > 5000
   ) {
-    return NextResponse.json({ error: "Bitte alle Felder korrekt ausfüllen." }, { status: 400 });
+    return NextResponse.json({ error: "Bitte alle Felder korrekt ausfüllen." }, { status: 400, headers: CORS_HEADERS });
   }
 
   const { error } = await resend.emails.send({
@@ -41,7 +53,7 @@ export async function POST(request: Request) {
   });
 
   if (error) {
-    return NextResponse.json({ error: "Versand fehlgeschlagen. Bitte später erneut versuchen." }, { status: 500 });
+    return NextResponse.json({ error: "Versand fehlgeschlagen. Bitte später erneut versuchen." }, { status: 500, headers: CORS_HEADERS });
   }
-  return NextResponse.json({ ok: true });
+  return NextResponse.json({ ok: true }, { headers: CORS_HEADERS });
 }

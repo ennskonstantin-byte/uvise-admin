@@ -10,7 +10,6 @@ import { useToast } from "@/components/Toast";
 import { useAppData } from "@/lib/store";
 import { exportNachweiseCsv, exportQualifikationenCsv } from "@/lib/exportCsv";
 import { exportGesamtBackupZip } from "@/lib/exportZip";
-import { SUPPORT_EMAIL, CONTACT_EMAIL } from "@/lib/legal";
 import { PLANS } from "@/lib/types";
 import { supabase } from "@/lib/supabase";
 
@@ -45,6 +44,10 @@ export default function EinstellungenPage() {
   const [uploadingLogo, setUploadingLogo] = useState(false);
   const [sendingTestMail, setSendingTestMail] = useState(false);
   const [zippingBackup, setZippingBackup] = useState(false);
+  const [supportMessage, setSupportMessage] = useState("");
+  const [sendingSupport, setSendingSupport] = useState(false);
+  const [supportSent, setSupportSent] = useState(false);
+  const [supportError, setSupportError] = useState<string | null>(null);
   const [startingCheckout, setStartingCheckout] = useState<string | null>(null);
   const [deletingCompany, setDeletingCompany] = useState(false);
 
@@ -113,6 +116,34 @@ export default function EinstellungenPage() {
       showToast(`Fehlgeschlagen: ${e instanceof Error ? e.message : "Unbekannter Fehler"}`);
     } finally {
       setSendingTestMail(false);
+    }
+  }
+
+  // Nutzt die bestehende öffentliche Kontaktformular-Route (app/kontakt) --
+  // Name/E-Mail kommen automatisch aus dem eingeloggten Konto, damit man nur
+  // noch die Nachricht eintippen muss. Vorher standen hier zwei sichtbare
+  // Support-Adressen (identisch) statt eines echten Formulars.
+  async function handleSendSupport() {
+    if (!session?.user.email) return;
+    setSendingSupport(true);
+    setSupportError(null);
+    try {
+      const res = await fetch("/api/kontakt", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: company?.chefName || company?.name || "uVise-Kunde",
+          email: session.user.email,
+          nachricht: supportMessage,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Unbekannter Fehler");
+      setSupportSent(true);
+    } catch (e) {
+      setSupportError(e instanceof Error ? e.message : "Versand fehlgeschlagen. Bitte später erneut versuchen.");
+    } finally {
+      setSendingSupport(false);
     }
   }
 
@@ -321,19 +352,32 @@ export default function EinstellungenPage() {
           <p className="text-foreground/60 text-sm mb-4">
             Fragen oder Probleme? Schreib uns — wir melden uns so schnell wie möglich.
           </p>
-          <Card className="max-w-lg flex flex-wrap gap-3">
-            <a
-              href={`mailto:${SUPPORT_EMAIL}?subject=uVise%20Support`}
-              className="inline-flex items-center gap-2 rounded-full border border-border px-5 py-2.5 text-sm font-medium hover:border-foreground/30"
-            >
-              ✉️ Support: {SUPPORT_EMAIL}
-            </a>
-            <a
-              href={`mailto:${CONTACT_EMAIL}?subject=uVise%20Kontakt`}
-              className="inline-flex items-center gap-2 rounded-full border border-border px-5 py-2.5 text-sm font-medium hover:border-foreground/30"
-            >
-              ✉️ Kontakt: {CONTACT_EMAIL}
-            </a>
+          <Card className="max-w-lg">
+            {supportSent ? (
+              <p className="text-sm rounded-2xl bg-green-500/10 text-green-700 dark:text-green-400 px-4 py-3">
+                ✅ Danke! Deine Nachricht ist angekommen — wir melden uns bald bei dir.
+              </p>
+            ) : (
+              <>
+                <textarea
+                  value={supportMessage}
+                  onChange={(e) => setSupportMessage(e.target.value)}
+                  placeholder="Worum geht es?"
+                  rows={4}
+                  maxLength={5000}
+                  className="w-full rounded-2xl border border-border bg-surface px-4 py-2.5 text-sm outline-none resize-y mb-3"
+                />
+                {supportError && <p className="text-sm text-red-600 mb-3">{supportError}</p>}
+                <button
+                  onClick={handleSendSupport}
+                  disabled={sendingSupport || supportMessage.trim() === ""}
+                  className="rounded-full px-5 py-2.5 text-sm font-medium text-white disabled:opacity-50"
+                  style={{ background: "var(--accent-gradient)" }}
+                >
+                  {sendingSupport ? "Sendet…" : "Nachricht senden"}
+                </button>
+              </>
+            )}
           </Card>
         </section>
 
