@@ -9,14 +9,17 @@ import { ArchiveDocumentModal } from "@/components/ArchiveDocumentModal";
 import { trainingName, type EmployeeTraining } from "@/lib/types";
 import { EmployeeAvatar } from "@/components/EmployeeAvatar";
 import { useAppData } from "@/lib/store";
+import { RECENT_SIGNED_DAYS, isRecentlySigned } from "@/lib/recentlySigned";
 
 const YEARS = ["2026", "2025", "2024"];
 
 export default function ArchivPage() {
   const { employees, employeeTrainings, trainings, categories } = useAppData();
+  const [mode, setMode] = useState<"mitarbeiter" | "unterweisung">("mitarbeiter");
   const [category, setCategory] = useState<string | null>(null);
   const [query, setQuery] = useState("");
   const [employeeId, setEmployeeId] = useState<string | null>(null);
+  const [trainingId, setTrainingId] = useState<string | null>(null);
   const [year, setYear] = useState<string | null>(null);
   const [viewingEntry, setViewingEntry] = useState<EmployeeTraining | null>(null);
   const [showArchived, setShowArchived] = useState(false);
@@ -29,6 +32,10 @@ export default function ArchivPage() {
     return matchesCategory && matchesQuery;
   }
 
+  function employeeHasRecentlySigned(id: string) {
+    return employeeTrainings.some((et) => et.employeeId === id && isRecentlySigned(et));
+  }
+
   const filteredEmployees = useMemo(
     () => employees.filter((e) => !e.archiviert && matchesFilters(e)),
     [employees, category, query]
@@ -38,6 +45,182 @@ export default function ArchivPage() {
     [employees, category, query]
   );
 
+  function switchMode(next: "mitarbeiter" | "unterweisung") {
+    setMode(next);
+    setEmployeeId(null);
+    setTrainingId(null);
+    setYear(null);
+  }
+
+  const modeToggle = (
+    <div className="flex gap-2 mb-6">
+      <button
+        onClick={() => switchMode("mitarbeiter")}
+        className={`rounded-full px-4 py-2 text-sm ${
+          mode === "mitarbeiter" ? "text-white" : "border border-border text-foreground/70"
+        }`}
+        style={mode === "mitarbeiter" ? { background: "var(--accent-gradient)" } : undefined}
+      >
+        Nach Mitarbeiter
+      </button>
+      <button
+        onClick={() => switchMode("unterweisung")}
+        className={`rounded-full px-4 py-2 text-sm ${
+          mode === "unterweisung" ? "text-white" : "border border-border text-foreground/70"
+        }`}
+        style={mode === "unterweisung" ? { background: "var(--accent-gradient)" } : undefined}
+      >
+        Nach Unterweisung
+      </button>
+    </div>
+  );
+
+  // -------------------------------------------------------------------------
+  // Modus "Nach Unterweisung": erst Vorlage wählen, dann Jahr -- alle
+  // Mitarbeiter mit dieser Unterweisung in einem Jahr zusammen, damit man sie
+  // im Stapel drucken/speichern kann, ohne einzeln durch Mitarbeiter zu klicken.
+  // -------------------------------------------------------------------------
+  if (mode === "unterweisung" && trainingId && year) {
+    const selectedTraining = trainings.find((t) => t.id === trainingId);
+    const entries = employeeTrainings.filter(
+      (et) => et.trainingId === trainingId && et.status === "signiert" && (et.signiertAm ?? "").endsWith(year)
+    );
+    return (
+      <DashboardShell>
+        <button
+          onClick={() => setYear(null)}
+          className="inline-flex items-center gap-2 text-sm text-foreground/60 hover:text-foreground mb-6"
+        >
+          <ArrowLeft size={16} />
+          Zurück zur Jahresauswahl
+        </button>
+
+        <Card>
+          <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
+            <h1 className="text-2xl font-semibold">
+              {selectedTraining?.icon} {selectedTraining?.name} · {year}
+            </h1>
+            <button
+              onClick={() => window.print()}
+              className="flex items-center gap-2 rounded-full border border-border px-4 py-2 text-sm hover:border-foreground/30"
+            >
+              <Printer size={14} />
+              Alle als PDF drucken
+            </button>
+          </div>
+
+          <div className="rounded-3xl border border-border divide-y divide-border overflow-hidden">
+            {entries.map((et) => {
+              const emp = employees.find((e) => e.id === et.employeeId);
+              return (
+                <div key={et.id} className="flex items-center gap-4 px-5 py-4">
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium truncate">
+                      {emp ? `${emp.vorname} ${emp.nachname}` : "Unbekannt"}
+                    </p>
+                    <p className="text-xs text-foreground/65">signiert am {et.signiertAm}</p>
+                  </div>
+                  <button
+                    onClick={() => setViewingEntry(et)}
+                    className="flex items-center gap-1.5 text-xs rounded-full px-3 py-1.5 border border-border hover:border-foreground/30"
+                  >
+                    <FileDown size={12} />
+                    Dokument ansehen
+                  </button>
+                </div>
+              );
+            })}
+            {entries.length === 0 && (
+              <p className="px-5 py-4 text-sm text-foreground/65">
+                Keine signierten Nachweise für dieses Jahr.
+              </p>
+            )}
+          </div>
+        </Card>
+
+        {viewingEntry && (
+          <ArchiveDocumentModal
+            entry={viewingEntry}
+            trainingName={selectedTraining?.name ?? "Unbekannt"}
+            employeeName={(() => {
+              const emp = employees.find((e) => e.id === viewingEntry.employeeId);
+              return emp ? `${emp.vorname} ${emp.nachname}` : "Unbekannt";
+            })()}
+            onClose={() => setViewingEntry(null)}
+          />
+        )}
+      </DashboardShell>
+    );
+  }
+
+  if (mode === "unterweisung" && trainingId) {
+    const selectedTraining = trainings.find((t) => t.id === trainingId);
+    return (
+      <DashboardShell>
+        <button
+          onClick={() => setTrainingId(null)}
+          className="inline-flex items-center gap-2 text-sm text-foreground/60 hover:text-foreground mb-6"
+        >
+          <ArrowLeft size={16} />
+          Zurück zur Unterweisungs-Auswahl
+        </button>
+
+        <Card>
+          <h1 className="text-2xl font-semibold mb-6">
+            {selectedTraining?.icon} {selectedTraining?.name}
+          </h1>
+
+          <p className="text-sm text-foreground/60 mb-3">Jahr wählen</p>
+          <div className="flex flex-wrap gap-2">
+            {YEARS.map((y) => (
+              <button
+                key={y}
+                onClick={() => setYear(y)}
+                className="rounded-full border border-border px-5 py-2.5 text-sm hover:border-foreground/30"
+              >
+                {y}
+              </button>
+            ))}
+          </div>
+        </Card>
+      </DashboardShell>
+    );
+  }
+
+  if (mode === "unterweisung") {
+    return (
+      <DashboardShell>
+        <PageHeader
+          title="Archiv & Historie"
+          subtitle="Unterweisung wählen, danach das Jahr — alle Mitarbeiter zusammen zum Stapel-Drucken."
+        />
+        {modeToggle}
+        <Card>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {trainings.map((t) => (
+              <button
+                key={t.id}
+                onClick={() => setTrainingId(t.id)}
+                className="text-left rounded-3xl border border-border bg-surface p-5 hover:shadow-md transition-shadow"
+              >
+                <p className="text-2xl mb-3">{t.icon}</p>
+                <p className="font-medium">{t.name}</p>
+              </button>
+            ))}
+            {trainings.length === 0 && (
+              <p className="text-foreground/65 text-sm col-span-full text-center py-6">
+                Noch keine Unterweisungen vorhanden.
+              </p>
+            )}
+          </div>
+        </Card>
+      </DashboardShell>
+    );
+  }
+
+  // -------------------------------------------------------------------------
+  // Modus "Nach Mitarbeiter" (Standard, wie bisher)
+  // -------------------------------------------------------------------------
   const selectedEmployee = employees.find((e) => e.id === employeeId);
   const entries = employeeTrainings.filter(
     (et) => et.employeeId === employeeId && (!year || (et.signiertAm ?? "").endsWith(year))
@@ -148,6 +331,7 @@ export default function ArchivPage() {
         title="Archiv & Historie"
         subtitle="Erst Kategorie und Mitarbeiter wählen, danach das Jahr — für eine schnellere Übersicht."
       />
+      {modeToggle}
 
       <Card>
         <div className="flex flex-wrap items-center gap-4 mb-6">
@@ -187,8 +371,15 @@ export default function ArchivPage() {
             <button
               key={e.id}
               onClick={() => setEmployeeId(e.id)}
-              className="text-left rounded-3xl border border-border bg-surface p-5 hover:shadow-md transition-shadow"
+              className="relative text-left rounded-3xl border border-border bg-surface p-5 hover:shadow-md transition-shadow"
             >
+              {employeeHasRecentlySigned(e.id) && (
+                <span
+                  className="absolute top-4 right-4 h-3 w-3 rounded-full bg-red-500"
+                  title={`Neuer signierter Nachweis (letzte ${RECENT_SIGNED_DAYS} Tage)`}
+                  aria-label="Neuer signierter Nachweis"
+                />
+              )}
               <div className="mb-3">
                 <EmployeeAvatar vorname={e.vorname} nachname={e.nachname} fotoUrl={e.fotoUrl} size={48} />
               </div>

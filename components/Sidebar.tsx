@@ -21,6 +21,7 @@ import { useAppData } from "@/lib/store";
 import { LogoMark } from "@/components/Logo";
 import { Switch } from "@/components/Switch";
 import { isOwnerEmail } from "@/lib/owner";
+import { countRecentlySigned } from "@/lib/recentlySigned";
 
 const NAV_ITEMS = [
   { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
@@ -34,8 +35,12 @@ const NAV_ITEMS = [
 
 export function Sidebar() {
   const pathname = usePathname();
-  const { questions, company, session, signOut } = useAppData();
+  const { questions, employeeTrainings, company, session, signOut } = useAppData();
   const openQuestions = questions.filter((q) => q.status === "offen").length;
+  // Wie viele Nachweise in den letzten Tagen signiert zurückkamen und noch
+  // nicht gedruckt/archiviert wurden -- damit man im Archiv sieht, "wo es
+  // leuchtet", statt jeden Mitarbeiter einzeln durchzuklicken.
+  const recentlySignedCount = countRecentlySigned(employeeTrainings);
   const companyName = company?.name ?? "uVise";
   // Betreiber-Ansichten (Besucherstatistik) nur für die Betreiber-Logins zeigen —
   // der Server prüft die Berechtigung zusätzlich selbst.
@@ -104,7 +109,12 @@ export function Sidebar() {
             : []),
         ].map(({ label, href, icon: Icon }) => {
           const active = href === "/dashboard" ? pathname === "/dashboard" : pathname.startsWith(href);
-          const badge = label === "Rückfragen" ? openQuestions : undefined;
+          const badge =
+            label === "Rückfragen"
+              ? openQuestions
+              : label === "Archiv"
+                ? recentlySignedCount
+                : undefined;
           return (
             <Link
               key={label}
