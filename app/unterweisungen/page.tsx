@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { AlertTriangle, FileText, Pencil, Printer, Send, Trash2 } from "lucide-react";
+import { AlertTriangle, Download, Pencil, Printer, Send, Trash2 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { DashboardShell } from "@/components/DashboardShell";
 import { PageHeader } from "@/components/PageHeader";
@@ -28,15 +28,26 @@ export default function UnterweisungenPage() {
     (t) => t.status === "laeuft_ab" || t.status === "abgelaufen"
   );
 
-  async function openPdf(path: string) {
+  // Speichert die hochgeladene PDF wirklich auf dem Gerät (statt nur in einem
+  // neuen Tab zu öffnen) -- für den Fall, dass die Original-Datei verloren geht.
+  async function downloadPdf(path: string, trainingName: string) {
     const { data, error } = await supabase.storage
       .from("training-documents")
       .createSignedUrl(path, 3600);
     if (error || !data?.signedUrl) {
-      alert("PDF konnte nicht geöffnet werden.");
+      alert("PDF konnte nicht heruntergeladen werden.");
       return;
     }
-    window.open(data.signedUrl, "_blank", "noopener,noreferrer");
+    const res = await fetch(data.signedUrl);
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${trainingName}.pdf`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
   }
 
   async function handleDeleteTraining(id: string, name: string) {
@@ -135,34 +146,35 @@ export default function UnterweisungenPage() {
                   )}
                   {t.pdfPath && (
                     <button
-                      onClick={() => openPdf(t.pdfPath!)}
+                      onClick={() => downloadPdf(t.pdfPath!, t.name)}
                       className="h-8 w-8 rounded-full border border-border flex items-center justify-center text-blue-500 hover:border-foreground/30"
-                      aria-label="Hochgeladene PDF ansehen"
-                      title="Hochgeladene PDF ansehen"
+                      aria-label={`${t.name} — hochgeladene PDF speichern`}
+                      title={`${t.name} — hochgeladene PDF speichern`}
                     >
-                      <FileText size={14} />
+                      <Download size={14} />
                     </button>
                   )}
                   <button
                     onClick={() => printTraining(t)}
                     className="h-8 w-8 rounded-full border border-border flex items-center justify-center text-blue-500 hover:border-foreground/30"
-                    aria-label="Drucken oder teilen"
-                    title="Als PDF drucken oder teilen"
+                    aria-label={`${t.name} — Vorlage drucken oder teilen`}
+                    title={`${t.name} — Vorlage drucken oder teilen (gilt für alle Mitarbeiter, kein einzelner Nachweis)`}
                   >
                     <Printer size={14} />
                   </button>
                   <button
                     onClick={() => setAssigningTraining(t)}
                     className="h-8 w-8 rounded-full border border-border flex items-center justify-center hover:border-foreground/30"
-                    aria-label="Verteilen"
-                    title="An Mitarbeiter verteilen"
+                    aria-label={`${t.name} — an Mitarbeiter verteilen`}
+                    title={`${t.name} — an Mitarbeiter verteilen`}
                   >
                     <Send size={14} />
                   </button>
                   <button
                     onClick={() => setEditingTraining(t)}
                     className="h-8 w-8 rounded-full border border-border flex items-center justify-center hover:border-foreground/30"
-                    aria-label="Bearbeiten"
+                    aria-label={`${t.name} — bearbeiten`}
+                    title={`${t.name} — bearbeiten`}
                   >
                     <Pencil size={14} />
                   </button>
@@ -170,7 +182,8 @@ export default function UnterweisungenPage() {
                     onClick={() => handleDeleteTraining(t.id, t.name)}
                     disabled={deletingId === t.id}
                     className="h-8 w-8 rounded-full border border-border flex items-center justify-center text-red-500 hover:border-red-300 disabled:opacity-40"
-                    aria-label="Löschen"
+                    aria-label={`${t.name} — löschen`}
+                    title={`${t.name} — löschen`}
                   >
                     <Trash2 size={14} />
                   </button>
