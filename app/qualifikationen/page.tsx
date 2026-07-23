@@ -24,10 +24,20 @@ export default function QualifikationenPage() {
   const { qualifications: allQualifications, employees } = useAppData();
   const { showToast, ToastView } = useToast();
   const [showWizard, setShowWizard] = useState(false);
-  // Archivierte (gekündigte) Mitarbeiter tauchen hier nicht mehr auf
-  const qualifications = allQualifications.filter(
-    (q) => !employees.find((e) => e.id === q.employeeId)?.archiviert
-  );
+  // Archivierte (gekündigte) Mitarbeiter tauchen hier nicht mehr auf.
+  // Ampel-Sortierung: Überfällig (rot) → Läuft bald ab (gelb) → Gültig (grün),
+  // innerhalb der Gruppe das früheste Ablaufdatum zuerst.
+  const statusRang: Record<string, number> = { abgelaufen: 0, laeuft_ab: 1, gueltig: 2 };
+  // ablaufdatum kommt als deutsches Datum (TT.MM.JJJJ) — zum Sortieren umdrehen
+  const sortierbar = (datum: string | null) =>
+    datum ? datum.split(".").reverse().join("-") : "9999";
+  const qualifications = allQualifications
+    .filter((q) => !employees.find((e) => e.id === q.employeeId)?.archiviert)
+    .sort(
+      (a, b) =>
+        (statusRang[a.status] ?? 3) - (statusRang[b.status] ?? 3) ||
+        sortierbar(a.ablaufdatum).localeCompare(sortierbar(b.ablaufdatum))
+    );
 
   return (
     <DashboardShell>

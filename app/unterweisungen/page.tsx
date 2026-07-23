@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { AlertTriangle, Pencil, Printer, Send, Trash2 } from "lucide-react";
+import { AlertTriangle, Pencil, Printer, Send, Trash2, Undo2 } from "lucide-react";
 import { DashboardShell } from "@/components/DashboardShell";
 import { PageHeader } from "@/components/PageHeader";
 import { Card } from "@/components/Card";
@@ -15,7 +15,8 @@ import { useAppData } from "@/lib/store";
 import { printTraining } from "@/lib/printTraining";
 
 export default function UnterweisungenPage() {
-  const { trainings, bundles, deleteTraining, deleteBundle } = useAppData();
+  const { trainings, bundles, deleteTraining, deleteBundle, withdrawTraining, employeeTrainings } =
+    useAppData();
   const [tab, setTab] = useState<"vorlagen" | "bundles">("vorlagen");
   const [showTrainingWizard, setShowTrainingWizard] = useState(false);
   const [showBundleWizard, setShowBundleWizard] = useState(false);
@@ -32,6 +33,28 @@ export default function UnterweisungenPage() {
     setDeletingId(id);
     try {
       await deleteTraining(id);
+    } finally {
+      setDeletingId(null);
+    }
+  }
+
+  // Wie viele offene (noch nicht signierte) Zuweisungen hat eine Vorlage?
+  function offeneZuweisungen(trainingId: string) {
+    return employeeTrainings.filter((et) => et.trainingId === trainingId && et.status === "offen")
+      .length;
+  }
+
+  async function handleWithdrawTraining(id: string, name: string) {
+    const anzahl = offeneZuweisungen(id);
+    if (
+      !confirm(
+        `„${name}" wirklich zurückziehen? ${anzahl} offene Zuweisung(en) werden gelöscht — die Mitarbeiter sehen die Unterweisung dann nicht mehr. Bereits signierte Nachweise bleiben erhalten.`
+      )
+    )
+      return;
+    setDeletingId(id);
+    try {
+      await withdrawTraining(id);
     } finally {
       setDeletingId(null);
     }
@@ -137,6 +160,17 @@ export default function UnterweisungenPage() {
                   >
                     <Send size={14} />
                   </button>
+                  {offeneZuweisungen(t.id) > 0 && (
+                    <button
+                      onClick={() => handleWithdrawTraining(t.id, t.name)}
+                      disabled={deletingId === t.id}
+                      className="h-8 w-8 rounded-full border border-border flex items-center justify-center text-amber-600 hover:border-amber-300 disabled:opacity-40"
+                      aria-label={`${t.name} — Verteilung zurückziehen`}
+                      title={`${t.name} — Verteilung zurückziehen (${offeneZuweisungen(t.id)} offene Zuweisung(en) löschen, signierte Nachweise bleiben)`}
+                    >
+                      <Undo2 size={14} />
+                    </button>
+                  )}
                   <button
                     onClick={() => setEditingTraining(t)}
                     className="h-8 w-8 rounded-full border border-border flex items-center justify-center hover:border-foreground/30"

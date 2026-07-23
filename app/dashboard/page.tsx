@@ -74,14 +74,20 @@ export default function DashboardPage() {
     !!company?.subscriptionStatus && company.subscriptionStatus !== "active";
 
   const filtered = useMemo(() => {
-    return employees.filter((e) => {
-      if (e.archiviert) return false;
-      const matchesCategory = category === "Alle" || e.kategorie === category;
-      const matchesQuery = `${e.vorname} ${e.nachname}`
-        .toLowerCase()
-        .includes(query.toLowerCase());
-      return matchesCategory && matchesQuery;
-    });
+    return employees
+      .filter((e) => {
+        if (e.archiviert) return false;
+        const matchesCategory = category === "Alle" || e.kategorie === category;
+        const matchesQuery = `${e.vorname} ${e.nachname}`
+          .toLowerCase()
+          .includes(query.toLowerCase());
+        return matchesCategory && matchesQuery;
+      })
+      // Ampel-Sortierung: Rot (offene Punkte) zuerst, damit das Wichtige
+      // oben steht — bei gleicher Farbe die meisten offenen Punkte zuerst.
+      .sort((a, b) =>
+        a.ampel === b.ampel ? b.offenePunkte - a.offenePunkte : a.ampel === "rot" ? -1 : 1
+      );
   }, [employees, category, query]);
 
   return (

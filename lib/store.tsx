@@ -17,6 +17,13 @@ import {
   istMinderjaehrig,
 } from "@/lib/types";
 
+// Erkennt "E-Mail schon vergeben" — egal ob aus der Vorab-Prüfung
+// (email_taken) oder vom Unique-Index der Datenbank (Migration 0038).
+export function istEmailKonflikt(error: unknown) {
+  const msg = error instanceof Error ? error.message : String(error);
+  return msg === "email_taken" || msg.includes("employees_email_unique");
+}
+
 type Company = {
   id: string;
   name: string;
@@ -74,6 +81,7 @@ type AppDataContextValue = {
     ablaufdatum: string | null;
   }) => Promise<void>;
   assignTraining: (trainingId: string, employeeIds: string[]) => Promise<void>;
+  withdrawTraining: (trainingId: string) => Promise<void>;
   updateEmployee: (
     id: string,
     input: {
@@ -382,8 +390,21 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [session?.user.id]);
 
+  // Eine E-Mail darf nur einmal vergeben werden (siehe Migration 0038).
+  // Vorab-Prüfung gegen die geladene Liste liefert eine verständliche
+  // Meldung; der Unique-Index in der Datenbank fängt den Rest ab.
+  function assertEmailFrei(email: string | null, ignoreId?: string) {
+    if (!email) return;
+    const lower = email.toLowerCase();
+    const taken = employees.some(
+      (e) => e.id !== ignoreId && e.email?.toLowerCase() === lower
+    );
+    if (taken) throw new Error("email_taken");
+  }
+
   async function addEmployee(input: NewEmployeeInput): Promise<Employee> {
     if (!company) throw new Error("Keine Firma geladen");
+    assertEmailFrei(input.email);
     // ist_beauftragter wird bewusst NICHT mit angelegt — ein Datenbank-Trigger
     // erzwingt ohnehin "false" bei jedem normalen Insert (siehe Migration
     // 0014_employee_role_protection.sql). Die Rolle wird danach separat über
@@ -498,6 +519,7 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
       istBeauftragter: boolean;
     }
   ) {
+    assertEmailFrei(input.email, id);
     // ist_beauftragter bewusst getrennt von den übrigen Feldern: der
     // Schutz-Trigger blockt Rollenänderungen über ein normales UPDATE (siehe
     // Migration 0014), Rollenwechsel läuft ausschließlich über set_beauftragter().
@@ -704,6 +726,20 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
     }
   }
 
+  // Zieht eine versehentlich verteilte Unterweisung zurück: löscht alle noch
+  // OFFENEN Zuweisungen dieser Vorlage. Bereits signierte Nachweise bleiben
+  // unangetastet (die Delete-Policy aus Migration 0039 erlaubt ohnehin nur
+  // status = 'offen').
+  async function withdrawTraining(trainingId: string) {
+    const { error } = await supabase
+      .from("employee_trainings")
+      .delete()
+      .eq("training_id", trainingId)
+      .eq("status", "offen");
+    if (error) throw error;
+    await loadData();
+  }
+
   async function uploadCompanyLogo(file: File) {
     if (!company) return;
     const ext = (file.name.split(".").pop() || "png").toLowerCase();
@@ -777,6 +813,7 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
         updateBundle,
         addQualification,
         assignTraining,
+        withdrawTraining,
         updateEmployee,
         updateTraining,
         deleteEmployee,

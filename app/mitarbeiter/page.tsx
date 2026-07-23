@@ -97,6 +97,10 @@ export default function MitarbeiterPage() {
           `${e.vorname} ${e.nachname} ${e.personalnummer}`
             .toLowerCase()
             .includes(query.toLowerCase())
+        )
+        // Ampel-Sortierung: Rot zuerst, dann nach offenen Punkten
+        .sort((a, b) =>
+          a.ampel === b.ampel ? b.offenePunkte - a.offenePunkte : a.ampel === "rot" ? -1 : 1
         ),
     [base, categoryFilter, query]
   );
