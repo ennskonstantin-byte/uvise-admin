@@ -47,8 +47,8 @@ man sich in der falschen App/Ansicht an, erscheint ein freundlicher Hinweis.
 - **Mitarbeiter einladen**: per Einladungscode; Mitarbeiter ohne Smartphone können auch nur mit Telefonnummer geführt werden.
 
 # Preise (7 Tage kostenlos testen, monatlich kündbar, keine Mindestlaufzeit)
-- **Starter**: 19 €/Monat, bis 5 Mitarbeiter – Unterweisungen & Fristen, Ampelsystem & Badges, E-Mail-Erinnerungen.
-- **Team**: 29 €/Monat, bis 15 Mitarbeiter – alles aus Starter + Bundle-Vorlagen + App-Push-Erinnerungen.
+- **Starter**: 19 €/Monat, bis 5 Mitarbeiter – Unterweisungen & Fristen, Ampelsystem & Badges, E-Mail- & App-Push-Erinnerungen.
+- **Team**: 29 €/Monat, bis 15 Mitarbeiter – alles aus Starter + Bundle-Vorlagen.
 - **Betrieb**: 49 €/Monat, bis 30 Mitarbeiter – alles aus Team + priorisierter Support + erweitertes Archiv.
 - Bei jährlicher Zahlung 20 % günstiger (Starter 182 €, Team 278 €, Betrieb 470 € pro Jahr).
 - Bezahlung sicher über Stripe (Karte, Apple Pay, Google Pay, Lastschrift, PayPal, Klarna) – Kartendaten werden nie bei uVise gespeichert.

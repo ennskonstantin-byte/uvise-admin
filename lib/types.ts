@@ -211,14 +211,14 @@ export const PLANS = [
     preis: "19",
     preisJaehrlich: 182,
     limit: "bis 5 Mitarbeiter",
-    features: ["Unterweisungen & Fristen", "Ampelsystem & Badges", "E-Mail-Erinnerungen"],
+    features: ["Unterweisungen & Fristen", "Ampelsystem & Badges", "E-Mail- & App-Push-Erinnerungen"],
   },
   {
     name: "Team",
     preis: "29",
     preisJaehrlich: 278,
     limit: "bis 15 Mitarbeiter",
-    features: ["Alles aus Starter", "Bundle-Vorlagen", "App-Push-Erinnerungen"],
+    features: ["Alles aus Starter", "Bundle-Vorlagen"],
   },
   {
     name: "Betrieb",
