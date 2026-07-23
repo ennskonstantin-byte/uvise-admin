@@ -106,6 +106,7 @@ export async function POST(request: Request) {
   // Facebook trotzdem erfolgreich; wir merken uns nur einen ehrlichen Hinweis.
   let igHinweis: string | null = null;
   let igOk = false;
+  let igPostId: string | null = null;
   if (bildUrl) {
     const igId = await resolveInstagramAccountId(pageId, pageToken);
     if (!igId) {
@@ -115,21 +116,27 @@ export async function POST(request: Request) {
       // leiten, damit auch unser PNG-Beitragsbild funktioniert.
       const igBildUrl = `https://www.uvise.de/api/jpg?url=${encodeURIComponent(bildUrl)}`;
       const ig = await postToInstagram(igId, pageToken, text, igBildUrl);
-      if (ig.ok) igOk = true;
-      else igHinweis = `Instagram: ${ig.fehler}`;
+      if (ig.ok) {
+        igOk = true;
+        igPostId = ig.id;
+      } else {
+        igHinweis = `Instagram: ${ig.fehler}`;
+      }
     }
   } else {
     igHinweis = "Instagram übersprungen — dort sind nur Beiträge mit Bild möglich.";
   }
 
-  // Facebook-Beitragsnummer + Veröffentlichungszeitpunkt merken (für die Galerie).
-  // Rückfall ohne die neuen Spalten, falls Migration 0031/0032 noch fehlt.
+  // Facebook- + Instagram-Beitragsnummer + Veröffentlichungszeitpunkt merken
+  // (für die Galerie und die Social-Media-Übersicht -- ohne die Instagram-
+  // Nummer könnte die Übersicht dort nie Likes/Kommentare abfragen).
+  // Rückfall ohne die neuen Spalten, falls die Migrationen noch fehlen.
   const fbPostId = fbJson.post_id || fbJson.id || null;
   const jetzt = new Date().toISOString();
   let updErr = (
     await db
       .from("social_posts")
-      .update({ status: "veroeffentlicht", fb_post_id: fbPostId, veroeffentlicht_am: jetzt })
+      .update({ status: "veroeffentlicht", fb_post_id: fbPostId, ig_post_id: igPostId, veroeffentlicht_am: jetzt })
       .eq("id", id)
   ).error;
   if (updErr) {

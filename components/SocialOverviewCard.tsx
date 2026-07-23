@@ -13,6 +13,7 @@ type Overview = {
   likesGesamt?: number;
   kommentareGesamt?: number;
   letzteKommentare?: { name: string; text: string; datum: string }[];
+  apiFehler?: string | null;
 };
 
 // Nur für den Betreiber: Social-Media-Überblick (Facebook-Seite) im Dashboard —
@@ -56,12 +57,22 @@ export function SocialOverviewCard() {
       </div>
 
       {!data.eingerichtet ? (
-        <p className="text-sm text-foreground/50">
-          Sobald der Facebook-Zugang eingerichtet ist und Beiträge veröffentlicht wurden, siehst du hier Follower,
-          Likes und Kommentare.
-        </p>
+        <div>
+          <p className="text-sm text-foreground/50">
+            Sobald der Facebook-Zugang eingerichtet ist und Beiträge veröffentlicht wurden, siehst du hier Follower,
+            Likes und Kommentare.
+          </p>
+          {data.apiFehler && (
+            <p className="mt-2 text-sm text-red-500">Grund: {data.apiFehler}</p>
+          )}
+        </div>
       ) : (
         <>
+          {data.apiFehler && (
+            <p className="mb-3 text-sm text-red-500">
+              ⚠️ Nicht alle Zahlen konnten abgerufen werden: {data.apiFehler}
+            </p>
+          )}
           <div className="grid grid-cols-3 gap-3">
             {[
               { label: "Follower", wert: data.followers ?? 0, icon: "👥" },
@@ -100,7 +111,7 @@ export function SocialOverviewCard() {
 
           <p className="mt-4 text-[11px] text-foreground/40">
             Facebook-Nachrichten (Postfach) brauchen eine zusätzliche Meta-Berechtigung — sag Bescheid, wenn du die
-            auch hier haben möchtest. Instagram folgt nach Metas Prüfung.
+            auch hier haben möchtest. Likes &amp; Kommentare zählen Facebook und Instagram zusammen.
           </p>
         </>
       )}

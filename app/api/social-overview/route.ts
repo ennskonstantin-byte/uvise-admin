@@ -34,8 +34,9 @@ export async function GET(request: Request) {
 
   const pageAuth = await resolvePageAuth();
   if ("fehler" in pageAuth) {
-    // Kein Facebook-Zugang -> leere, aber gültige Antwort (Karte zeigt Hinweis).
-    return NextResponse.json({ eingerichtet: false });
+    // Kein Facebook-Zugang -> leere, aber gültige Antwort (Karte zeigt Hinweis
+    // MIT dem echten Grund, statt ihn zu verschlucken).
+    return NextResponse.json({ eingerichtet: false, apiFehler: pageAuth.fehler });
   }
   const { pageId, pageToken } = pageAuth;
 
@@ -51,23 +52,27 @@ export async function GET(request: Request) {
     /* ignorieren */
   }
 
-  // Veröffentlichte Beiträge mit Facebook-Nummer holen
+  // Veröffentlichte Beiträge mit Facebook- und/oder Instagram-Nummer holen
   const { data: rows } = await auth.db
     .from("social_posts")
-    .select("fb_post_id")
+    .select("fb_post_id, ig_post_id")
     .eq("status", "veroeffentlicht")
-    .not("fb_post_id", "is", null)
     .order("veroeffentlicht_am", { ascending: false })
     .limit(25);
-  const ids = (rows ?? []).map((r) => r.fb_post_id as string).filter(Boolean);
+  const fbIds = (rows ?? []).map((r) => r.fb_post_id as string).filter(Boolean);
+  const igIds = (rows ?? []).map((r) => r.ig_post_id as string).filter(Boolean);
 
   let likesGesamt = 0;
   let kommentareGesamt = 0;
   const letzteKommentare: Kommentar[] = [];
+  // Fehler von Facebook/Instagram nicht mehr stillschweigend verschlucken --
+  // sonst zeigt das Dashboard "0" an, ohne dass erkennbar ist, ob das an
+  // fehlender Berechtigung, einem abgelaufenen Token oder echter Null liegt.
+  let apiFehler: string | null = null;
 
   const felder = "reactions.summary(true).limit(0),comments.summary(true).limit(5){message,from,created_time}";
   await Promise.all(
-    ids.map(async (id) => {
+    fbIds.map(async (id) => {
       try {
         const res = await fetch(
           `${GRAPH}/${encodeURIComponent(id)}?fields=${encodeURIComponent(felder)}&access_token=${encodeURIComponent(pageToken)}`,
@@ -78,7 +83,12 @@ export async function GET(request: Request) {
             summary?: { total_count?: number };
             data?: { message?: string; from?: { name?: string }; created_time?: string }[];
           };
+          error?: { message?: string; code?: number };
         };
+        if (json.error) {
+          apiFehler = apiFehler || `Facebook: ${json.error.message ?? "unbekannter Fehler"} (Code ${json.error.code ?? "?"})`;
+          return;
+        }
         likesGesamt += json.reactions?.summary?.total_count ?? 0;
         kommentareGesamt += json.comments?.summary?.total_count ?? 0;
         for (const k of json.comments?.data ?? []) {
@@ -89,7 +99,28 @@ export async function GET(request: Request) {
           });
         }
       } catch {
-        /* einzelnen Post überspringen */
+        apiFehler = apiFehler || "Facebook war für die Beitrags-Statistik nicht erreichbar.";
+      }
+    }),
+  );
+
+  // Instagram zählt separat mit (eigene Felder: like_count/comments_count auf
+  // dem Medien-Objekt, kein reactions/comments-Endpunkt wie bei Facebook).
+  await Promise.all(
+    igIds.map(async (id) => {
+      try {
+        const res = await fetch(
+          `${GRAPH}/${encodeURIComponent(id)}?fields=like_count,comments_count&access_token=${encodeURIComponent(pageToken)}`,
+        );
+        const json = (await res.json()) as { like_count?: number; comments_count?: number; error?: { message?: string; code?: number } };
+        if (json.error) {
+          apiFehler = apiFehler || `Instagram: ${json.error.message ?? "unbekannter Fehler"} (Code ${json.error.code ?? "?"})`;
+          return;
+        }
+        likesGesamt += json.like_count ?? 0;
+        kommentareGesamt += json.comments_count ?? 0;
+      } catch {
+        apiFehler = apiFehler || "Instagram war für die Beitrags-Statistik nicht erreichbar.";
       }
     }),
   );
@@ -99,9 +130,10 @@ export async function GET(request: Request) {
   return NextResponse.json({
     eingerichtet: true,
     followers,
-    postsGesamt: ids.length,
+    postsGesamt: fbIds.length,
     likesGesamt,
     kommentareGesamt,
     letzteKommentare: letzteKommentare.slice(0, 8),
+    apiFehler,
   });
 }
