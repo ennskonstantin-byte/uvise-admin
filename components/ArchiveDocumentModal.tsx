@@ -4,6 +4,7 @@ import { useState } from "react";
 import type { EmployeeTraining } from "@/lib/types";
 import { useEscapeClose } from "@/lib/useEscapeClose";
 import { saveArchiveDocumentPdf } from "@/lib/exportArchiveDocument";
+import { supabase } from "@/lib/supabase";
 
 export function ArchiveDocumentModal({
   entry,
@@ -18,6 +19,10 @@ export function ArchiveDocumentModal({
 }) {
   useEscapeClose(onClose);
   const [saving, setSaving] = useState(false);
+  const [checking, setChecking] = useState(false);
+  const [verifyResult, setVerifyResult] = useState<{ gueltig: boolean; grund: string } | null>(
+    null
+  );
 
   async function handleSave() {
     setSaving(true);
@@ -26,6 +31,20 @@ export function ArchiveDocumentModal({
     } finally {
       setSaving(false);
     }
+  }
+
+  async function handleVerify() {
+    setChecking(true);
+    setVerifyResult(null);
+    const { data, error } = await supabase
+      .rpc("verify_training_signature", { p_employee_training_id: entry.id })
+      .maybeSingle();
+    setChecking(false);
+    if (error || !data) {
+      setVerifyResult({ gueltig: false, grund: "Prüfung fehlgeschlagen. Bitte erneut versuchen." });
+      return;
+    }
+    setVerifyResult({ gueltig: data.gueltig, grund: data.grund });
   }
 
   return (
@@ -66,10 +85,29 @@ export function ArchiveDocumentModal({
             <div>
               <p className="text-xs text-foreground/65">Siegel (Prüfsumme SHA-256)</p>
               <p className="font-mono text-[11px] break-all leading-snug">{entry.signaturHash}</p>
-              <p className="text-[11px] text-foreground/55 mt-1">
+              <p className="text-[11px] text-foreground/55 mt-1 mb-2">
                 Fälschungssicherer Fingerabdruck über Unterweisung, Unterschrift, Zeitpunkt,
-                Mitarbeiter und Gerät — belegt, dass der Nachweis nachträglich nicht verändert wurde.
+                Mitarbeiter und Gerät.
               </p>
+              <button
+                onClick={handleVerify}
+                disabled={checking}
+                className="w-full rounded-full border border-border px-4 py-2 text-xs font-medium hover:border-foreground/30 disabled:opacity-50"
+              >
+                {checking ? "Prüft…" : "Nachweis jetzt prüfen"}
+              </button>
+              {verifyResult && (
+                <p
+                  className={`text-xs font-medium mt-2 rounded-xl px-3 py-2 ${
+                    verifyResult.gueltig
+                      ? "bg-green-500/10 text-green-700"
+                      : "bg-red-500/10 text-red-700"
+                  }`}
+                >
+                  {verifyResult.gueltig ? "✓ " : "⚠️ "}
+                  {verifyResult.grund}
+                </p>
+              )}
             </div>
           )}
 
