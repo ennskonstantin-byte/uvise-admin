@@ -540,6 +540,11 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
     // ist_beauftragter bewusst getrennt von den übrigen Feldern: der
     // Schutz-Trigger blockt Rollenänderungen über ein normales UPDATE (siehe
     // Migration 0014), Rollenwechsel läuft ausschließlich über set_beauftragter().
+    // .select().single() ist hier bewusst nicht nur Stil -- ohne .select()
+    // meldet ein durch RLS blockiertes UPDATE (0 betroffene Zeilen) fälschlich
+    // Erfolg (error: null), weil PostgREST ohne Rückgabe-Anforderung keine
+    // Zeilenzahl prüft. .single() erzwingt einen Fehler, wenn nicht genau
+    // eine Zeile geändert wurde (Runde-2-Audit, H-03).
     const { error } = await supabase
       .from("employees")
       .update({
@@ -551,7 +556,9 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
         geburtsdatum: input.geburtsdatum,
         kategorie: input.kategorie,
       })
-      .eq("id", id);
+      .eq("id", id)
+      .select()
+      .single();
     throwIfError(error);
 
     const current = employees.find((e) => e.id === id);
