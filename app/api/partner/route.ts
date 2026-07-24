@@ -34,7 +34,7 @@ export async function GET(request: Request) {
   const [{ data: partner }, { data: clicks }, { data: firmen }] = await Promise.all([
     auth.db.from("affiliate_partners").select("*").order("created_at", { ascending: false }),
     auth.db.from("affiliate_clicks").select("partner_id"),
-    auth.db.from("companies").select("ref_code").not("ref_code", "is", null),
+    auth.db.from("companies").select("ref_code").not("ref_code", "is", null).eq("geloescht", false),
   ]);
 
   const klicksProPartner = new Map<string, number>();
