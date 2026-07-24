@@ -18,9 +18,11 @@ function DistributionDialog({
   useEscapeClose(onClose);
   const { employees, categories, assignTraining } = useAppData();
   const [tab, setTab] = useState<"mitarbeiter" | "abteilungen">("mitarbeiter");
-  const [selectedEmployees, setSelectedEmployees] = useState<string[]>(
-    employees.map((e) => e.id)
-  );
+  // Bewusst leer starten (nicht alle Mitarbeiter vorausgewählt) -- ein
+  // unachtsamer Klick auf "Senden" direkt nach dem Anlegen hätte sonst die
+  // gesamte Belegschaft erfasst, auch wenn nur eine Testgruppe gemeint war
+  // (Runde-3-Audit, P1-05). Analog zum Verhalten in der Chef-App.
+  const [selectedEmployees, setSelectedEmployees] = useState<string[]>([]);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [sending, setSending] = useState(false);
   const [memberQuery, setMemberQuery] = useState("");
