@@ -41,8 +41,11 @@ export async function GET(request: Request) {
     db.from("social_posts").select("id", { count: "exact", head: false }).eq("status", "freigegeben"),
     db.from("affiliate_partners").select("id", { count: "exact", head: true }),
     db.from("affiliate_clicks").select("id", { count: "exact", head: true }),
-    db.from("companies").select("id", { count: "exact", head: true }),
-    db.from("companies").select("id", { count: "exact", head: true }).not("ref_code", "is", null),
+    db.from("companies").select("id", { count: "exact", head: true }).eq("geloescht", false),
+    db.from("companies")
+      .select("id", { count: "exact", head: true })
+      .eq("geloescht", false)
+      .not("ref_code", "is", null),
   ]);
 
   const besucherHeute = new Set((viewsHeute ?? []).map((v) => v.visitor_hash)).size;
