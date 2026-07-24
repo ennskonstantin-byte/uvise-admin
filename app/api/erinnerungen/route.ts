@@ -52,7 +52,7 @@ export async function GET(request: Request) {
 
   const [{ data: companies }, { data: employees }, { data: trainings }, { data: quals }, { data: ets }] =
     await Promise.all([
-      db.from("companies").select("id, name"),
+      db.from("companies").select("id, name").eq("geloescht", false),
       db.from("employees").select("id, company_id, vorname, nachname, email, push_token, ist_beauftragter, archiviert"),
       db.from("trainings").select("id, company_id, name, ablaufdatum"),
       db.from("qualifications").select("employee_id, name, ablaufdatum"),
