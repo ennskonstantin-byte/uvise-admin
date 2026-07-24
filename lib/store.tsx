@@ -96,6 +96,7 @@ type AppDataContextValue = {
     ablaufdatum: string | null;
   }) => Promise<void>;
   assignTraining: (trainingId: string, employeeIds: string[]) => Promise<void>;
+  assignBundle: (trainingIds: string[], employeeIds: string[]) => Promise<void>;
   withdrawTraining: (trainingId: string) => Promise<void>;
   updateEmployee: (
     id: string,
@@ -742,6 +743,31 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
     }
   }
 
+  // Verteilt ALLE Unterweisungen eines Bundles an die gewählten Mitarbeiter --
+  // im Web gab es dafür bisher gar keine Funktion, Bundles ließen sich zwar
+  // anlegen, aber nicht verschicken (Runde-1-Audit, P1-03). Bereits
+  // zugewiesene Kombinationen (Mitarbeiter + Unterweisung) werden
+  // übersprungen, damit keine doppelten Zeilen entstehen.
+  async function assignBundle(trainingIds: string[], employeeIds: string[]) {
+    if (trainingIds.length === 0 || employeeIds.length === 0) return;
+    const rows: { employee_id: string; training_id: string; status: "offen" }[] = [];
+    for (const trainingId of trainingIds) {
+      const already = new Set(
+        employeeTrainings.filter((et) => et.trainingId === trainingId).map((et) => et.employeeId)
+      );
+      for (const employeeId of employeeIds) {
+        if (!already.has(employeeId)) rows.push({ employee_id: employeeId, training_id: trainingId, status: "offen" });
+      }
+    }
+    if (rows.length === 0) return;
+    const { error } = await supabase.from("employee_trainings").insert(rows);
+    throwIfError(error);
+    await loadData();
+    if (session) {
+      notifyPush(session.access_token, employeeIds, "Neue Unterweisungen", "Dir wurden neue Unterweisungen zugewiesen.");
+    }
+  }
+
   // Zieht eine versehentlich verteilte Unterweisung zurück: löscht alle noch
   // OFFENEN Zuweisungen dieser Vorlage. Bereits signierte Nachweise bleiben
   // unangetastet (die Delete-Policy aus Migration 0039 erlaubt ohnehin nur
@@ -829,6 +855,7 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
         updateBundle,
         addQualification,
         assignTraining,
+        assignBundle,
         withdrawTraining,
         updateEmployee,
         updateTraining,

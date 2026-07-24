@@ -10,6 +10,7 @@ import { NewBundleWizard } from "@/components/NewBundleWizard";
 import { EditTrainingModal } from "@/components/EditTrainingModal";
 import { EditBundleModal } from "@/components/EditBundleModal";
 import { AssignTrainingModal } from "@/components/AssignTrainingModal";
+import { AssignBundleModal } from "@/components/AssignBundleModal";
 import type { Bundle, Training } from "@/lib/types";
 import { useAppData } from "@/lib/store";
 import { printTraining } from "@/lib/printTraining";
@@ -23,6 +24,7 @@ export default function UnterweisungenPage() {
   const [editingTraining, setEditingTraining] = useState<Training | null>(null);
   const [editingBundle, setEditingBundle] = useState<Bundle | null>(null);
   const [assigningTraining, setAssigningTraining] = useState<Training | null>(null);
+  const [assigningBundle, setAssigningBundle] = useState<Bundle | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const expiringSoon = trainings.filter(
     (t) => t.status === "laeuft_ab" || t.status === "abgelaufen"
@@ -206,6 +208,14 @@ export default function UnterweisungenPage() {
                   <span className="text-2xl">{b.icon}</span>
                   <div className="flex gap-2">
                     <button
+                      onClick={() => setAssigningBundle(b)}
+                      className="h-8 w-8 rounded-full border border-border flex items-center justify-center hover:border-foreground/30"
+                      aria-label={`${b.name} — an Mitarbeiter verteilen`}
+                      title={`${b.name} — an Mitarbeiter verteilen`}
+                    >
+                      <Send size={14} />
+                    </button>
+                    <button
                       onClick={() => setEditingBundle(b)}
                       className="h-8 w-8 rounded-full border border-border flex items-center justify-center hover:border-foreground/30"
                       aria-label="Bearbeiten"
@@ -246,6 +256,9 @@ export default function UnterweisungenPage() {
       )}
       {editingBundle && (
         <EditBundleModal bundle={editingBundle} onClose={() => setEditingBundle(null)} />
+      )}
+      {assigningBundle && (
+        <AssignBundleModal bundle={assigningBundle} onClose={() => setAssigningBundle(null)} />
       )}
       {assigningTraining && (
         <AssignTrainingModal training={assigningTraining} onClose={() => setAssigningTraining(null)} />
