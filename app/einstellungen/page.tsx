@@ -7,7 +7,7 @@ import { DashboardShell } from "@/components/DashboardShell";
 import { PageHeader } from "@/components/PageHeader";
 import { Card } from "@/components/Card";
 import { useToast } from "@/components/Toast";
-import { useAppData } from "@/lib/store";
+import { useAppData, throwIfError } from "@/lib/store";
 import { exportNachweiseCsv, exportQualifikationenCsv } from "@/lib/exportCsv";
 import { exportGesamtBackupZip } from "@/lib/exportZip";
 import { PLANS } from "@/lib/types";
@@ -68,7 +68,7 @@ export default function EinstellungenPage() {
     setDeletingCompany(true);
     try {
       const { error } = await supabase.rpc("delete_own_company_account");
-      if (error) throw error;
+      throwIfError(error);
       // Konto ist gelöscht — Abmelden darf keinen Fehler mehr werfen.
       await supabase.auth.signOut().catch(() => {});
     } catch {

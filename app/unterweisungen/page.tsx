@@ -33,6 +33,12 @@ export default function UnterweisungenPage() {
     setDeletingId(id);
     try {
       await deleteTraining(id);
+    } catch (err) {
+      alert(
+        err instanceof Error
+          ? err.message
+          : "Löschen fehlgeschlagen. Bitte erneut versuchen."
+      );
     } finally {
       setDeletingId(null);
     }

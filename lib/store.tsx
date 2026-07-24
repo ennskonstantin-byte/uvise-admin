@@ -17,6 +17,21 @@ import {
   istMinderjaehrig,
 } from "@/lib/types";
 
+// Wirft den Supabase/Postgrest-Fehler als echte Error-Instanz weiter. Ohne
+// .throwOnError() liefert postgrest-js bei einer fehlgeschlagenen Anfrage nur
+// ein einfaches Objekt ({message, code, ...}), kein Error-Objekt — ein
+// nachgelagertes `err instanceof Error` (z.B. für Fehlermeldungen im UI)
+// schlägt dann immer fehl, selbst wenn `error.message` die eigentliche,
+// hilfreiche DB-Meldung enthält (z.B. aus einem Trigger wie in Migration 0042).
+export function throwIfError(error: unknown): asserts error is null {
+  if (!error) return;
+  throw error instanceof Error
+    ? error
+    : new Error(
+        (error as { message?: string })?.message ?? "Unbekannter Fehler"
+      );
+}
+
 // Erkennt "E-Mail schon vergeben" — egal ob aus der Vorab-Prüfung
 // (email_taken) oder vom Unique-Index der Datenbank (Migration 0038).
 export function istEmailKonflikt(error: unknown) {
@@ -424,13 +439,13 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
       })
       .select()
       .single();
-    if (error) throw error;
+    throwIfError(error);
     if (input.istBeauftragter) {
       const { error: roleError } = await supabase.rpc("set_beauftragter", {
         p_employee_id: data.id,
         p_value: true,
       });
-      if (roleError) throw roleError;
+      throwIfError(roleError);
     }
     await loadData();
     return {
@@ -471,7 +486,7 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
       })
       .select()
       .single();
-    if (error) throw error;
+    throwIfError(error);
     if (input.bundleId && data) {
       await supabase
         .from("bundle_trainings")
@@ -536,7 +551,7 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
         kategorie: input.kategorie,
       })
       .eq("id", id);
-    if (error) throw error;
+    throwIfError(error);
 
     const current = employees.find((e) => e.id === id);
     if (current && current.istBeauftragter !== input.istBeauftragter) {
@@ -544,7 +559,7 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
         p_employee_id: id,
         p_value: input.istBeauftragter,
       });
-      if (roleError) throw roleError;
+      throwIfError(roleError);
     }
     await loadData();
   }
@@ -565,7 +580,7 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
       .from("employees")
       .update({ foto_url: path })
       .eq("id", employeeId);
-    if (error) throw error;
+    throwIfError(error);
     await loadData();
   }
 
@@ -582,7 +597,7 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
         ablaufdatum: input.ablaufdatum,
       })
       .eq("id", id);
-    if (error) throw error;
+    throwIfError(error);
     await loadData();
   }
 
@@ -593,7 +608,7 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
       .insert({ company_id: company.id, name: input.name, icon: input.icon })
       .select()
       .single();
-    if (error) throw error;
+    throwIfError(error);
     if (input.trainingIds.length > 0 && data) {
       await supabase
         .from("bundle_trainings")
@@ -616,19 +631,19 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
       }
     }
     const { error } = await supabase.from("employees").delete().eq("id", id);
-    if (error) throw error;
+    throwIfError(error);
     await loadData();
   }
 
   async function deleteTraining(id: string) {
     const { error } = await supabase.from("trainings").delete().eq("id", id);
-    if (error) throw error;
+    throwIfError(error);
     await loadData();
   }
 
   async function deleteBundle(id: string) {
     const { error } = await supabase.from("bundles").delete().eq("id", id);
-    if (error) throw error;
+    throwIfError(error);
     await loadData();
   }
 
@@ -640,26 +655,26 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
       .from("bundles")
       .update({ name: input.name, icon: input.icon })
       .eq("id", id);
-    if (error) throw error;
+    throwIfError(error);
 
     const { error: deleteError } = await supabase
       .from("bundle_trainings")
       .delete()
       .eq("bundle_id", id);
-    if (deleteError) throw deleteError;
+    throwIfError(deleteError);
 
     if (input.trainingIds.length > 0) {
       const { error: insertError } = await supabase
         .from("bundle_trainings")
         .insert(input.trainingIds.map((trainingId) => ({ bundle_id: id, training_id: trainingId })));
-      if (insertError) throw insertError;
+      throwIfError(insertError);
     }
     await loadData();
   }
 
   async function deleteCategory(id: string) {
     const { error } = await supabase.from("categories").delete().eq("id", id);
-    if (error) throw error;
+    throwIfError(error);
     await loadData();
   }
 
@@ -668,7 +683,7 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
     const { error } = await supabase
       .from("categories")
       .insert({ company_id: company.id, name: input.name, icon: input.icon });
-    if (error) throw error;
+    throwIfError(error);
     await loadData();
   }
 
@@ -677,21 +692,21 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
       .from("categories")
       .update({ name: input.name, icon: input.icon })
       .eq("id", id);
-    if (error) throw error;
+    throwIfError(error);
     await loadData();
   }
 
   // Archivieren statt löschen (gekündigte MA bleiben erhalten) bzw. wiederherstellen
   async function setEmployeeArchived(id: string, archiviert: boolean) {
     const { error } = await supabase.from("employees").update({ archiviert }).eq("id", id);
-    if (error) throw error;
+    throwIfError(error);
     await loadData();
   }
 
   // Einen Mitarbeiter einer Kategorie zuordnen (oder mit "" abwählen)
   async function setEmployeeCategory(employeeId: string, kategorie: string) {
     const { error } = await supabase.from("employees").update({ kategorie }).eq("id", employeeId);
-    if (error) throw error;
+    throwIfError(error);
     await loadData();
   }
 
@@ -706,7 +721,7 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
       ablaufdatum: input.ablaufdatum,
       status: "gueltig",
     });
-    if (error) throw error;
+    throwIfError(error);
     await loadData();
   }
 
@@ -719,7 +734,7 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
         status: "offen",
       }))
     );
-    if (error) throw error;
+    throwIfError(error);
     await loadData();
     const trainingName = trainings.find((t) => t.id === trainingId)?.name ?? "eine Unterweisung";
     if (session) {
@@ -737,7 +752,7 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
       .delete()
       .eq("training_id", trainingId)
       .eq("status", "offen");
-    if (error) throw error;
+    throwIfError(error);
     await loadData();
   }
 
@@ -753,7 +768,7 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
     if (upErr) throw upErr;
     // Bucket ist privat (Migration 0020) — nur den Pfad speichern.
     const { error } = await supabase.from("companies").update({ logo_url: path }).eq("id", company.id);
-    if (error) throw error;
+    throwIfError(error);
     await loadData();
   }
 
@@ -763,7 +778,7 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
       .from("companies")
       .update({ name: input.name, address: input.address, chef_name: input.chefName })
       .eq("id", company.id);
-    if (error) throw error;
+    throwIfError(error);
     await loadData();
   }
 
@@ -772,7 +787,7 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
       .from("questions")
       .update({ antwort, status: "beantwortet" })
       .eq("id", id);
-    if (error) throw error;
+    throwIfError(error);
     await loadData();
     const employeeId = questions.find((q) => q.id === id)?.employeeId;
     if (session && employeeId) {
