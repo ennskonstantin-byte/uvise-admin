@@ -61,6 +61,17 @@ export default function MitarbeiterPage() {
     }
   }
 
+  async function handleRestore(id: string) {
+    setDeletingId(id);
+    try {
+      await setEmployeeArchived(id, false);
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Wiederherstellen fehlgeschlagen. Bitte erneut versuchen.");
+    } finally {
+      setDeletingId(null);
+    }
+  }
+
   async function handleDeleteCategory(id: string, name: string) {
     if (
       !confirm(
@@ -367,9 +378,10 @@ export default function MitarbeiterPage() {
                       <button
                         onClick={(ev) => {
                           ev.stopPropagation();
-                          setEmployeeArchived(e.id, false);
+                          handleRestore(e.id);
                         }}
-                        className="h-8 w-8 rounded-full border border-border flex items-center justify-center hover:border-foreground/30 shrink-0"
+                        disabled={deletingId === e.id}
+                        className="h-8 w-8 rounded-full border border-border flex items-center justify-center hover:border-foreground/30 disabled:opacity-40 shrink-0"
                         aria-label="Wiederherstellen"
                         title="Wiederherstellen"
                       >
