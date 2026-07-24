@@ -6,7 +6,7 @@ import { motion } from "framer-motion";
 // Versions-Stempel gegen hartnäckigen Browser-Cache (v.a. Safari/iPhone):
 // wird vom Demo-Neubau-Skript automatisch hochgezählt — dadurch bekommt die
 // iframe-URL bei jedem Neubau eine neue Adresse und niemand sieht alte Builds.
-const DEMO_VERSION = "2026-07-24-0129";
+const DEMO_VERSION = "2026-07-24-0828";
 
 const APPS = [
   {
