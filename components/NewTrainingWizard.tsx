@@ -224,11 +224,18 @@ export function NewTrainingWizard({ onClose }: { onClose: () => void }) {
     const file = e.target.files?.[0];
     if (!file) return;
     const pdf = file.type === "application/pdf" || file.name.toLowerCase().endsWith(".pdf");
+    // Nur echte PDFs werden unterstützt -- es gibt keine Texterkennung (OCR).
+    // Ein Bild anzunehmen und den Dateinamen zu bestätigen hätte fälschlich
+    // suggeriert, der Bildinhalt sei übernommen worden (Runde-1/2-Audit, H-02).
+    if (!pdf) {
+      setError("Nur PDF-Dateien werden unterstützt. Bitte den Text stattdessen von Hand eingeben.");
+      e.target.value = "";
+      return;
+    }
+    setError(null);
     setFileName(file.name);
-    setIsPdf(pdf);
-    // Nur echte PDFs tatsächlich hochladen — für Bilder gibt es (noch) keine
-    // Anzeige in der App, dort bleibt es beim von Hand eingetippten Text.
-    setPdfFile(pdf ? file : null);
+    setIsPdf(true);
+    setPdfFile(file);
   }
 
   async function handleFinish() {
@@ -344,7 +351,7 @@ export function NewTrainingWizard({ onClose }: { onClose: () => void }) {
                     Datei auswählen
                     <input
                       type="file"
-                      accept="application/pdf,image/*"
+                      accept="application/pdf"
                       onChange={handleFileChange}
                       className="hidden"
                     />
@@ -360,11 +367,7 @@ export function NewTrainingWizard({ onClose }: { onClose: () => void }) {
                   <textarea
                     value={inhalt}
                     onChange={(e) => setInhalt(e.target.value)}
-                    placeholder={
-                      isPdf
-                        ? "Optional: Text für die Vorlese-Stimme hier einfügen (die PDF selbst wird trotzdem angezeigt)."
-                        : "Erkannter Text erscheint hier, editierbar…"
-                    }
+                    placeholder="Optional: Text für die Vorlese-Stimme hier einfügen (die PDF selbst wird trotzdem angezeigt)."
                     className="w-full h-24 rounded-2xl border border-border bg-surface px-4 py-3 text-sm outline-none"
                   />
                 )}
