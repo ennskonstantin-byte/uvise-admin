@@ -126,6 +126,11 @@ export function AppPreview() {
       >
         {current.hint}
       </motion.p>
+      {/* Sichtbarer Versions-Stempel: macht sofort erkennbar, ob ein Browser
+          noch eine alte, zwischengespeicherte Demo zeigt. */}
+      <p className="text-[10px] text-center mt-1.5" style={{ color: "var(--mk-ink-40, #9ca3af)" }}>
+        Demo-Stand: {DEMO_VERSION}
+      </p>
 
       {/* Offizielle Apple-/Google-Play-Buttons (schwarz mit hellem Keyline-Rand,
           damit sie auch auf dunklem Hintergrund gut sichtbar sind). flex-wrap:
