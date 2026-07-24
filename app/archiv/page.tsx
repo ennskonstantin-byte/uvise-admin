@@ -275,6 +275,14 @@ export default function ArchivPage() {
                     Status: {et.status}
                     {et.signiertAm ? ` · signiert am ${et.signiertAm}` : ""}
                   </p>
+                  {/* Nur anzeigen, wenn der damalige Name vom heutigen abweicht
+                      (z.B. nach Heirat) — sonst unnötige Doppelung. */}
+                  {et.signiertAls &&
+                    et.signiertAls !== `${selectedEmployee.vorname} ${selectedEmployee.nachname}` && (
+                      <p className="text-xs text-amber-700 dark:text-amber-400 mt-0.5">
+                        Damals signiert als: {et.signiertAls}
+                      </p>
+                    )}
                 </div>
                 {et.status === "signiert" && (
                   <button

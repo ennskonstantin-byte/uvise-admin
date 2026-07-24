@@ -33,11 +33,23 @@ function nachweiseRows(
   employeeTrainings: EmployeeTraining[]
 ): string[][] {
   const rows: string[][] = [
-    ["Nachname", "Vorname", "Mitarbeiternummer", "Kategorie", "Unterweisung", "Status", "Signiert am", "Gerät", "Archiviert"],
+    [
+      "Nachname",
+      "Vorname",
+      "Mitarbeiternummer",
+      "Kategorie",
+      "Unterweisung",
+      "Status",
+      "Signiert am",
+      "Damals signiert als",
+      "Gerät",
+      "Archiviert",
+    ],
   ];
   for (const et of employeeTrainings) {
     const e = employees.find((x) => x.id === et.employeeId);
     const t = trainings.find((x) => x.id === et.trainingId);
+    const aktuellerName = e ? `${e.vorname} ${e.nachname}` : "";
     rows.push([
       e?.nachname ?? "Unbekannt",
       e?.vorname ?? "",
@@ -46,6 +58,7 @@ function nachweiseRows(
       t?.name ?? "Unbekannte Unterweisung",
       et.status,
       et.signiertAm ?? "",
+      et.signiertAls && et.signiertAls !== aktuellerName ? et.signiertAls : "",
       et.geraet ?? "",
       e?.archiviert ? "ja" : "nein",
     ]);

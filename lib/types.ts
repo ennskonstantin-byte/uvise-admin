@@ -105,6 +105,9 @@ export type EmployeeTraining = {
   signaturBildUrl: string | null;
   geraet: string | null;
   signaturHash: string | null;
+  // Name des Mitarbeiters zum Signierzeitpunkt (Migration 0040) — bleibt bei
+  // späteren Namensänderungen unverändert. Bei Alt-Nachweisen (vor 0040) null.
+  signiertAls: string | null;
   ablaufdatumIso: string | null;
 };
 

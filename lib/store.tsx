@@ -210,6 +210,7 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
       signaturBildUrl: et.signatur_bild_url ?? null,
       geraet: et.geraet ?? null,
       signaturHash: et.signatur_hash ?? null,
+      signiertAls: et.signiert_als ?? null,
       // Rohes ISO-Datum (nicht das deutsch formatierte Training.ablaufdatum!)
       // für Ampel-Berechnungen in der UI — new Date("22.7.2026") lässt sich
       // nicht zuverlässig parsen, new Date("2026-07-22") schon.

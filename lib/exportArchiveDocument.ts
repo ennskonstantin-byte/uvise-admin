@@ -42,6 +42,9 @@ export async function saveArchiveDocumentPdf(
   row("Unterweisung", trainingName);
   row("Mitarbeiter", employeeName);
   row("Signiert am", entry.signiertAm ?? "—");
+  if (entry.signiertAls && entry.signiertAls !== employeeName) {
+    row("Damals signiert als", entry.signiertAls);
+  }
   row("Gerät", entry.geraet ?? "Nicht erfasst");
 
   if (entry.signaturHash) {

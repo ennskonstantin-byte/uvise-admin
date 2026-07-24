@@ -51,6 +51,12 @@ export function ArchiveDocumentModal({
             <p className="text-xs text-foreground/65">Signiert am</p>
             <p className="font-medium">{entry.signiertAm ?? "—"}</p>
           </div>
+          {entry.signiertAls && entry.signiertAls !== employeeName && (
+            <div>
+              <p className="text-xs text-foreground/65">Damals signiert als</p>
+              <p className="font-medium">{entry.signiertAls}</p>
+            </div>
+          )}
           <div>
             <p className="text-xs text-foreground/65">Gerät</p>
             <p className="font-medium">{entry.geraet ?? "Nicht erfasst"}</p>
