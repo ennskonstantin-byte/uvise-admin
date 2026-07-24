@@ -97,6 +97,7 @@ type AppDataContextValue = {
   }) => Promise<void>;
   assignTraining: (trainingId: string, employeeIds: string[]) => Promise<void>;
   assignBundle: (trainingIds: string[], employeeIds: string[]) => Promise<void>;
+  regenerateInviteToken: (employeeId: string) => Promise<string>;
   withdrawTraining: (trainingId: string) => Promise<void>;
   updateEmployee: (
     id: string,
@@ -775,6 +776,18 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
     }
   }
 
+  // Widerruft einen ausgegebenen Einladungscode und erzeugt einen neuen --
+  // z.B. wenn der alte versehentlich weitergegeben wurde (Runde-2/3-Audit,
+  // M-01: invite_token war bisher unbegrenzt gültig ohne Widerrufsmöglichkeit).
+  async function regenerateInviteToken(employeeId: string) {
+    const { data, error } = await supabase.rpc("regenerate_invite_token", {
+      p_employee_id: employeeId,
+    });
+    throwIfError(error);
+    await loadData();
+    return data as string;
+  }
+
   // Zieht eine versehentlich verteilte Unterweisung zurück: löscht alle noch
   // OFFENEN Zuweisungen dieser Vorlage. Bereits signierte Nachweise bleiben
   // unangetastet (die Delete-Policy aus Migration 0039 erlaubt ohnehin nur
@@ -863,6 +876,7 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
         addQualification,
         assignTraining,
         assignBundle,
+        regenerateInviteToken,
         withdrawTraining,
         updateEmployee,
         updateTraining,

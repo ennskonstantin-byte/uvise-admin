@@ -42,15 +42,35 @@ const QUALIFICATION_STATUS_COLOR: Record<string, string> = {
 
 export default function EmployeeDetailPage() {
   const params = useParams<{ id: string }>();
-  const { employees, employeeTrainings, qualifications, trainings } = useAppData();
+  const { employees, employeeTrainings, qualifications, trainings, regenerateInviteToken } =
+    useAppData();
   const { showToast, ToastView } = useToast();
   const [editing, setEditing] = useState(false);
   const [assigning, setAssigning] = useState(false);
   const [addingQualification, setAddingQualification] = useState(false);
+  const [regenerating, setRegenerating] = useState(false);
   const employee = employees.find((e) => e.id === params.id);
   const empTrainings = employeeTrainings.filter((et) => et.employeeId === params.id);
   const empQualifications = qualifications.filter((q) => q.employeeId === params.id);
   const openCount = empTrainings.filter((t) => t.status === "offen").length;
+
+  async function handleRegenerateInvite() {
+    if (
+      !confirm(
+        "Neuen Einladungscode erzeugen? Der bisherige Code funktioniert danach nicht mehr — sinnvoll, wenn er versehentlich weitergegeben wurde."
+      )
+    )
+      return;
+    setRegenerating(true);
+    try {
+      await regenerateInviteToken(params.id);
+      showToast("Neuer Einladungscode erzeugt, alter ist ungültig.");
+    } catch (err) {
+      showToast(err instanceof Error ? err.message : "Konnte keinen neuen Code erzeugen.");
+    } finally {
+      setRegenerating(false);
+    }
+  }
 
   if (!employee) {
     return (
@@ -110,16 +130,26 @@ export default function EmployeeDetailPage() {
                 <span className="font-mono text-foreground">{employee.inviteToken}</span>
               </p>
             </div>
-            <button
-              onClick={() => {
-                navigator.clipboard.writeText(employee.inviteToken!);
-                showToast("Einladungscode kopiert");
-              }}
-              className="flex items-center gap-2 rounded-full border border-border px-3 py-2 text-xs hover:border-foreground/30"
-            >
-              <Copy size={14} />
-              Kopieren
-            </button>
+            <div className="flex gap-2">
+              <button
+                onClick={() => {
+                  navigator.clipboard.writeText(employee.inviteToken!);
+                  showToast("Einladungscode kopiert");
+                }}
+                className="flex items-center gap-2 rounded-full border border-border px-3 py-2 text-xs hover:border-foreground/30"
+              >
+                <Copy size={14} />
+                Kopieren
+              </button>
+              <button
+                onClick={handleRegenerateInvite}
+                disabled={regenerating}
+                title="Alten Code widerrufen und einen neuen erzeugen — z.B. wenn er versehentlich weitergegeben wurde."
+                className="rounded-full border border-border px-3 py-2 text-xs hover:border-foreground/30 disabled:opacity-50"
+              >
+                {regenerating ? "…" : "Code neu erzeugen"}
+              </button>
+            </div>
           </div>
         )}
 
