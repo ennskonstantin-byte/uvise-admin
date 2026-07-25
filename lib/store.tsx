@@ -188,7 +188,16 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
   const [questions, setQuestions] = useState<Question[]>([]);
   const [employeeTrainings, setEmployeeTrainings] = useState<EmployeeTraining[]>([]);
 
-  const loadData = useCallback(async () => {
+  // Coalescing für loadData (M-09, sichere Teil-Optimierung): Ohne das löste
+  // jede Schreibaktion einen eigenen vollständigen Reload aller Kern-Tabellen
+  // aus — bei mehreren Aktionen kurz hintereinander liefen die 9 Tabellen-
+  // Abfragen mehrfach parallel („Reload-Sturm"). Jetzt wird höchstens EIN
+  // Reload gleichzeitig ausgeführt, und höchstens EIN weiterer eingereiht
+  // (der die neuesten Daten mitnimmt), statt N gestapelter Läufe.
+  const loadChainRef = useRef<Promise<void>>(Promise.resolve());
+  const loadQueuedRef = useRef<Promise<void> | null>(null);
+
+  const runLoad = useCallback(async () => {
     setDataLoading(true);
 
     const [
@@ -202,15 +211,18 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
       { data: questionRows },
       { data: employeeTrainingRows },
     ] = await Promise.all([
+      // .order(...) macht die (bisher implizite) Reihenfolge deterministisch
+      // — Voraussetzung für spätere serverseitige Pagination und verhindert
+      // zufällig springende Listen (M-09, sichere Teil-Optimierung).
       supabase.from("companies").select("*").limit(1),
-      supabase.from("employees").select("*"),
-      supabase.from("trainings").select("*"),
-      supabase.from("bundles").select("*"),
+      supabase.from("employees").select("*").order("created_at"),
+      supabase.from("trainings").select("*").order("erstellt_am"),
+      supabase.from("bundles").select("*").order("created_at"),
       supabase.from("bundle_trainings").select("*"),
-      supabase.from("categories").select("*"),
-      supabase.from("qualifications").select("*"),
-      supabase.from("questions").select("*"),
-      supabase.from("employee_trainings").select("*"),
+      supabase.from("categories").select("*").order("created_at"),
+      supabase.from("qualifications").select("*").order("created_at"),
+      supabase.from("questions").select("*").order("created_at"),
+      supabase.from("employee_trainings").select("*").order("created_at"),
     ]);
 
     const signedUrlMap = await resolveSignedUrls([
@@ -335,6 +347,19 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
     setEmployeeTrainings(empTrainings);
     setDataLoading(false);
   }, []);
+
+  const loadData = useCallback((): Promise<void> => {
+    // Bereits ein Reload eingereiht, der noch nicht gestartet ist? -> denselben
+    // wiederverwenden; er wird ohnehin die neuesten Daten laden.
+    if (loadQueuedRef.current) return loadQueuedRef.current;
+    const queued = loadChainRef.current.then(async () => {
+      loadQueuedRef.current = null; // ab hier läuft dieser Reload -> neue Aufrufe brauchen einen frischen
+      await runLoad();
+    });
+    loadChainRef.current = queued.catch(() => {}); // Kette bei Fehler nicht abreißen lassen
+    loadQueuedRef.current = queued;
+    return queued;
+  }, [runLoad]);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
