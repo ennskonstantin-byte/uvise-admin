@@ -86,8 +86,9 @@ function DistributionDialog({
       <div className="w-full max-w-lg rounded-3xl bg-background border border-border p-6 sm:p-8">
         <h2 className="text-xl font-semibold mb-1">„{training.name}&quot; weiterleiten</h2>
         <p className="text-sm text-foreground/60 mb-5">
-          An einzelne Mitarbeiter oder ganze Abteilungen senden — kann auch später über die
-          Mitarbeiter-Seite nachgeholt werden.
+          Die Unterweisung ist bereits als Vorlage gespeichert. Du kannst sie jetzt an einzelne
+          Mitarbeiter oder ganze Abteilungen senden — oder das später nachholen, das Verteilen ist
+          optional.
         </p>
 
         {distributionError && (
@@ -167,7 +168,7 @@ function DistributionDialog({
             onClick={onClose}
             className="rounded-full px-5 py-2.5 text-sm font-medium border border-border"
           >
-            Später
+            Fertig, später verteilen
           </button>
           <button
             onClick={handleSend}
