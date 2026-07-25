@@ -490,9 +490,9 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
       .from("employees")
       .insert({
         company_id: company.id,
-        vorname: input.vorname,
-        nachname: input.nachname,
-        personalnummer: input.personalnummer,
+        vorname: input.vorname.trim(),
+        nachname: input.nachname.trim(),
+        personalnummer: input.personalnummer.trim(),
         email: input.email,
         telefon: input.telefon,
         geburtsdatum: input.geburtsdatum,
@@ -608,9 +608,9 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
     const { error } = await supabase
       .from("employees")
       .update({
-        vorname: input.vorname,
-        nachname: input.nachname,
-        personalnummer: input.personalnummer,
+        vorname: input.vorname.trim(),
+        nachname: input.nachname.trim(),
+        personalnummer: input.personalnummer.trim(),
         email: input.email,
         telefon: input.telefon,
         geburtsdatum: input.geburtsdatum,
