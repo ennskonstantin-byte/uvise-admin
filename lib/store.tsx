@@ -15,6 +15,7 @@ import {
   type Category,
   qualIcon,
   istMinderjaehrig,
+  AMPEL_WARN_TAGE,
 } from "@/lib/types";
 
 // Wirft den Supabase/Postgrest-Fehler als echte Error-Instanz weiter. Ohne
@@ -145,7 +146,7 @@ function qualStatus(ablaufdatum: string | null): "gueltig" | "laeuft_ab" | "abge
   if (!ablaufdatum) return "gueltig";
   const days = (new Date(ablaufdatum).getTime() - Date.now()) / 86_400_000;
   if (days < 0) return "abgelaufen";
-  if (days < 30) return "laeuft_ab";
+  if (days < AMPEL_WARN_TAGE) return "laeuft_ab";
   return "gueltig";
 }
 
@@ -153,7 +154,7 @@ function trainingStatus(ablaufdatum: string | null): "aktuell" | "laeuft_ab" | "
   if (!ablaufdatum) return "aktuell";
   const daysLeft = (new Date(ablaufdatum).getTime() - Date.now()) / 86_400_000;
   if (daysLeft < 0) return "abgelaufen";
-  return daysLeft < 30 ? "laeuft_ab" : "aktuell";
+  return daysLeft < AMPEL_WARN_TAGE ? "laeuft_ab" : "aktuell";
 }
 
 // Der Storage-Bucket "employee-photos" ist privat (Migration 0020) — foto_url/

@@ -1,3 +1,8 @@
+// Ab wie vielen Tagen vor Ablauf eine Qualifikation/Unterweisung als
+// „läuft bald ab" (gelb) gilt. Zentrale Konstante statt Magic Number an
+// mehreren Stellen (Runde-3-Audit, N-10).
+export const AMPEL_WARN_TAGE = 30;
+
 export type Employee = {
   id: string;
   vorname: string;
