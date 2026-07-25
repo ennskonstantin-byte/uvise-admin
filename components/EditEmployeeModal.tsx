@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { CATEGORY_ICON_OPTIONS, istMinderjaehrig as isMinderjaehrig, type Employee } from "@/lib/types";
-import { useAppData, istEmailKonflikt } from "@/lib/store";
+import { useAppData, istEmailKonflikt, istEmailFormatFehler } from "@/lib/store";
 import { Switch } from "@/components/Switch";
 import { DateSelect } from "@/components/DateSelect";
 import { EmployeeAvatar } from "@/components/EmployeeAvatar";
@@ -71,7 +71,9 @@ export function EditEmployeeModal({
       onClose();
     } catch (err) {
       setError(
-        istEmailKonflikt(err)
+        istEmailFormatFehler(err)
+          ? "Bitte eine gültige E-Mail-Adresse eingeben (z.B. name@firma.de)."
+          : istEmailKonflikt(err)
           ? "Diese E-Mail-Adresse wird bereits verwendet. Jede E-Mail kann nur einmal vergeben werden."
           : "Speichern fehlgeschlagen. Bist du als Beauftragte/r eingeloggt?"
       );

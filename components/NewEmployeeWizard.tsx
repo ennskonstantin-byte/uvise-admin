@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { CATEGORY_ICON_OPTIONS, QUALIFICATION_PRESETS, istMinderjaehrig as isMinderjaehrig } from "@/lib/types";
-import { useAppData, istEmailKonflikt } from "@/lib/store";
+import { useAppData, istEmailKonflikt, istEmailFormatFehler } from "@/lib/store";
 import { useEscapeClose } from "@/lib/useEscapeClose";
 import { DateSelect } from "@/components/DateSelect";
 
@@ -125,7 +125,9 @@ export function NewEmployeeWizard({ onClose }: { onClose: () => void }) {
       setTimeout(onClose, 1400);
     } catch (err) {
       setError(
-        istEmailKonflikt(err)
+        istEmailFormatFehler(err)
+          ? "Bitte eine gültige E-Mail-Adresse eingeben (z.B. name@firma.de)."
+          : istEmailKonflikt(err)
           ? "Diese E-Mail-Adresse wird bereits verwendet. Jede E-Mail kann nur einmal vergeben werden."
           : "Anlegen fehlgeschlagen. Bitte prüfe, ob du als Beauftragte/r eingeloggt bist."
       );

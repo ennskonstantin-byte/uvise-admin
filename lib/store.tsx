@@ -40,6 +40,18 @@ export function istEmailKonflikt(error: unknown) {
   return msg === "email_taken" || msg.includes("employees_email_unique");
 }
 
+// Einfache Format-Plausibilität für E-Mail-Adressen (Runde-3-Audit, N-13) --
+// verlässt sich nicht mehr allein auf Server/Storage. Leere Eingabe ist ok
+// (E-Mail ist optional).
+export function istGueltigeEmail(email: string | null | undefined): boolean {
+  if (!email || email.trim() === "") return true;
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
+}
+export function istEmailFormatFehler(error: unknown) {
+  const msg = error instanceof Error ? error.message : String(error);
+  return msg === "email_invalid";
+}
+
 type Company = {
   id: string;
   name: string;
@@ -473,6 +485,7 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
   // Meldung; der Unique-Index in der Datenbank fängt den Rest ab.
   function assertEmailFrei(email: string | null, ignoreId?: string) {
     if (!email) return;
+    if (!istGueltigeEmail(email)) throw new Error("email_invalid");
     const lower = email.toLowerCase();
     const taken = employees.some(
       (e) => e.id !== ignoreId && e.email?.toLowerCase() === lower
