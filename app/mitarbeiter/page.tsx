@@ -41,6 +41,8 @@ export default function MitarbeiterPage() {
     setDeletingId(id);
     try {
       await setEmployeeArchived(id, true);
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Archivieren fehlgeschlagen. Bitte erneut versuchen.");
     } finally {
       setDeletingId(null);
     }
@@ -49,13 +51,15 @@ export default function MitarbeiterPage() {
   async function handleDeleteForever(id: string, name: string) {
     if (
       !confirm(
-        `${name} und ALLE Nachweise ENDGÜLTIG löschen? Das kann nicht rückgängig gemacht werden.`
+        `${name} endgültig löschen? Persönliche Daten und noch offene (unsignierte) Zuweisungen werden entfernt. Bereits signierte, aufbewahrungspflichtige Nachweise bleiben davon unberührt bestehen -- in dem Fall ist nur Archivieren möglich. Das lässt sich nicht rückgängig machen.`
       )
     )
       return;
     setDeletingId(id);
     try {
       await deleteEmployee(id);
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Löschen fehlgeschlagen. Bitte erneut versuchen.");
     } finally {
       setDeletingId(null);
     }

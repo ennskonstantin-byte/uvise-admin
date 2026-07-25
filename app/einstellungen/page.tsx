@@ -55,11 +55,11 @@ export default function EinstellungenPage() {
   // Zwei Sicherheitsabfragen, weil unwiderruflich und weitreichend.
   async function handleDeleteCompany() {
     const bestaetigt = window.confirm(
-      `„${company?.name ?? "Deine Firma"}" wird mit ALLEN Mitarbeitern, Unterweisungen, Nachweisen und Logins endgültig gelöscht. Das lässt sich nicht rückgängig machen.\n\nWirklich fortfahren?`,
+      `„${company?.name ?? "Deine Firma"}" wird gelöscht: Alle Logins (auch deiner) werden entfernt und persönliche Mitarbeiterdaten (E-Mail, Telefon, Geburtsdatum, Foto) gelöscht. Gesetzlich aufbewahrungspflichtige Unterweisungs-Nachweise bleiben dabei anonymisiert erhalten und lassen sich nicht separat entfernen. Das lässt sich nicht rückgängig machen.\n\nWirklich fortfahren?`,
     );
     if (!bestaetigt) return;
     const wortlaut = window.prompt(
-      'Letzte Sicherheitsabfrage: Tippe LÖSCHEN (in Großbuchstaben), um die Firma endgültig zu löschen.',
+      'Letzte Sicherheitsabfrage: Tippe LÖSCHEN (in Großbuchstaben), um fortzufahren.',
     );
     if (wortlaut !== "LÖSCHEN") {
       showToast("Löschung abgebrochen.");
