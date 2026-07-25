@@ -207,12 +207,14 @@ export function NewEmployeeWizard({ onClose }: { onClose: () => void }) {
               value={vorname}
               onChange={(e) => setVorname(e.target.value)}
               placeholder="Vorname"
+              maxLength={80}
               className="w-full rounded-full border border-border bg-surface px-4 py-2.5 text-sm outline-none focus:border-foreground/30"
             />
             <input
               value={nachname}
               onChange={(e) => setNachname(e.target.value)}
               placeholder="Nachname"
+              maxLength={80}
               className="w-full rounded-full border border-border bg-surface px-4 py-2.5 text-sm outline-none focus:border-foreground/30"
             />
           </div>
@@ -221,6 +223,7 @@ export function NewEmployeeWizard({ onClose }: { onClose: () => void }) {
             value={personalnummer}
             onChange={(e) => setPersonalnummer(e.target.value)}
             placeholder="Mitarbeiternummer"
+            maxLength={40}
             className="w-full rounded-full border border-border bg-surface px-4 py-2.5 text-sm outline-none focus:border-foreground/30"
           />
           <input
@@ -228,6 +231,7 @@ export function NewEmployeeWizard({ onClose }: { onClose: () => void }) {
             onChange={(e) => setEmail(e.target.value)}
             type="email"
             placeholder="E-Mail (für App-Login, optional)"
+            maxLength={200}
             className="w-full rounded-full border border-border bg-surface px-4 py-2.5 text-sm outline-none focus:border-foreground/30"
           />
           <input
@@ -235,6 +239,7 @@ export function NewEmployeeWizard({ onClose }: { onClose: () => void }) {
             onChange={(e) => setTelefon(e.target.value)}
             type="tel"
             placeholder="Telefon (Alternative/Kontakt, optional)"
+            maxLength={40}
             className="w-full rounded-full border border-border bg-surface px-4 py-2.5 text-sm outline-none focus:border-foreground/30"
           />
 
@@ -312,6 +317,7 @@ export function NewEmployeeWizard({ onClose }: { onClose: () => void }) {
                   value={newCategoryName}
                   onChange={(e) => setNewCategoryName(e.target.value)}
                   placeholder="z.B. Staplerfahrer"
+                  maxLength={60}
                   className="w-full rounded-full border border-border bg-surface px-4 py-2.5 text-sm outline-none mb-3"
                 />
                 <button

@@ -124,18 +124,21 @@ export function EditEmployeeModal({
             value={vorname}
             onChange={(e) => setVorname(e.target.value)}
             placeholder="Vorname"
+            maxLength={80}
             className="w-full rounded-full border border-border bg-surface px-4 py-2.5 text-sm outline-none"
           />
           <input
             value={nachname}
             onChange={(e) => setNachname(e.target.value)}
             placeholder="Nachname"
+            maxLength={80}
             className="w-full rounded-full border border-border bg-surface px-4 py-2.5 text-sm outline-none"
           />
           <input
             value={personalnummer}
             onChange={(e) => setPersonalnummer(e.target.value)}
             placeholder="Mitarbeiternummer"
+            maxLength={40}
             className="w-full rounded-full border border-border bg-surface px-4 py-2.5 text-sm outline-none"
           />
           <input
@@ -143,6 +146,7 @@ export function EditEmployeeModal({
             onChange={(e) => setEmail(e.target.value)}
             type="email"
             placeholder="E-Mail (für App-Login, optional)"
+            maxLength={200}
             className="w-full rounded-full border border-border bg-surface px-4 py-2.5 text-sm outline-none"
           />
           <input
@@ -150,6 +154,7 @@ export function EditEmployeeModal({
             onChange={(e) => setTelefon(e.target.value)}
             type="tel"
             placeholder="Telefon (Alternative/Kontakt, optional)"
+            maxLength={40}
             className="w-full rounded-full border border-border bg-surface px-4 py-2.5 text-sm outline-none"
           />
           <div>
@@ -219,6 +224,7 @@ export function EditEmployeeModal({
                   value={newCategoryName}
                   onChange={(e) => setNewCategoryName(e.target.value)}
                   placeholder="Name der Kategorie"
+                  maxLength={60}
                   className="w-full rounded-full border border-border bg-background px-4 py-2.5 text-sm outline-none mb-3"
                 />
                 <button
