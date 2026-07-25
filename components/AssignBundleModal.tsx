@@ -64,7 +64,7 @@ export function AssignBundleModal({
 
   if (sentCount !== null) {
     return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
+      <div role="status" aria-live="polite" className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
         <div className="w-full max-w-sm rounded-3xl bg-background border border-border p-8 flex flex-col items-center text-center gap-3">
           <div
             className="h-12 w-12 rounded-full flex items-center justify-center text-white"
@@ -81,7 +81,7 @@ export function AssignBundleModal({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
+    <div role="dialog" aria-modal="true" aria-label="Bundle verteilen" className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
       <div className="w-full max-w-md rounded-3xl bg-background border border-border p-6 sm:p-8">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-xl font-semibold">„{bundle.name}" verteilen</h2>

@@ -35,7 +35,7 @@ export function NewBundleWizard({ onClose }: { onClose: () => void }) {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
+    <div role="dialog" aria-modal="true" aria-label="Neues Bundle" className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
       <div className="w-full max-w-md rounded-3xl bg-background border border-border p-6 sm:p-8">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-xl font-semibold">Neues Bundle</h2>

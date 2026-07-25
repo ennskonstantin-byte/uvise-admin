@@ -49,7 +49,7 @@ export function NewQualificationModal({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
+    <div role="dialog" aria-modal="true" aria-label="Qualifikation hinzufügen" className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
       <div className="w-full max-w-md rounded-3xl bg-background border border-border p-6 sm:p-8">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-xl font-semibold">Qualifikation hinzufügen</h2>
@@ -110,7 +110,7 @@ export function NewQualificationModal({
       {/* Vorschläge als eigenes Popup — wie in der App, damit das Formular
           kurz und übersichtlich bleibt. */}
       {presetsOpen && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/40 px-4">
+        <div role="dialog" aria-modal="true" aria-label="Gängige Qualifikationen" className="fixed inset-0 z-[60] flex items-center justify-center bg-black/40 px-4">
           <div className="w-full max-w-md rounded-3xl bg-background border border-border p-6 max-h-[80vh] flex flex-col">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold">Gängige Qualifikationen</h3>

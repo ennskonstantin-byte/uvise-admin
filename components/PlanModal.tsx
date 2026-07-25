@@ -43,7 +43,7 @@ export function PlanModal({ onClose }: { onClose: () => void }) {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
+    <div role="dialog" aria-modal="true" aria-label="Abo wählen" className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
       <div className="w-full max-w-3xl max-h-[90vh] overflow-y-auto rounded-3xl bg-background border border-border p-6 sm:p-8">
         <div className="flex items-center justify-between mb-2">
           <h2 className="text-xl font-semibold">Dein Abo wählen</h2>

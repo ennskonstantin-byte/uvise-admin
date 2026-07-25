@@ -136,7 +136,7 @@ export function NewEmployeeWizard({ onClose }: { onClose: () => void }) {
 
   if (done) {
     return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
+      <div role="dialog" aria-modal="true" aria-label="Mitarbeiter angelegt" className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
         <div className="w-full max-w-md rounded-3xl bg-background border border-border p-6 sm:p-8 text-center">
           <p className="text-4xl mb-4">✅</p>
           <p className="font-medium">
@@ -160,7 +160,7 @@ export function NewEmployeeWizard({ onClose }: { onClose: () => void }) {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4 py-8 overflow-y-auto">
+    <div role="dialog" aria-modal="true" aria-label="Neuer Mitarbeiter" className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4 py-8 overflow-y-auto">
       <div className="w-full max-w-md rounded-3xl bg-background border border-border p-6 sm:p-8 my-auto">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-xl font-semibold">Neuer Mitarbeiter</h2>

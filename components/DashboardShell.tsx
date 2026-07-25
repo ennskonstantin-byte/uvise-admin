@@ -48,7 +48,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
       </header>
 
       {menuOffen && (
-        <div className="lg:hidden fixed inset-0 z-50 flex">
+        <div role="dialog" aria-modal="true" aria-label="Navigationsmenü" className="lg:hidden fixed inset-0 z-50 flex">
           <div className="relative h-full overflow-y-auto">
             <Sidebar />
             <button
