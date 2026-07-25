@@ -124,6 +124,8 @@ export type Qualification = {
   name: string;
   icon: string;
   ablaufdatum: string;
+  // Rohes ISO-Datum (oder null) zum Vorbefüllen des Bearbeiten-Dialogs.
+  ablaufdatumIso: string | null;
   status: "gueltig" | "laeuft_ab" | "abgelaufen";
 };
 

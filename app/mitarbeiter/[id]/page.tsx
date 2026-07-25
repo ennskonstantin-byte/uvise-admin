@@ -9,6 +9,8 @@ import { Card } from "@/components/Card";
 import { EditEmployeeModal } from "@/components/EditEmployeeModal";
 import { AssignTrainingToEmployeeModal } from "@/components/AssignTrainingToEmployeeModal";
 import { NewQualificationModal } from "@/components/NewQualificationModal";
+import { EditQualificationModal } from "@/components/EditQualificationModal";
+import type { Qualification } from "@/lib/types";
 import { useToast } from "@/components/Toast";
 import { EmployeeAvatar } from "@/components/EmployeeAvatar";
 import { trainingName } from "@/lib/types";
@@ -48,6 +50,7 @@ export default function EmployeeDetailPage() {
   const [editing, setEditing] = useState(false);
   const [assigning, setAssigning] = useState(false);
   const [addingQualification, setAddingQualification] = useState(false);
+  const [editingQualification, setEditingQualification] = useState<Qualification | null>(null);
   const [regenerating, setRegenerating] = useState(false);
   const employee = employees.find((e) => e.id === params.id);
   const empTrainings = employeeTrainings.filter((et) => et.employeeId === params.id);
@@ -222,17 +225,24 @@ export default function EmployeeDetailPage() {
         </div>
         <div className="rounded-3xl border border-border divide-y divide-border overflow-hidden">
           {empQualifications.map((q) => (
-            <div key={q.id} className="flex items-center gap-4 px-5 py-3">
+            <button
+              key={q.id}
+              type="button"
+              onClick={() => setEditingQualification(q)}
+              className="flex w-full items-center gap-4 px-5 py-3 text-left hover:bg-surface"
+              aria-label={`Qualifikation ${q.name} bearbeiten`}
+            >
               <span className="text-3xl">{q.icon}</span>
               <div className="flex-1 min-w-0">
                 <p className="font-medium truncate">{q.name}</p>
                 <p className="text-xs text-foreground/65">Läuft ab: {q.ablaufdatum}</p>
               </div>
+              <span className="text-xs text-foreground/50 shrink-0">Bearbeiten</span>
               <span
                 className="h-2.5 w-2.5 rounded-full shrink-0"
                 style={{ background: QUALIFICATION_STATUS_COLOR[q.status] }}
               />
-            </div>
+            </button>
           ))}
           {empQualifications.length === 0 && (
             <p className="px-5 py-4 text-sm text-foreground/65">
@@ -252,6 +262,12 @@ export default function EmployeeDetailPage() {
         <NewQualificationModal
           defaultEmployeeId={employee.id}
           onClose={() => setAddingQualification(false)}
+        />
+      )}
+      {editingQualification && (
+        <EditQualificationModal
+          qualification={editingQualification}
+          onClose={() => setEditingQualification(null)}
         />
       )}
       <ToastView />

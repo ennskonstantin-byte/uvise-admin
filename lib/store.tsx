@@ -95,6 +95,11 @@ type AppDataContextValue = {
     name: string;
     ablaufdatum: string | null;
   }) => Promise<void>;
+  updateQualification: (
+    id: string,
+    input: { name: string; ablaufdatum: string | null }
+  ) => Promise<void>;
+  deleteQualification: (id: string) => Promise<void>;
   assignTraining: (trainingId: string, employeeIds: string[]) => Promise<void>;
   assignBundle: (trainingIds: string[], employeeIds: string[]) => Promise<void>;
   regenerateInviteToken: (employeeId: string) => Promise<string>;
@@ -240,6 +245,7 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
       name: q.name,
       icon: qualIcon(q.name),
       ablaufdatum: formatDate(q.ablaufdatum),
+      ablaufdatumIso: q.ablaufdatum ?? null,
       status: qualStatus(q.ablaufdatum),
     }));
 
@@ -734,6 +740,28 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
     await loadData();
   }
 
+  // Qualifikationen ließen sich im Web bisher nur anlegen, nicht bearbeiten
+  // oder löschen -- die Chef-App konnte beides schon (Runde-1/2-Audit, M-08).
+  async function updateQualification(
+    id: string,
+    input: { name: string; ablaufdatum: string | null }
+  ) {
+    const { error } = await supabase
+      .from("qualifications")
+      .update({ name: input.name, ablaufdatum: input.ablaufdatum })
+      .eq("id", id)
+      .select()
+      .single();
+    throwIfError(error);
+    await loadData();
+  }
+
+  async function deleteQualification(id: string) {
+    const { error } = await supabase.from("qualifications").delete().eq("id", id);
+    throwIfError(error);
+    await loadData();
+  }
+
   async function assignTraining(trainingId: string, employeeIds: string[]) {
     if (employeeIds.length === 0) return;
     const { error } = await supabase.from("employee_trainings").insert(
@@ -874,6 +902,8 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
         setEmployeeCategory,
         updateBundle,
         addQualification,
+        updateQualification,
+        deleteQualification,
         assignTraining,
         assignBundle,
         regenerateInviteToken,

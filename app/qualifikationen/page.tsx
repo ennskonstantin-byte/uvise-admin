@@ -6,8 +6,9 @@ import { DashboardShell } from "@/components/DashboardShell";
 import { PageHeader } from "@/components/PageHeader";
 import { Card } from "@/components/Card";
 import { NewQualificationModal } from "@/components/NewQualificationModal";
+import { EditQualificationModal } from "@/components/EditQualificationModal";
 import { useToast } from "@/components/Toast";
-import { employeeName } from "@/lib/types";
+import { employeeName, type Qualification } from "@/lib/types";
 import { EmployeeAvatar } from "@/components/EmployeeAvatar";
 import { useAppData } from "@/lib/store";
 
@@ -24,6 +25,7 @@ export default function QualifikationenPage() {
   const { qualifications: allQualifications, employees } = useAppData();
   const { showToast, ToastView } = useToast();
   const [showWizard, setShowWizard] = useState(false);
+  const [editingQualification, setEditingQualification] = useState<Qualification | null>(null);
   // Archivierte (gekündigte) Mitarbeiter tauchen hier nicht mehr auf.
   // Ampel-Sortierung: Überfällig (rot) → Läuft bald ab (gelb) → Gültig (grün),
   // innerhalb der Gruppe das früheste Ablaufdatum zuerst.
@@ -93,6 +95,13 @@ export default function QualifikationenPage() {
                   <Bell size={12} />
                   Erinnern
                 </button>
+                <button
+                  onClick={() => setEditingQualification(q)}
+                  className="text-xs rounded-full px-3 py-1.5 border border-border hover:border-foreground/30"
+                  aria-label={`Qualifikation ${q.name} bearbeiten`}
+                >
+                  Bearbeiten
+                </button>
               </div>
             );
           })}
@@ -105,6 +114,12 @@ export default function QualifikationenPage() {
       </Card>
 
       {showWizard && <NewQualificationModal onClose={() => setShowWizard(false)} />}
+      {editingQualification && (
+        <EditQualificationModal
+          qualification={editingQualification}
+          onClose={() => setEditingQualification(null)}
+        />
+      )}
       <ToastView />
     </DashboardShell>
   );
