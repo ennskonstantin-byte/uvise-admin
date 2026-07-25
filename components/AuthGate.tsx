@@ -238,6 +238,15 @@ function AuthForm() {
             onChange={setPassword}
             autoComplete={isRegister ? "new-password" : "current-password"}
           />
+          {isRegister && (
+            <p
+              className={`text-xs ${
+                password.length > 0 && password.length < 6 ? "text-red-600" : "text-foreground/55"
+              }`}
+            >
+              Mindestens 6 Zeichen.
+            </p>
+          )}
         </div>
 
         {isRegister && (
@@ -264,6 +273,7 @@ function AuthForm() {
               (firma.trim() === "" ||
                 vorname.trim() === "" ||
                 nachname.trim() === "" ||
+                password.length < 6 ||
                 !dataResponsibilityConfirmed))
           }
           className="w-full mt-5 rounded-full px-5 py-2.5 text-sm font-medium text-white disabled:opacity-50"
