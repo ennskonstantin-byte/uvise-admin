@@ -89,6 +89,7 @@ export function EditTrainingModal({
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="Name der Unterweisung"
+            maxLength={120}
             className="w-full rounded-full border border-border bg-surface px-4 py-2.5 text-sm outline-none"
           />
 
@@ -96,6 +97,7 @@ export function EditTrainingModal({
             value={inhalt}
             onChange={(e) => setInhalt(e.target.value)}
             placeholder="Inhalt der Unterweisung (wird dem Mitarbeiter angezeigt)…"
+            maxLength={20000}
             className="w-full h-28 rounded-2xl border border-border bg-surface px-4 py-3 text-sm outline-none"
           />
 

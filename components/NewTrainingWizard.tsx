@@ -309,6 +309,7 @@ export function NewTrainingWizard({ onClose }: { onClose: () => void }) {
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="Name der Unterweisung (z.B. Staplerfahrer)"
+            maxLength={120}
             className="w-full rounded-full border border-border bg-surface px-4 py-2.5 text-sm outline-none"
           />
 
@@ -342,6 +343,7 @@ export function NewTrainingWizard({ onClose }: { onClose: () => void }) {
                 value={inhalt}
                 onChange={(e) => setInhalt(e.target.value)}
                 placeholder="Inhalt der Unterweisung (wird dem Mitarbeiter angezeigt)…"
+                maxLength={20000}
                 className="w-full h-28 rounded-2xl border border-border bg-surface px-4 py-3 text-sm outline-none"
               />
             ) : (
@@ -368,6 +370,7 @@ export function NewTrainingWizard({ onClose }: { onClose: () => void }) {
                     value={inhalt}
                     onChange={(e) => setInhalt(e.target.value)}
                     placeholder="Optional: Text für die Vorlese-Stimme hier einfügen (die PDF selbst wird trotzdem angezeigt)."
+                    maxLength={20000}
                     className="w-full h-24 rounded-2xl border border-border bg-surface px-4 py-3 text-sm outline-none"
                   />
                 )}
