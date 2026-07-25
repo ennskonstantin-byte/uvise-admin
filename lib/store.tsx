@@ -377,6 +377,34 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
   }, [loadData]);
 
   const { showToast, ToastView } = useToast();
+
+  // Automatische Abmeldung nach Inaktivität (M-15, Runde-3-Audit): eine
+  // einmal angemeldete Chef-Session blieb bisher unbegrenzt aktiv. Auf einem
+  // gemeinsam genutzten/unbeaufsichtigten Rechner konnte so jeder spätere
+  // Nutzer ohne erneute Anmeldung auf alle Personendaten zugreifen. Nach
+  // 30 Minuten ohne Interaktion wird jetzt automatisch abgemeldet.
+  const IDLE_LOGOUT_MS = 30 * 60 * 1000;
+  const signOutRef = useRef<() => void>(() => {});
+  useEffect(() => {
+    signOutRef.current = signOut;
+  });
+  useEffect(() => {
+    if (!session) return;
+    let timer: ReturnType<typeof setTimeout>;
+    const reset = () => {
+      clearTimeout(timer);
+      timer = setTimeout(() => signOutRef.current(), IDLE_LOGOUT_MS);
+    };
+    const events = ["mousedown", "keydown", "scroll", "touchstart", "click"] as const;
+    events.forEach((e) => window.addEventListener(e, reset, { passive: true }));
+    reset();
+    return () => {
+      clearTimeout(timer);
+      events.forEach((e) => window.removeEventListener(e, reset));
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [session]);
+
   // Immer aktuelle Listen für den Realtime-Handler unten (ohne dass die
   // Subscription bei jeder Datenänderung neu aufgebaut werden muss).
   const employeesRef = useRef(employees);
