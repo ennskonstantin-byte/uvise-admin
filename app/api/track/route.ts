@@ -9,9 +9,17 @@ import { createHash } from "crypto";
 export async function POST(request: Request) {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  const secret = process.env.CRON_SECRET ?? "uvise";
+  const secret = process.env.CRON_SECRET;
   if (!supabaseUrl || !serviceKey) {
     return NextResponse.json({ ok: false }, { status: 500 });
+  }
+  // [Audit-Fund SUPABASE & DATEN, 27.07.2026] Vorher `?? "uvise"` -- ein
+  // öffentlich bekanntes Wort als Geheimnis, falls die Env-Var fehlt. Lieber
+  // sichtbar fehlschlagen (Analytics-Lücke bemerkbar) als eine leicht
+  // nachvollziehbare Pseudonymisierung stillschweigend durchreichen.
+  if (!secret) {
+    console.error("track: CRON_SECRET fehlt -- Besucher-Hash würde ungeschützt (ratbar) sein, kein Insert.");
+    return NextResponse.json({ ok: true });
   }
 
   let path = "/";
@@ -42,7 +50,8 @@ export async function POST(request: Request) {
   const visitorHash = createHash("sha256").update(`${ip}|${ua}|${tag}|${secret}`).digest("hex");
 
   const db = createClient(supabaseUrl, serviceKey);
-  await db.from("page_views").insert({ path, referrer, visitor_hash: visitorHash });
+  const { error } = await db.from("page_views").insert({ path, referrer, visitor_hash: visitorHash });
+  if (error) console.error("track: page_views-Insert fehlgeschlagen", error);
 
   return NextResponse.json({ ok: true });
 }

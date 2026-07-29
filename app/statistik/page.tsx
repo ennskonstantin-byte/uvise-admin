@@ -99,7 +99,9 @@ export default function StatistikPage() {
     (async () => {
       const {
         data: { session },
+        error: sessionError,
       } = await supabase.auth.getSession();
+      if (sessionError) console.error("statistik: getSession fehlgeschlagen", sessionError);
       if (!session) {
         setFehler("Nicht angemeldet.");
         return;

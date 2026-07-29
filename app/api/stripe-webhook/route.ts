@@ -52,37 +52,48 @@ export async function POST(request: Request) {
       current_period_end: new Date(item.current_period_end * 1000).toISOString(),
     };
 
-    if (companyId) {
-      await db.from("companies").update(updateData).eq("id", companyId);
-    } else {
-      await db.from("companies").update(updateData).eq("stripe_subscription_id", subscription.id);
-    }
+    // [Audit-Fund SUPABASE & DATEN, 27.07.2026] error wurde bisher nicht
+    // geprüft -- ein fehlgeschlagenes Update blieb unbemerkt, Stripe bekam
+    // trotzdem "received: true" und wiederholte den Webhook nie. Jetzt wird
+    // der Fehler nach oben gereicht, damit die Route einen Fehlerstatus
+    // zurückgibt und Stripe automatisch erneut zustellt.
+    const { error } =
+      companyId
+        ? await db.from("companies").update(updateData).eq("id", companyId)
+        : await db.from("companies").update(updateData).eq("stripe_subscription_id", subscription.id);
+    if (error) throw error;
   }
 
-  switch (event.type) {
-    case "checkout.session.completed": {
-      const session = event.data.object as Stripe.Checkout.Session;
-      const companyId = session.client_reference_id;
-      if (companyId && session.subscription) {
-        const subscriptionId =
-          typeof session.subscription === "string" ? session.subscription : session.subscription.id;
-        const subscription = await stripe.subscriptions.retrieve(subscriptionId);
-        await upsertFromSubscription(subscription, companyId);
+  try {
+    switch (event.type) {
+      case "checkout.session.completed": {
+        const session = event.data.object as Stripe.Checkout.Session;
+        const companyId = session.client_reference_id;
+        if (companyId && session.subscription) {
+          const subscriptionId =
+            typeof session.subscription === "string" ? session.subscription : session.subscription.id;
+          const subscription = await stripe.subscriptions.retrieve(subscriptionId);
+          await upsertFromSubscription(subscription, companyId);
+        }
+        break;
       }
-      break;
+      case "customer.subscription.updated": {
+        await upsertFromSubscription(event.data.object as Stripe.Subscription);
+        break;
+      }
+      case "customer.subscription.deleted": {
+        const subscription = event.data.object as Stripe.Subscription;
+        const { error } = await db
+          .from("companies")
+          .update({ subscription_status: "canceled" })
+          .eq("stripe_subscription_id", subscription.id);
+        if (error) throw error;
+        break;
+      }
     }
-    case "customer.subscription.updated": {
-      await upsertFromSubscription(event.data.object as Stripe.Subscription);
-      break;
-    }
-    case "customer.subscription.deleted": {
-      const subscription = event.data.object as Stripe.Subscription;
-      await db
-        .from("companies")
-        .update({ subscription_status: "canceled" })
-        .eq("stripe_subscription_id", subscription.id);
-      break;
-    }
+  } catch (err) {
+    console.error("stripe-webhook: DB-Update fehlgeschlagen", err);
+    return NextResponse.json({ error: "db_update_failed" }, { status: 500 });
   }
 
   return NextResponse.json({ received: true });

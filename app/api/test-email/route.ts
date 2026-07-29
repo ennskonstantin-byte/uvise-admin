@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { createClient } from "@supabase/supabase-js";
 import { resend, RESEND_FROM } from "@/lib/resend";
 
 // CORS nötig, weil die native Chef-App (sicherakte/) diese Route von einem
@@ -6,7 +7,7 @@ import { resend, RESEND_FROM } from "@/lib/resend";
 const CORS_HEADERS = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
-  "Access-Control-Allow-Headers": "Content-Type",
+  "Access-Control-Allow-Headers": "Content-Type, Authorization",
 };
 
 export async function OPTIONS() {
@@ -14,6 +15,27 @@ export async function OPTIONS() {
 }
 
 export async function POST(request: Request) {
+  // [Audit-Fund AUTH & SESSION, 27.07.2026] Diese Route hatte gar keinen
+  // Auth-Check + Wildcard-CORS -> offenes E-Mail-Relay: jeder beliebige
+  // Aufrufer konnte über den uVise-Resend-Account an eine frei wählbare
+  // Adresse Mails verschicken. Jetzt wie /api/uebersetzen: nur mit gültigem
+  // Supabase-Access-Token.
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  if (!supabaseUrl || !supabaseAnonKey) {
+    return NextResponse.json({ error: "Serverseitig nicht konfiguriert." }, { status: 500, headers: CORS_HEADERS });
+  }
+  const accessToken = request.headers.get("authorization")?.replace("Bearer ", "");
+  if (!accessToken) {
+    return NextResponse.json({ error: "Nicht angemeldet." }, { status: 401, headers: CORS_HEADERS });
+  }
+  const {
+    data: { user },
+  } = await createClient(supabaseUrl, supabaseAnonKey).auth.getUser(accessToken);
+  if (!user) {
+    return NextResponse.json({ error: "Nicht angemeldet." }, { status: 401, headers: CORS_HEADERS });
+  }
+
   const { to } = await request.json();
   if (!to || typeof to !== "string") {
     return NextResponse.json({ error: "Fehlende E-Mail-Adresse" }, { status: 400, headers: CORS_HEADERS });

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import { Bell, ArrowLeft, Pencil, Send, Plus, Copy } from "lucide-react";
@@ -44,7 +44,7 @@ const QUALIFICATION_STATUS_COLOR: Record<string, string> = {
 
 export default function EmployeeDetailPage() {
   const params = useParams<{ id: string }>();
-  const { employees, employeeTrainings, qualifications, trainings, regenerateInviteToken } =
+  const { employees, employeeTrainings, qualifications, trainings, regenerateInviteToken, fetchInviteToken } =
     useAppData();
   const { showToast, ToastView } = useToast();
   const [editing, setEditing] = useState(false);
@@ -52,10 +52,20 @@ export default function EmployeeDetailPage() {
   const [addingQualification, setAddingQualification] = useState(false);
   const [editingQualification, setEditingQualification] = useState<Qualification | null>(null);
   const [regenerating, setRegenerating] = useState(false);
+  // [Audit-Fund SUPABASE & DATEN, 28.07.2026] invite_token ist nicht mehr Teil
+  // des Bulk-Loads (unbegrenzt gültiger Auth-Bypass-Code, unnötig in jeder
+  // Mitarbeiterliste) -- hier gezielt nachgeladen, weil diese Detail-Seite
+  // ihn wirklich braucht.
+  const [inviteToken, setInviteToken] = useState<string | null>(null);
   const employee = employees.find((e) => e.id === params.id);
   const empTrainings = employeeTrainings.filter((et) => et.employeeId === params.id);
   const empQualifications = qualifications.filter((q) => q.employeeId === params.id);
   const openCount = empTrainings.filter((t) => t.status === "offen").length;
+
+  useEffect(() => {
+    if (!params.id || employee?.registriert) return;
+    fetchInviteToken(params.id).then(setInviteToken).catch(() => setInviteToken(null));
+  }, [params.id, employee?.registriert, fetchInviteToken]);
 
   async function handleRegenerateInvite() {
     if (
@@ -66,7 +76,8 @@ export default function EmployeeDetailPage() {
       return;
     setRegenerating(true);
     try {
-      await regenerateInviteToken(params.id);
+      const neuerToken = await regenerateInviteToken(params.id);
+      setInviteToken(neuerToken);
       showToast("Neuer Einladungscode erzeugt, alter ist ungültig.");
     } catch (err) {
       showToast(err instanceof Error ? err.message : "Konnte keinen neuen Code erzeugen.");
@@ -124,19 +135,19 @@ export default function EmployeeDetailPage() {
           </button>
         </div>
 
-        {!employee.registriert && employee.inviteToken && (
+        {!employee.registriert && inviteToken && (
           <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-border bg-surface px-4 py-3 mb-8">
             <div>
               <p className="text-sm font-medium">Noch nicht registriert</p>
               <p className="text-xs text-foreground/60">
                 Gib {employee.vorname} diesen Einladungscode für die App-Registrierung:{" "}
-                <span className="font-mono text-foreground">{employee.inviteToken}</span>
+                <span className="font-mono text-foreground">{inviteToken}</span>
               </p>
             </div>
             <div className="flex gap-2">
               <button
                 onClick={() => {
-                  navigator.clipboard.writeText(employee.inviteToken!);
+                  navigator.clipboard.writeText(inviteToken);
                   showToast("Einladungscode kopiert");
                 }}
                 className="flex items-center gap-2 rounded-full border border-border px-3 py-2 text-xs hover:border-foreground/30"

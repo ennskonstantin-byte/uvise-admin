@@ -62,7 +62,13 @@ export default function UnterweisungenPage() {
       return;
     setDeletingId(id);
     try {
-      await withdrawTraining(id);
+      const entfernt = await withdrawTraining(id);
+      // [Audit-Fund OFFLINE & SYNC, 28.07.2026] 0 entfernte Zeilen trotz
+      // erwarteter offener Zuweisungen -- z.B. weil ein Mitarbeiter zeitgleich
+      // signiert hat. Chef bisher nie informiert.
+      if (anzahl > 0 && entfernt === 0) {
+        alert("Alle betroffenen Zuweisungen wurden inzwischen bereits signiert oder waren schon zurückgezogen.");
+      }
     } finally {
       setDeletingId(null);
     }

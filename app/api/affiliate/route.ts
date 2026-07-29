@@ -10,7 +10,7 @@ export async function POST(request: Request) {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
   const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  const secret = process.env.CRON_SECRET ?? "uvise";
+  const secret = process.env.CRON_SECRET;
   if (!supabaseUrl || !supabaseAnonKey || !serviceKey) {
     return NextResponse.json({ ok: false }, { status: 500 });
   }
@@ -31,11 +31,21 @@ export async function POST(request: Request) {
   }
 
   if (body.aktion === "klick") {
+    // [Audit-Fund SUPABASE & DATEN, 27.07.2026] Vorher `?? "uvise"` -- lieber
+    // sichtbar nichts zählen als mit einem öffentlich bekannten Wort als
+    // Geheimnis eine leicht nachvollziehbare Pseudonymisierung vortäuschen.
+    if (!secret) {
+      console.error("affiliate: CRON_SECRET fehlt -- Klick nicht gezählt.");
+      return NextResponse.json({ ok: true });
+    }
     const ip = (request.headers.get("x-forwarded-for") ?? "").split(",")[0].trim();
     const ua = request.headers.get("user-agent") ?? "";
     const tag = new Date().toISOString().slice(0, 10);
     const visitorHash = createHash("sha256").update(`${ip}|${ua}|${tag}|${secret}`).digest("hex");
-    await db.from("affiliate_clicks").insert({ partner_id: partner.id, visitor_hash: visitorHash });
+    const { error: clickError } = await db
+      .from("affiliate_clicks")
+      .insert({ partner_id: partner.id, visitor_hash: visitorHash });
+    if (clickError) console.error("affiliate: Klick-Zählung fehlgeschlagen", clickError);
     return NextResponse.json({ ok: true });
   }
 
@@ -58,11 +68,15 @@ export async function POST(request: Request) {
     }
     // Nur setzen, wenn noch kein Partner zugeordnet ist — nachträgliches
     // Umhängen auf einen anderen Partner ist nicht möglich.
-    await db
+    const { error: refError } = await db
       .from("companies")
       .update({ ref_code: code })
       .eq("id", employee.company_id)
       .is("ref_code", null);
+    if (refError) {
+      console.error("affiliate: Partner-Zuordnung fehlgeschlagen", refError);
+      return NextResponse.json({ error: "Partner-Zuordnung fehlgeschlagen." }, { status: 500 });
+    }
     return NextResponse.json({ ok: true });
   }
 

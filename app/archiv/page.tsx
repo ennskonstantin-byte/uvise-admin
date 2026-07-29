@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { ArrowLeft, FileDown, Printer } from "lucide-react";
 import { DashboardShell } from "@/components/DashboardShell";
 import { PageHeader } from "@/components/PageHeader";
@@ -14,7 +14,7 @@ import { RECENT_SIGNED_DAYS, isRecentlySigned } from "@/lib/recentlySigned";
 const YEARS = ["2026", "2025", "2024"];
 
 export default function ArchivPage() {
-  const { employees, employeeTrainings, trainings, categories } = useAppData();
+  const { employees, employeeTrainings, trainings, categories, loadEmployeeArchive, loadTrainingArchive } = useAppData();
   const [mode, setMode] = useState<"mitarbeiter" | "unterweisung">("mitarbeiter");
   const [category, setCategory] = useState<string | null>(null);
   const [query, setQuery] = useState("");
@@ -25,6 +25,40 @@ export default function ArchivPage() {
   const [showArchived, setShowArchived] = useState(false);
   // Suche nach Unterweisungsart in der Dokument-Liste eines Mitarbeiters
   const [docQuery, setDocQuery] = useState("");
+
+  // [N-16] Der Bulk-Load (`employeeTrainings`) enthält nur noch "offen" +
+  // kürzlich signiert -- sobald ein Mitarbeiter bzw. eine Unterweisung
+  // geöffnet wird, die volle Historie gezielt nachladen statt im (bewusst
+  // eingeschränkten) globalen Array zu suchen.
+  const [employeeArchive, setEmployeeArchive] = useState<EmployeeTraining[] | null>(null);
+  const [trainingArchive, setTrainingArchive] = useState<EmployeeTraining[] | null>(null);
+  const [archiveLoading, setArchiveLoading] = useState(false);
+
+  useEffect(() => {
+    if (!employeeId) {
+      setEmployeeArchive(null);
+      return;
+    }
+    let cancelled = false;
+    setArchiveLoading(true);
+    loadEmployeeArchive(employeeId)
+      .then((rows) => { if (!cancelled) setEmployeeArchive(rows); })
+      .finally(() => { if (!cancelled) setArchiveLoading(false); });
+    return () => { cancelled = true; };
+  }, [employeeId, loadEmployeeArchive]);
+
+  useEffect(() => {
+    if (!trainingId) {
+      setTrainingArchive(null);
+      return;
+    }
+    let cancelled = false;
+    setArchiveLoading(true);
+    loadTrainingArchive(trainingId)
+      .then((rows) => { if (!cancelled) setTrainingArchive(rows); })
+      .finally(() => { if (!cancelled) setArchiveLoading(false); });
+    return () => { cancelled = true; };
+  }, [trainingId, loadTrainingArchive]);
 
   function matchesFilters(e: (typeof employees)[number]) {
     const matchesCategory = !category || e.kategorie === category;
@@ -85,9 +119,7 @@ export default function ArchivPage() {
   // -------------------------------------------------------------------------
   if (mode === "unterweisung" && trainingId && year) {
     const selectedTraining = trainings.find((t) => t.id === trainingId);
-    const entries = employeeTrainings.filter(
-      (et) => et.trainingId === trainingId && et.status === "signiert" && (et.signiertAm ?? "").endsWith(year)
-    );
+    const entries = (trainingArchive ?? []).filter((et) => (et.signiertAm ?? "").endsWith(year));
     return (
       <DashboardShell>
         <button
@@ -135,7 +167,7 @@ export default function ArchivPage() {
             })}
             {entries.length === 0 && (
               <p className="px-5 py-4 text-sm text-foreground/65">
-                Keine signierten Nachweise für dieses Jahr.
+                {archiveLoading ? "Lädt…" : "Keine signierten Nachweise für dieses Jahr."}
               </p>
             )}
           </div>
@@ -225,9 +257,8 @@ export default function ArchivPage() {
   // Modus "Nach Mitarbeiter" (Standard, wie bisher)
   // -------------------------------------------------------------------------
   const selectedEmployee = employees.find((e) => e.id === employeeId);
-  const entries = employeeTrainings.filter(
+  const entries = (employeeArchive ?? []).filter(
     (et) =>
-      et.employeeId === employeeId &&
       (!year || (et.signiertAm ?? "").endsWith(year)) &&
       // Suche nach Unterweisungsart, damit lange Listen übersichtlich bleiben
       trainingName(trainings, et.trainingId).toLowerCase().includes(docQuery.toLowerCase())
@@ -297,7 +328,7 @@ export default function ArchivPage() {
             ))}
             {entries.length === 0 && (
               <p className="px-5 py-4 text-sm text-foreground/65">
-                {docQuery ? "Keine Einträge zu dieser Suche." : "Keine Einträge für dieses Jahr."}
+                {archiveLoading ? "Lädt…" : docQuery ? "Keine Einträge zu dieser Suche." : "Keine Einträge für dieses Jahr."}
               </p>
             )}
           </div>

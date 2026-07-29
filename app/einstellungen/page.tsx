@@ -7,6 +7,7 @@ import { DashboardShell } from "@/components/DashboardShell";
 import { PageHeader } from "@/components/PageHeader";
 import { Card } from "@/components/Card";
 import { useToast } from "@/components/Toast";
+import { ConfirmModal } from "@/components/ConfirmModal";
 import { useAppData, throwIfError } from "@/lib/store";
 import { exportNachweiseCsv, exportQualifikationenCsv } from "@/lib/exportCsv";
 import { exportGesamtBackupZip } from "@/lib/exportZip";
@@ -28,6 +29,7 @@ export default function EinstellungenPage() {
     company,
     session,
     updateCompany,
+    updateAufbewahrungsfrist,
     uploadCompanyLogo,
     employees,
     trainings,
@@ -50,27 +52,23 @@ export default function EinstellungenPage() {
   const [supportError, setSupportError] = useState<string | null>(null);
   const [startingCheckout, setStartingCheckout] = useState<string | null>(null);
   const [deletingCompany, setDeletingCompany] = useState(false);
+  const [showDeleteCompanyModal, setShowDeleteCompanyModal] = useState(false);
+  const [savingFrist, setSavingFrist] = useState(false);
 
   // DSGVO + Konsistenz zu den Apps: Firma & Konto endgültig löschbar.
-  // Zwei Sicherheitsabfragen, weil unwiderruflich und weitreichend.
+  // Tipp-Bestätigung im Modal übernimmt die zweite Sicherheitsabfrage.
   async function handleDeleteCompany() {
-    const bestaetigt = window.confirm(
-      `„${company?.name ?? "Deine Firma"}" wird gelöscht: Alle Logins (auch deiner) werden entfernt und persönliche Mitarbeiterdaten (E-Mail, Telefon, Geburtsdatum, Foto) gelöscht. Gesetzlich aufbewahrungspflichtige Unterweisungs-Nachweise bleiben dabei anonymisiert erhalten und lassen sich nicht separat entfernen. Das lässt sich nicht rückgängig machen.\n\nWirklich fortfahren?`,
-    );
-    if (!bestaetigt) return;
-    const wortlaut = window.prompt(
-      'Letzte Sicherheitsabfrage: Tippe LÖSCHEN (in Großbuchstaben), um fortzufahren.',
-    );
-    if (wortlaut !== "LÖSCHEN") {
-      showToast("Löschung abgebrochen.");
-      return;
-    }
+    setShowDeleteCompanyModal(false);
     setDeletingCompany(true);
     try {
       const { error } = await supabase.rpc("delete_own_company_account");
       throwIfError(error);
       // Konto ist gelöscht — Abmelden darf keinen Fehler mehr werfen.
       await supabase.auth.signOut().catch(() => {});
+      // Harte Navigation statt auf den State-Wechsel zu warten (siehe
+      // AuthGate.tsx/Sidebar.tsx): sonst rendert diese noch aktive Seite kurz
+      // das Login-Formular, bevor AuthGate zur Startseite umleitet.
+      window.location.assign("/");
     } catch {
       setDeletingCompany(false);
       showToast("Die Firma konnte nicht gelöscht werden. Bitte später erneut versuchen.");
@@ -106,7 +104,10 @@ export default function EinstellungenPage() {
     try {
       const res = await fetch("/api/test-email", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${session.access_token}`,
+        },
         body: JSON.stringify({ to: session.user.email }),
       });
       const data = await res.json();
@@ -176,6 +177,16 @@ export default function EinstellungenPage() {
       showToast("Firmenprofil gespeichert.");
     } finally {
       setSaving(false);
+    }
+  }
+
+  async function handleFristChange(value: string) {
+    setSavingFrist(true);
+    try {
+      await updateAufbewahrungsfrist(value === "" ? null : Number(value));
+      showToast("Aufbewahrungsfrist gespeichert.");
+    } finally {
+      setSavingFrist(false);
     }
   }
 
@@ -273,6 +284,37 @@ export default function EinstellungenPage() {
             >
               {saving ? "Speichert…" : "Speichern"}
             </button>
+          </Card>
+        </section>
+
+        <section>
+          <h2 className="font-medium">Aufbewahrungsfrist Unterweisungsnachweise</h2>
+          <p className="text-foreground/60 text-sm mb-4 max-w-xl">
+            Es gibt keine einzige, branchenübergreifend richtige Frist für die Aufbewahrung
+            signierter Unterweisungsnachweise (Arbeitsschutzgesetz und DGUV Vorschrift 1 nennen
+            keine feste Frist; die DGUV Information 211-005 empfiehlt unverbindlich mindestens
+            2 Jahre). Lass dich bei Unsicherheit rechtlich beraten. Standardmäßig wird nichts
+            automatisch gelöscht.
+          </p>
+          <Card className="max-w-lg">
+            <label className="block text-xs text-foreground/65 mb-2">
+              Signierte Nachweise nach Ablauf der Frist automatisch anonymisieren
+            </label>
+            <select
+              value={company?.aufbewahrungsfristMonate ?? ""}
+              onChange={(e) => handleFristChange(e.target.value)}
+              disabled={savingFrist}
+              className="w-full rounded-full border border-border bg-surface px-4 py-2.5 text-sm outline-none"
+            >
+              <option value="">Nie automatisch anonymisieren (Standard)</option>
+              <option value="24">Nach 2 Jahren</option>
+              <option value="60">Nach 5 Jahren</option>
+              <option value="120">Nach 10 Jahren</option>
+            </select>
+            <p className="text-xs text-foreground/50 mt-3">
+              Anonymisiert wird nur die Unterschrift selbst — dass die Unterweisung stattgefunden
+              hat, bleibt weiterhin nachweisbar.
+            </p>
           </Card>
         </section>
 
@@ -492,7 +534,7 @@ export default function EinstellungenPage() {
           </p>
           <Card className="max-w-lg border-red-500/40">
             <button
-              onClick={handleDeleteCompany}
+              onClick={() => setShowDeleteCompanyModal(true)}
               disabled={deletingCompany}
               className="w-full rounded-full border border-red-500 py-2.5 text-sm font-semibold text-red-500 hover:bg-red-500/10 disabled:opacity-50"
             >
@@ -502,6 +544,17 @@ export default function EinstellungenPage() {
         </section>
       </div>
       <ToastView />
+      {showDeleteCompanyModal && (
+        <ConfirmModal
+          title="Firma & Konto endgültig löschen"
+          message={`„${company?.name ?? "Deine Firma"}" wird gelöscht: Alle Logins (auch deiner) werden entfernt und persönliche Mitarbeiterdaten (E-Mail, Telefon, Geburtsdatum, Foto) gelöscht. Gesetzlich aufbewahrungspflichtige Unterweisungs-Nachweise bleiben dabei anonymisiert erhalten und lassen sich nicht separat entfernen. Das lässt sich nicht rückgängig machen.`}
+          confirmLabel="Endgültig löschen"
+          danger
+          requireTypedText="LÖSCHEN"
+          onConfirm={handleDeleteCompany}
+          onClose={() => setShowDeleteCompanyModal(false)}
+        />
+      )}
     </DashboardShell>
   );
 }

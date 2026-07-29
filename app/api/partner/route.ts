@@ -66,7 +66,9 @@ export async function POST(request: Request) {
     const name = typeof body.name === "string" ? body.name.trim().slice(0, 200) : "";
     if (!name) return NextResponse.json({ error: "Name fehlt." }, { status: 400 });
     const email = typeof body.email === "string" && body.email.includes("@") ? body.email.trim().slice(0, 200) : null;
-    const budgetCents = Math.max(0, Math.round((parseFloat(body.budgetEuro) || 0) * 100));
+    // [Audit-Fund SUPABASE & DATEN, 27.07.2026] Vorher kein Maximum -- ein
+    // Zahlendreher (z.B. Millionen statt Euro) hätte ungeprüft durchgereicht.
+    const budgetCents = Math.min(100_000_000_00, Math.max(0, Math.round((parseFloat(body.budgetEuro) || 0) * 100)));
 
     // Kurzer Link-Code + langer geheimer Zugangs-Schlüssel.
     const code = randomBytes(4).toString("hex").slice(0, 6);
@@ -85,7 +87,7 @@ export async function POST(request: Request) {
     if (!body.id) return NextResponse.json({ error: "Ungültige Anfrage." }, { status: 400 });
     const update: Record<string, unknown> = {};
     if (body.budgetEuro !== undefined) {
-      update.budget_cents = Math.max(0, Math.round((parseFloat(body.budgetEuro) || 0) * 100));
+      update.budget_cents = Math.min(100_000_000_00, Math.max(0, Math.round((parseFloat(body.budgetEuro) || 0) * 100)));
     }
     if (typeof body.aktiv === "boolean") update.aktiv = body.aktiv;
     if (Object.keys(update).length === 0) {

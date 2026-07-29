@@ -9,6 +9,7 @@ import { Card } from "@/components/Card";
 import { NewEmployeeWizard } from "@/components/NewEmployeeWizard";
 import { EditEmployeeModal } from "@/components/EditEmployeeModal";
 import { EditCategoryModal } from "@/components/EditCategoryModal";
+import { ConfirmModal } from "@/components/ConfirmModal";
 import { QualiIcons } from "@/components/QualiIcons";
 import { EmployeeAvatar } from "@/components/EmployeeAvatar";
 import { type Category, type Employee } from "@/lib/types";
@@ -27,17 +28,30 @@ export default function MitarbeiterPage() {
   const [categoryFilter, setCategoryFilter] = useState<string | null>(null);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
   const [deletingCategoryId, setDeletingCategoryId] = useState<string | null>(null);
+  const [pendingAction, setPendingAction] = useState<
+    | { type: "archive"; id: string; name: string }
+    | { type: "deleteForever"; id: string; name: string }
+    | { type: "deleteCategory"; id: string; name: string }
+    | null
+  >(null);
 
   const active = employees.filter((e) => !e.archiviert);
   const archived = employees.filter((e) => e.archiviert);
 
-  async function handleDelete(id: string, name: string) {
-    if (
-      !confirm(
-        `${name} archivieren (z.B. bei Kündigung)? Nachweise und Daten bleiben erhalten und sind über den Reiter „Archiviert" erreichbar.`
-      )
-    )
-      return;
+  function confirmArchive(id: string, name: string) {
+    setPendingAction({ type: "archive", id, name });
+  }
+
+  function confirmDeleteForever(id: string, name: string) {
+    setPendingAction({ type: "deleteForever", id, name });
+  }
+
+  function confirmDeleteCategory(id: string, name: string) {
+    setPendingAction({ type: "deleteCategory", id, name });
+  }
+
+  async function handleDelete(id: string) {
+    setPendingAction(null);
     setDeletingId(id);
     try {
       await setEmployeeArchived(id, true);
@@ -48,13 +62,8 @@ export default function MitarbeiterPage() {
     }
   }
 
-  async function handleDeleteForever(id: string, name: string) {
-    if (
-      !confirm(
-        `${name} endgültig löschen? Persönliche Daten und noch offene (unsignierte) Zuweisungen werden entfernt. Bereits signierte, aufbewahrungspflichtige Nachweise bleiben davon unberührt bestehen -- in dem Fall ist nur Archivieren möglich. Das lässt sich nicht rückgängig machen.`
-      )
-    )
-      return;
+  async function handleDeleteForever(id: string) {
+    setPendingAction(null);
     setDeletingId(id);
     try {
       await deleteEmployee(id);
@@ -76,13 +85,8 @@ export default function MitarbeiterPage() {
     }
   }
 
-  async function handleDeleteCategory(id: string, name: string) {
-    if (
-      !confirm(
-        `Kategorie "${name}" wirklich löschen? Mitarbeiter behalten die Kategorie als Text, bis sie neu zugeordnet werden.`
-      )
-    )
-      return;
+  async function handleDeleteCategory(id: string) {
+    setPendingAction(null);
     setDeletingCategoryId(id);
     try {
       await deleteCategory(id);
@@ -163,7 +167,7 @@ export default function MitarbeiterPage() {
                   <Pencil size={14} />
                 </button>
                 <button
-                  onClick={() => handleDeleteCategory(c.id, c.name)}
+                  onClick={() => confirmDeleteCategory(c.id, c.name)}
                   disabled={deletingCategoryId === c.id}
                   className="h-8 w-8 rounded-full border border-border flex items-center justify-center text-red-500 hover:border-red-300 disabled:opacity-40"
                   aria-label="Löschen"
@@ -368,7 +372,7 @@ export default function MitarbeiterPage() {
                       <button
                         onClick={(ev) => {
                           ev.stopPropagation();
-                          handleDelete(e.id, `${e.vorname} ${e.nachname}`);
+                          confirmArchive(e.id, `${e.vorname} ${e.nachname}`);
                         }}
                         disabled={deletingId === e.id}
                         className="h-8 w-8 rounded-full border border-border flex items-center justify-center text-red-600 hover:border-red-300 disabled:opacity-40 shrink-0"
@@ -394,7 +398,7 @@ export default function MitarbeiterPage() {
                       <button
                         onClick={(ev) => {
                           ev.stopPropagation();
-                          handleDeleteForever(e.id, `${e.vorname} ${e.nachname}`);
+                          confirmDeleteForever(e.id, `${e.vorname} ${e.nachname}`);
                         }}
                         disabled={deletingId === e.id}
                         className="h-8 w-8 rounded-full border border-border flex items-center justify-center text-red-600 hover:border-red-300 disabled:opacity-40 shrink-0"
@@ -423,6 +427,35 @@ export default function MitarbeiterPage() {
       )}
       {editingCategory && (
         <EditCategoryModal category={editingCategory} onClose={() => setEditingCategory(null)} />
+      )}
+      {pendingAction?.type === "archive" && (
+        <ConfirmModal
+          title="Mitarbeiter archivieren"
+          message={`${pendingAction.name} archivieren (z.B. bei Kündigung)? Nachweise und Daten bleiben erhalten und sind über den Reiter „Archiviert" erreichbar.`}
+          confirmLabel="Archivieren"
+          onConfirm={() => handleDelete(pendingAction.id)}
+          onClose={() => setPendingAction(null)}
+        />
+      )}
+      {pendingAction?.type === "deleteForever" && (
+        <ConfirmModal
+          title="Mitarbeiter endgültig löschen"
+          message={`${pendingAction.name} endgültig löschen? Persönliche Daten und noch offene (unsignierte) Zuweisungen werden entfernt. Bereits signierte, aufbewahrungspflichtige Nachweise bleiben davon unberührt bestehen -- in dem Fall ist nur Archivieren möglich. Das lässt sich nicht rückgängig machen.`}
+          confirmLabel="Endgültig löschen"
+          danger
+          onConfirm={() => handleDeleteForever(pendingAction.id)}
+          onClose={() => setPendingAction(null)}
+        />
+      )}
+      {pendingAction?.type === "deleteCategory" && (
+        <ConfirmModal
+          title="Kategorie löschen"
+          message={`Kategorie "${pendingAction.name}" wirklich löschen? Mitarbeiter behalten die Kategorie als Text, bis sie neu zugeordnet werden.`}
+          confirmLabel="Löschen"
+          danger
+          onConfirm={() => handleDeleteCategory(pendingAction.id)}
+          onClose={() => setPendingAction(null)}
+        />
       )}
     </DashboardShell>
   );

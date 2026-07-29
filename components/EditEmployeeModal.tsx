@@ -7,6 +7,7 @@ import { Switch } from "@/components/Switch";
 import { DateSelect } from "@/components/DateSelect";
 import { EmployeeAvatar } from "@/components/EmployeeAvatar";
 import { useEscapeClose } from "@/lib/useEscapeClose";
+import { ConfirmModal } from "@/components/ConfirmModal";
 
 export function EditEmployeeModal({
   employee,
@@ -36,6 +37,7 @@ export function EditEmployeeModal({
   const [newCategoryName, setNewCategoryName] = useState("");
   const [newCategoryIcon, setNewCategoryIcon] = useState<string | null>(null);
   const [creatingCategory, setCreatingCategory] = useState(false);
+  const [showBeauftragterConfirm, setShowBeauftragterConfirm] = useState(false);
 
   async function handleCreateCategory() {
     if (!newCategoryIcon || newCategoryName.trim() === "") return;
@@ -258,16 +260,26 @@ export function EditEmployeeModal({
               label="Beauftragte/r — Chef-Zugriff"
               onChange={(next) => {
                 if (next) {
-                  const ok = window.confirm(
-                    `${vorname} ${nachname} als Beauftragte/n markieren? Diese Person kann dann ALLE Mitarbeiter der Firma einsehen und verwalten — auch Gehaltssensibles wie Qualifikationen und Kontaktdaten.`
-                  );
-                  if (!ok) return;
+                  setShowBeauftragterConfirm(true);
+                  return;
                 }
                 setIstBeauftragter(next);
               }}
             />
           </div>
         </div>
+        {showBeauftragterConfirm && (
+          <ConfirmModal
+            title="Beauftragte/r markieren"
+            message={`${vorname} ${nachname} als Beauftragte/n markieren? Diese Person kann dann ALLE Mitarbeiter der Firma einsehen und verwalten — auch Gehaltssensibles wie Qualifikationen und Kontaktdaten.`}
+            confirmLabel="Markieren"
+            onConfirm={() => {
+              setIstBeauftragter(true);
+              setShowBeauftragterConfirm(false);
+            }}
+            onClose={() => setShowBeauftragterConfirm(false)}
+          />
+        )}
 
         <button
           onClick={handleSave}

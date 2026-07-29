@@ -1,10 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { EmployeeTraining } from "@/lib/types";
 import { useEscapeClose } from "@/lib/useEscapeClose";
 import { saveArchiveDocumentPdf } from "@/lib/exportArchiveDocument";
 import { supabase } from "@/lib/supabase";
+import { useAppData } from "@/lib/store";
+import { isTypedSignature, typedSignatureName } from "@/lib/signature";
 
 export function ArchiveDocumentModal({
   entry,
@@ -18,16 +20,39 @@ export function ArchiveDocumentModal({
   onClose: () => void;
 }) {
   useEscapeClose(onClose);
+  const { fetchSignatureDetails } = useAppData();
   const [saving, setSaving] = useState(false);
   const [checking, setChecking] = useState(false);
   const [verifyResult, setVerifyResult] = useState<{ gueltig: boolean; grund: string } | null>(
     null
   );
+  // [Audit-Fund SUPABASE & DATEN, 28.07.2026] signatur_bild_url/signatur_hash
+  // sind nicht mehr Teil des Bulk-/Archiv-Loads -- hier gezielt nachgeladen,
+  // weil dieses Detail-Modal sie wirklich braucht (Anzeige + PDF-Export).
+  const [signatureDetails, setSignatureDetails] = useState<{
+    signaturBildUrl: string | null;
+    signaturHash: string | null;
+  } | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetchSignatureDetails(entry.id).then((details) => {
+      if (!cancelled) setSignatureDetails(details);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [entry.id, fetchSignatureDetails]);
+
+  // Solange die Signatur-Details noch nachgeladen werden, mit den (evtl.
+  // bereits vorhandenen) Werten aus `entry` als Platzhalter arbeiten -- kann
+  // z.B. bei sehr schnellem Öffnen kurz null sein.
+  const fullEntry = signatureDetails ? { ...entry, ...signatureDetails } : entry;
 
   async function handleSave() {
     setSaving(true);
     try {
-      await saveArchiveDocumentPdf(entry, trainingName, employeeName);
+      await saveArchiveDocumentPdf(fullEntry, trainingName, employeeName);
     } finally {
       setSaving(false);
     }
@@ -81,10 +106,10 @@ export function ArchiveDocumentModal({
             <p className="font-medium">{entry.geraet ?? "Nicht erfasst"}</p>
           </div>
 
-          {entry.signaturHash && (
+          {fullEntry.signaturHash && (
             <div>
               <p className="text-xs text-foreground/65">Siegel (Prüfsumme SHA-256)</p>
-              <p className="font-mono text-[11px] break-all leading-snug">{entry.signaturHash}</p>
+              <p className="font-mono text-[11px] break-all leading-snug">{fullEntry.signaturHash}</p>
               <p className="text-[11px] text-foreground/55 mt-1 mb-2">
                 Fälschungssicherer Fingerabdruck über Unterweisung, Unterschrift, Zeitpunkt,
                 Mitarbeiter und Gerät.
@@ -113,17 +138,28 @@ export function ArchiveDocumentModal({
 
           <div>
             <p className="text-xs text-foreground/65 mb-1">Unterschrift</p>
-            {entry.signaturBildUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={entry.signaturBildUrl}
-                alt="Unterschrift"
-                className="w-full rounded-2xl border border-border bg-white"
-              />
-            ) : (
+            {!fullEntry.signaturBildUrl ? (
               <div className="rounded-2xl border border-dashed border-border px-4 py-6 text-center text-foreground/65">
-                Kein Unterschriftsbild gespeichert.
+                {signatureDetails ? "Kein Unterschriftsbild gespeichert." : "Lädt…"}
               </div>
+            ) : isTypedSignature(fullEntry.signaturBildUrl) ? (
+              <div className="w-full h-[140px] flex items-center justify-center rounded-2xl border border-border bg-white">
+                <p className="text-xl font-bold italic text-foreground">
+                  „{typedSignatureName(fullEntry.signaturBildUrl)}"
+                </p>
+              </div>
+            ) : (
+              // [H-04-Nachtrag] War zuvor fälschlich <img src={entry.signaturBildUrl}>
+              // -- signatur_bild_url speichert rohe SVG-Path-Daten (M...L...),
+              // keine Bild-URL. Ein <img> kann das nie laden; das
+              // Unterschriftsbild war in dieser Vorschau immer unsichtbar.
+              <svg
+                viewBox="0 0 320 160"
+                preserveAspectRatio="xMidYMid meet"
+                className="w-full h-[140px] rounded-2xl border border-border bg-white"
+              >
+                <path d={fullEntry.signaturBildUrl} stroke="#14161b" strokeWidth={2.5} fill="none" />
+              </svg>
             )}
           </div>
         </div>

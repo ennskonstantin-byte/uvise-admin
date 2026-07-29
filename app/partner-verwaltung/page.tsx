@@ -31,7 +31,9 @@ export default function PartnerVerwaltungPage() {
   async function token(): Promise<string | null> {
     const {
       data: { session },
+      error,
     } = await supabase.auth.getSession();
+    if (error) console.error("partner-verwaltung: getSession fehlgeschlagen", error);
     return session?.access_token ?? null;
   }
 

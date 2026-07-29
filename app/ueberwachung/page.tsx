@@ -30,7 +30,9 @@ export default function UeberwachungPage() {
     (async () => {
       const {
         data: { session },
+        error: sessionError,
       } = await supabase.auth.getSession();
+      if (sessionError) console.error("ueberwachung: getSession fehlgeschlagen", sessionError);
       if (!session) {
         setFehler("Nicht angemeldet.");
         return;

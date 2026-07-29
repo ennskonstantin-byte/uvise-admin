@@ -21,6 +21,13 @@ export type Employee = {
   istBeauftragter: boolean;
   inviteToken: string | null;
   registriert: boolean;
+  // Für optimistic locking in updateEmployee() -- verhindert stillschweigendes
+  // last-write-wins bei paralleler Bearbeitung (z.B. Chef-Web + Chef-App
+  // gleichzeitig offen). Reiner Änderungs-Zähler (Migration 0064), NICHT
+  // updated_at: ein Zeitstempel änderte sich auch bei rein technischen
+  // Schreibvorgängen und löste dadurch Konflikt-Meldungen aus, obwohl
+  // niemand etwas geändert hatte.
+  version: number;
 };
 
 export type Category = {
@@ -65,6 +72,8 @@ export type Training = {
   erstelltAm: string;
   ablaufdatum: string;
   status: "aktuell" | "laeuft_ab" | "abgelaufen";
+  // Für optimistic locking in updateTraining(), s. Employee.version.
+  version: number;
 };
 
 // 30 gängige Icon-Vorschläge für Unterweisungen/Schulungen
@@ -132,7 +141,28 @@ export type Qualification = {
   // Rohes ISO-Datum (oder null) zum Vorbefüllen des Bearbeiten-Dialogs.
   ablaufdatumIso: string | null;
   status: "gueltig" | "laeuft_ab" | "abgelaufen";
+  // [Erinnerungs-Flow] Qualifikationen sind bewusst KEIN Signatur-Feature --
+  // nur eine Erinnerung. Diese beiden Zeitstempel steuern, ob die Erinnerung
+  // gerade ruht (s. istErinnerungFaellig unten).
+  terminVereinbartAm: string | null;
+  naechsteErinnerungAm: string | null;
 };
+
+// Ist die Erinnerung für eine Qualifikation gerade aktiv (nicht durch
+// "Termin vereinbart"/"Nochmal erinnern" stummgeschaltet)? Zentral, damit
+// Mitarbeiter-App, Chef-App und Web-Dashboard dieselbe Regel anwenden.
+export function istErinnerungFaellig(q: {
+  ablaufdatumIso: string | null;
+  terminVereinbartAm: string | null;
+  naechsteErinnerungAm: string | null;
+}): boolean {
+  if (!q.ablaufdatumIso) return false;
+  const tageBisAblauf = (new Date(q.ablaufdatumIso).getTime() - Date.now()) / 86_400_000;
+  if (tageBisAblauf >= AMPEL_WARN_TAGE) return false;
+  if (q.terminVereinbartAm && tageBisAblauf >= 0) return false;
+  if (q.naechsteErinnerungAm && new Date(q.naechsteErinnerungAm).getTime() > Date.now()) return false;
+  return true;
+}
 
 export type Question = {
   id: string;

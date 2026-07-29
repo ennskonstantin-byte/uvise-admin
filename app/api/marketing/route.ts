@@ -232,6 +232,12 @@ export async function POST(request: Request) {
     if (!body.id || typeof body.inhalt !== "string" || !body.inhalt.trim()) {
       return NextResponse.json({ error: "Ungültige Anfrage." }, { status: 400 });
     }
+    // [Audit-Fund SUPABASE & DATEN, 27.07.2026] Kein Längenlimit vorhanden --
+    // social_posts.inhalt hat (anders als trainings/questions) keinen
+    // DB-CHECK als zweite Linie. 20.000 Zeichen wie bei trainings.inhalt.
+    if (body.inhalt.trim().length > 20000) {
+      return NextResponse.json({ error: "Inhalt darf höchstens 20.000 Zeichen lang sein." }, { status: 400 });
+    }
     const { error } = await db.from("social_posts").update({ inhalt: body.inhalt.trim() }).eq("id", body.id);
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
     return NextResponse.json({ ok: true });

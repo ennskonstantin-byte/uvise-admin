@@ -183,7 +183,9 @@ export default function MarketingPage() {
   async function token(): Promise<string | null> {
     const {
       data: { session },
+      error,
     } = await supabase.auth.getSession();
+    if (error) console.error("marketing: getSession fehlgeschlagen", error);
     return session?.access_token ?? null;
   }
 

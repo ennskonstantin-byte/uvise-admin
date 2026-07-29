@@ -17,6 +17,7 @@ import {
   istMinderjaehrig,
   AMPEL_WARN_TAGE,
 } from "@/lib/types";
+import { RECENT_SIGNED_DAYS } from "@/lib/recentlySigned";
 
 // Wirft den Supabase/Postgrest-Fehler als echte Error-Instanz weiter. Ohne
 // .throwOnError() liefert postgrest-js bei einer fehlgeschlagenen Anfrage nur
@@ -52,6 +53,27 @@ export function istEmailFormatFehler(error: unknown) {
   return msg === "email_invalid";
 }
 
+// Clientseitige Längen-Prüfung als erste Verteidigungslinie, DB-CHECK-
+// Constraints (Migration 0062) fangen den Rest ab -- analog zu
+// assertEmailFrei/istGueltigeEmail oben (Audit-Fund "Writes ohne
+// Eingabevalidierung", 27.07.2026).
+function assertMaxLen(value: string | null | undefined, max: number, feldname: string) {
+  if (value && value.trim().length > max) {
+    throw new Error(`${feldname} darf höchstens ${max} Zeichen lang sein.`);
+  }
+}
+
+// Optionales Datum (Qualifikationen/Trainings): leer ist ok, sonst muss es
+// ein echtes, gültiges Kalenderdatum sein -- verhindert kaputte Werte wie
+// "31.02.2026", die die date-Spalte sonst erst beim Insert/Update ablehnt.
+function assertGueltigesDatum(value: string | null | undefined, feldname: string) {
+  if (!value) return;
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) {
+    throw new Error(`${feldname} ist kein gültiges Datum.`);
+  }
+}
+
 type Company = {
   id: string;
   name: string;
@@ -62,6 +84,10 @@ type Company = {
   billing: string | null;
   subscriptionStatus: string | null;
   createdAt: string;
+  // [M-17] Von der Firma selbst festgelegte Aufbewahrungsfrist für signierte
+  // Unterweisungsnachweise, in Monaten. null = nie automatisch anonymisieren
+  // (sicherer Standard -- es gibt keine branchenübergreifend richtige Zahl).
+  aufbewahrungsfristMonate: number | null;
 };
 
 type NewEmployeeInput = Omit<
@@ -75,8 +101,9 @@ type NewEmployeeInput = Omit<
   | "minderjaehrig"
   | "inviteToken"
   | "registriert"
+  | "version"
 >;
-type NewTrainingInput = Omit<Training, "id" | "pdfPath"> & {
+type NewTrainingInput = Omit<Training, "id" | "pdfPath" | "version"> & {
   bundleId?: string | null;
   pdfFile?: File | null;
 };
@@ -113,10 +140,12 @@ type AppDataContextValue = {
     input: { name: string; ablaufdatum: string | null }
   ) => Promise<void>;
   deleteQualification: (id: string) => Promise<void>;
+  qualifikationTerminVereinbart: (id: string) => Promise<void>;
+  qualifikationNochmalErinnern: (id: string) => Promise<void>;
   assignTraining: (trainingId: string, employeeIds: string[]) => Promise<void>;
   assignBundle: (trainingIds: string[], employeeIds: string[]) => Promise<void>;
   regenerateInviteToken: (employeeId: string) => Promise<string>;
-  withdrawTraining: (trainingId: string) => Promise<void>;
+  withdrawTraining: (trainingId: string) => Promise<number>;
   updateEmployee: (
     id: string,
     input: {
@@ -141,8 +170,15 @@ type AppDataContextValue = {
   deleteBundle: (id: string) => Promise<void>;
   deleteCategory: (id: string) => Promise<void>;
   updateCompany: (input: { name: string; address: string; chefName: string }) => Promise<void>;
+  updateAufbewahrungsfrist: (monate: number | null) => Promise<void>;
   uploadCompanyLogo: (file: File) => Promise<void>;
   answerQuestion: (id: string, antwort: string) => Promise<void>;
+  loadEmployeeArchive: (employeeId: string) => Promise<EmployeeTraining[]>;
+  loadTrainingArchive: (trainingId: string) => Promise<EmployeeTraining[]>;
+  fetchInviteToken: (employeeId: string) => Promise<string | null>;
+  fetchSignatureDetails: (
+    employeeTrainingId: string
+  ) => Promise<{ signaturBildUrl: string | null; signaturHash: string | null }>;
   reload: () => Promise<void>;
   signOut: () => Promise<void>;
 };
@@ -167,6 +203,31 @@ function trainingStatus(ablaufdatum: string | null): "aktuell" | "laeuft_ab" | "
   const daysLeft = (new Date(ablaufdatum).getTime() - Date.now()) / 86_400_000;
   if (daysLeft < 0) return "abgelaufen";
   return daysLeft < AMPEL_WARN_TAGE ? "laeuft_ab" : "aktuell";
+}
+
+function recentSignedCutoff(): string {
+  return new Date(Date.now() - RECENT_SIGNED_DAYS * 86_400_000).toISOString();
+}
+
+// ablaufdatumIso muss das ROHE ISO-Datum sein (nicht das deutsch formatierte
+// Training.ablaufdatum!) -- new Date("22.7.2026") lässt sich nicht
+// zuverlässig parsen, new Date("2026-07-22") schon. Der Aufrufer liefert es
+// getrennt an, weil die beiden Aufrufstellen es unterschiedlich beschaffen
+// (runLoad hat die rohen trainingRows griffbereit, die Archiv-Nachlade-
+// Funktionen joinen stattdessen direkt in der Query).
+function mapEmployeeTraining(et: any, ablaufdatumIso: string | null): EmployeeTraining {
+  return {
+    id: et.id,
+    employeeId: et.employee_id,
+    trainingId: et.training_id,
+    status: et.status,
+    signiertAm: et.signiert_am ? formatDate(et.signiert_am) : null,
+    signaturBildUrl: et.signatur_bild_url ?? null,
+    geraet: et.geraet ?? null,
+    signaturHash: et.signatur_hash ?? null,
+    signiertAls: et.signiert_als ?? null,
+    ablaufdatumIso,
+  };
 }
 
 // Der Storage-Bucket "employee-photos" ist privat (Migration 0020) — foto_url/
@@ -209,34 +270,77 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
   // (der die neuesten Daten mitnimmt), statt N gestapelter Läufe.
   const loadChainRef = useRef<Promise<void>>(Promise.resolve());
   const loadQueuedRef = useRef<Promise<void> | null>(null);
+  // Zählt jeden signOut() hoch (Audit-Fund "Redirect-Loops nach Logout",
+  // 27.07.2026): ein beim Logout noch laufender runLoad() kam bisher trotzdem
+  // noch zu Ende und schrieb die (zum Anfragezeitpunkt korrekt geladenen,
+  // aber inzwischen veralteten) Daten zurück in den bereits geleerten State.
+  const loadGenerationRef = useRef(0);
 
   const runLoad = useCallback(async () => {
+    const generation = loadGenerationRef.current;
     setDataLoading(true);
 
     const [
-      { data: companies },
-      { data: employeeRows },
-      { data: trainingRows },
-      { data: bundleRows },
-      { data: bundleTrainingRows },
-      { data: categoryRows },
-      { data: qualificationRows },
-      { data: questionRows },
-      { data: employeeTrainingRows },
+      { data: companies, error: companiesError },
+      { data: employeeRows, error: employeesError },
+      { data: trainingRows, error: trainingsError },
+      { data: bundleRows, error: bundlesError },
+      { data: bundleTrainingRows, error: bundleTrainingsError },
+      { data: categoryRows, error: categoriesError },
+      { data: qualificationRows, error: qualificationsError },
+      { data: questionRows, error: questionsError },
+      { data: employeeTrainingRows, error: employeeTrainingsError },
     ] = await Promise.all([
       // .order(...) macht die (bisher implizite) Reihenfolge deterministisch
       // — Voraussetzung für spätere serverseitige Pagination und verhindert
       // zufällig springende Listen (M-09, sichere Teil-Optimierung).
       supabase.from("companies").select("*").limit(1),
-      supabase.from("employees").select("*").order("created_at"),
+      // [Audit-Fund SUPABASE & DATEN, 28.07.2026] select("*") lud bisher
+      // unnötig invite_token (unbegrenzt gültiger Auth-Bypass-Code) und
+      // invite_token in jede Mitarbeiterliste mit -- der wird jetzt nur noch
+      // gezielt per fetchInviteToken() nachgeladen, wenn eine Detail-Ansicht
+      // ihn wirklich braucht (Einladungslink anzeigen).
+      // version = Zähler fürs Optimistic Locking (Migration 0064).
+      supabase
+        .from("employees")
+        .select(
+          "id, vorname, nachname, personalnummer, email, telefon, geburtsdatum, foto_url, kategorie, archiviert, ist_beauftragter, auth_user_id, version"
+        )
+        .order("created_at"),
       supabase.from("trainings").select("*").order("erstellt_am"),
       supabase.from("bundles").select("*").order("created_at"),
       supabase.from("bundle_trainings").select("*"),
       supabase.from("categories").select("*").order("created_at"),
       supabase.from("qualifications").select("*").order("created_at"),
       supabase.from("questions").select("*").order("created_at"),
-      supabase.from("employee_trainings").select("*").order("created_at"),
+      // [N-16] Nur "offen" (Dashboard-Ampel) + kürzlich signiert (Archiv-
+      // "Neu"-Punkt) laden -- die volle Signier-Historie wächst mit jedem
+      // Jahr unbegrenzt und wird nur noch gezielt nachgeladen, sobald das
+      // Archiv für einen Mitarbeiter/eine Unterweisung geöffnet wird (s.
+      // loadEmployeeArchive/loadTrainingArchive unten).
+      // [Audit-Fund SUPABASE & DATEN, 28.07.2026] signatur_bild_url/
+      // signatur_hash werden bewusst NICHT mehr im Bulk-Load mitgeladen --
+      // beide werden nur in Einzel-Detail-Ansichten (ArchiveDocumentModal)
+      // gebraucht, jetzt per fetchSignatureDetails() nachgeladen. `geraet`
+      // bleibt im Bulk, weil exportCsv.ts darüber iteriert (CSV-Export aller
+      // Nachweise).
+      supabase
+        .from("employee_trainings")
+        .select(
+          "id, employee_id, training_id, status, signiert_am, geraet, signiert_als, created_at, updated_at"
+        )
+        .or(`status.eq.offen,signiert_am.gte.${recentSignedCutoff()}`)
+        .order("created_at"),
     ]);
+
+    // [Audit-Fund SUPABASE & DATEN, 27.07.2026] Fehler wurden bisher nicht
+    // geprüft -- ein Fehlschlag bei einer der 9 Tabellen wurde über "?? []"
+    // stillschweigend zu einer leeren Liste statt sichtbar zu werden.
+    const bulkLoadError =
+      companiesError ?? employeesError ?? trainingsError ?? bundlesError ??
+      bundleTrainingsError ?? categoriesError ?? qualificationsError ??
+      questionsError ?? employeeTrainingsError;
+    if (bulkLoadError) console.error("Laden der Firmendaten teilweise fehlgeschlagen:", bulkLoadError);
 
     const signedUrlMap = await resolveSignedUrls([
       companies?.[0]?.logo_url,
@@ -248,21 +352,9 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
       return signedUrlMap[pathOrUrl] ?? null;
     }
 
-    const empTrainings = (employeeTrainingRows ?? []).map((et) => ({
-      id: et.id,
-      employeeId: et.employee_id,
-      trainingId: et.training_id,
-      status: et.status,
-      signiertAm: et.signiert_am ? formatDate(et.signiert_am) : null,
-      signaturBildUrl: et.signatur_bild_url ?? null,
-      geraet: et.geraet ?? null,
-      signaturHash: et.signatur_hash ?? null,
-      signiertAls: et.signiert_als ?? null,
-      // Rohes ISO-Datum (nicht das deutsch formatierte Training.ablaufdatum!)
-      // für Ampel-Berechnungen in der UI — new Date("22.7.2026") lässt sich
-      // nicht zuverlässig parsen, new Date("2026-07-22") schon.
-      ablaufdatumIso: (trainingRows ?? []).find((t) => t.id === et.training_id)?.ablaufdatum ?? null,
-    }));
+    const empTrainings = (employeeTrainingRows ?? []).map((et) =>
+      mapEmployeeTraining(et, (trainingRows ?? []).find((t) => t.id === et.training_id)?.ablaufdatum ?? null)
+    );
 
     const quals = (qualificationRows ?? []).map((q) => ({
       id: q.id,
@@ -272,6 +364,8 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
       ablaufdatum: formatDate(q.ablaufdatum),
       ablaufdatumIso: q.ablaufdatum ?? null,
       status: qualStatus(q.ablaufdatum),
+      terminVereinbartAm: q.termin_vereinbart_am ?? null,
+      naechsteErinnerungAm: q.naechste_erinnerung_am ?? null,
     }));
 
     const mappedEmployees: Employee[] = (employeeRows ?? []).map((e) => {
@@ -296,8 +390,11 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
         offenePunkte,
         qualifikationsIcons: ownQualIcons,
         istBeauftragter: e.ist_beauftragter,
-        inviteToken: e.invite_token ?? null,
+        // invite_token wird bewusst nicht mehr im Bulk-Load geladen (s.o.) --
+        // Detail-Ansichten holen ihn per fetchInviteToken() nach.
+        inviteToken: null,
         registriert: !!e.auth_user_id,
+        version: e.version,
       };
     });
 
@@ -311,6 +408,7 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
       erstelltAm: formatDate(t.erstellt_am),
       ablaufdatum: formatDate(t.ablaufdatum),
       status: trainingStatus(t.ablaufdatum),
+      version: t.version,
     }));
 
     const mappedBundles: Bundle[] = (bundleRows ?? []).map((b) => ({
@@ -338,6 +436,10 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
       gestelltAm: formatDate(q.created_at),
     }));
 
+    // Inzwischen abgemeldet, während diese Anfrage noch unterwegs war? Dann
+    // nicht mehr in den (bereits geleerten) State zurückschreiben.
+    if (loadGenerationRef.current !== generation) return;
+
     if (companies && companies[0]) {
       setCompany({
         id: companies[0].id,
@@ -349,6 +451,7 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
         billing: companies[0].billing,
         subscriptionStatus: companies[0].subscription_status,
         createdAt: companies[0].created_at,
+        aufbewahrungsfristMonate: companies[0].aufbewahrungsfrist_monate,
       });
     }
     setEmployees(mappedEmployees);
@@ -496,6 +599,8 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
   async function addEmployee(input: NewEmployeeInput): Promise<Employee> {
     if (!company) throw new Error("Keine Firma geladen");
     assertEmailFrei(input.email);
+    assertMaxLen(input.telefon, 40, "Telefonnummer");
+    assertGueltigesDatum(input.geburtsdatum, "Geburtsdatum");
     // ist_beauftragter wird bewusst NICHT mit angelegt — ein Datenbank-Trigger
     // erzwingt ohnehin "false" bei jedem normalen Insert (siehe Migration
     // 0014_employee_role_protection.sql). Die Rolle wird danach separat über
@@ -544,6 +649,7 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
       istBeauftragter: input.istBeauftragter,
       inviteToken: data.invite_token ?? null,
       registriert: false,
+      version: data.version,
     };
   }
 
@@ -562,25 +668,40 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
       .select()
       .single();
     throwIfError(error);
-    if (input.bundleId && data) {
-      await supabase
-        .from("bundle_trainings")
-        .insert({ bundle_id: input.bundleId, training_id: data.id });
-    }
-
-    // Die echte PDF hochladen (statt sie zu verwerfen und nur den von Hand
-    // eingetippten Text zu behalten). Pfad-Präfix "<company_id>/..." wie bei
-    // employee-photos, damit die Storage-Regeln greifen. pdf_path speichert
-    // nur den PFAD (Bucket ist privat) — die anzeigende Stelle erzeugt beim
-    // Öffnen eine zeitlich begrenzte signierte URL.
+    // [Audit-Fund OFFLINE & SYNC, 28.07.2026] Bundle-Verknüpfung und PDF-
+    // Upload laufen NACH dem bereits committeten Insert -- bei einem Fehler
+    // dazwischen blieb bisher ein Training ohne PDF/Bundle in der DB liegen.
+    // Fix: Kompensations-Löschung des gerade erst angelegten Trainings bei
+    // Fehlschlag, statt einen inkonsistenten Zwischenzustand zu hinterlassen.
     let pdfPath: string | null = null;
-    if (input.pdfFile && data) {
-      pdfPath = `${company.id}/training-${data.id}.pdf`;
-      const { error: uploadErr } = await supabase.storage
-        .from("training-documents")
-        .upload(pdfPath, input.pdfFile, { upsert: true, contentType: "application/pdf" });
-      if (uploadErr) throw uploadErr;
-      await supabase.from("trainings").update({ pdf_path: pdfPath }).eq("id", data.id);
+    try {
+      if (input.bundleId && data) {
+        const { error: bundleError } = await supabase
+          .from("bundle_trainings")
+          .insert({ bundle_id: input.bundleId, training_id: data.id });
+        throwIfError(bundleError);
+      }
+
+      // Die echte PDF hochladen (statt sie zu verwerfen und nur den von Hand
+      // eingetippten Text zu behalten). Pfad-Präfix "<company_id>/..." wie bei
+      // employee-photos, damit die Storage-Regeln greifen. pdf_path speichert
+      // nur den PFAD (Bucket ist privat) — die anzeigende Stelle erzeugt beim
+      // Öffnen eine zeitlich begrenzte signierte URL.
+      if (input.pdfFile && data) {
+        pdfPath = `${company.id}/training-${data.id}.pdf`;
+        const { error: uploadErr } = await supabase.storage
+          .from("training-documents")
+          .upload(pdfPath, input.pdfFile, { upsert: true, contentType: "application/pdf" });
+        if (uploadErr) throw uploadErr;
+        const { error: pdfPathError } = await supabase
+          .from("trainings")
+          .update({ pdf_path: pdfPath })
+          .eq("id", data.id);
+        throwIfError(pdfPathError);
+      }
+    } catch (err) {
+      await supabase.from("trainings").delete().eq("id", data.id);
+      throw err;
     }
 
     await loadData();
@@ -594,6 +715,7 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
       erstelltAm: formatDate(data.erstellt_am),
       ablaufdatum: formatDate(data.ablaufdatum),
       status: trainingStatus(data.ablaufdatum),
+      version: data.version,
     };
   }
 
@@ -611,6 +733,9 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
     }
   ) {
     assertEmailFrei(input.email, id);
+    assertMaxLen(input.telefon, 40, "Telefonnummer");
+    assertGueltigesDatum(input.geburtsdatum, "Geburtsdatum");
+    const current = employees.find((e) => e.id === id);
     // ist_beauftragter bewusst getrennt von den übrigen Feldern: der
     // Schutz-Trigger blockt Rollenänderungen über ein normales UPDATE (siehe
     // Migration 0014), Rollenwechsel läuft ausschließlich über set_beauftragter().
@@ -619,7 +744,12 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
     // Erfolg (error: null), weil PostgREST ohne Rückgabe-Anforderung keine
     // Zeilenzahl prüft. .single() erzwingt einen Fehler, wenn nicht genau
     // eine Zeile geändert wurde (Runde-2-Audit, H-03).
-    const { error } = await supabase
+    // Zusätzlich .eq("version", ...) als optimistic locking: wurde der
+    // Datensatz zwischenzeitlich von jemand anderem geändert (Chef-Web +
+    // Chef-App gleichzeitig offen), stimmt der Zähler nicht mehr überein ->
+    // 0 Zeilen betroffen -> .single() wirft, statt die fremde Änderung
+    // stillschweigend zu überschreiben. Bewusst NICHT updated_at (s. types.ts).
+    let query = supabase
       .from("employees")
       .update({
         vorname: input.vorname.trim(),
@@ -630,12 +760,16 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
         geburtsdatum: input.geburtsdatum,
         kategorie: input.kategorie,
       })
-      .eq("id", id)
-      .select()
-      .single();
+      .eq("id", id);
+    if (current?.version != null) query = query.eq("version", current.version);
+    const { error } = await query.select().single();
+    if (error && current?.version != null && (error as { code?: string }).code === "PGRST116") {
+      throw new Error(
+        "Dieser Mitarbeiter wurde inzwischen von jemand anderem geändert. Bitte neu laden und erneut versuchen."
+      );
+    }
     throwIfError(error);
 
-    const current = employees.find((e) => e.id === id);
     if (current && current.istBeauftragter !== input.istBeauftragter) {
       const { error: roleError } = await supabase.rpc("set_beauftragter", {
         p_employee_id: id,
@@ -670,7 +804,13 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
     id: string,
     input: { name: string; icon: string; inhalt: string | null; ablaufdatum: string | null }
   ) {
-    const { error } = await supabase
+    // [Audit-Fund OFFLINE & SYNC, 28.07.2026] Ohne .select().single() meldet
+    // ein durch RLS blockiertes/0-Zeilen-UPDATE fälschlich Erfolg (error: null)
+    // -- gleiches Muster wie der bereits gefixte H-03-Fall bei updateEmployee.
+    // Zusätzlich .eq("version", ...) als optimistic locking gegen
+    // gleichzeitige Bearbeitung derselben Vorlage durch zwei Chefs.
+    const current = trainings.find((t) => t.id === id);
+    let query = supabase
       .from("trainings")
       .update({
         name: input.name,
@@ -679,22 +819,32 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
         ablaufdatum: input.ablaufdatum,
       })
       .eq("id", id);
+    if (current?.version != null) query = query.eq("version", current.version);
+    const { error } = await query.select().single();
+    if (error && current?.version != null && (error as { code?: string }).code === "PGRST116") {
+      throw new Error(
+        "Diese Unterweisung wurde inzwischen von jemand anderem geändert. Bitte neu laden und erneut versuchen."
+      );
+    }
     throwIfError(error);
     await loadData();
   }
 
   async function addBundle(input: NewBundleInput) {
     if (!company) throw new Error("Keine Firma geladen");
+    assertMaxLen(input.name, 120, "Bundle-Name");
+    assertMaxLen(input.icon, 10, "Bundle-Icon");
     const { data, error } = await supabase
       .from("bundles")
-      .insert({ company_id: company.id, name: input.name, icon: input.icon })
+      .insert({ company_id: company.id, name: input.name.trim(), icon: input.icon })
       .select()
       .single();
     throwIfError(error);
     if (input.trainingIds.length > 0 && data) {
-      await supabase
+      const { error: bundleTrainingsError } = await supabase
         .from("bundle_trainings")
         .insert(input.trainingIds.map((trainingId) => ({ bundle_id: data.id, training_id: trainingId })));
+      throwIfError(bundleTrainingsError);
     }
     await loadData();
     return { id: data.id as string };
@@ -706,10 +856,18 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
     // Kaskaden (Unterweisungen, Qualifikationen, Fragen), das Foto im Storage
     // war davon aber nie erfasst und blieb bisher für immer liegen.
     if (company) {
-      const { data: files } = await supabase.storage.from("employee-photos").list(company.id);
+      const { data: files, error: listError } = await supabase.storage.from("employee-photos").list(company.id);
+      if (listError) {
+        // Löschung des DB-Datensatzes NICHT davon abhängig machen (die
+        // Foto-Referenz ist längst über foto_url erfasst) -- aber sichtbar
+        // machen, dass die DSGVO-Foto-Löschung evtl. unvollständig war,
+        // statt es lautlos zu verschlucken.
+        console.error("Foto-Storage-Listing für Löschung fehlgeschlagen:", listError);
+      }
       const ownFiles = (files ?? []).filter((f) => f.name.startsWith(`${id}-`)).map((f) => `${company.id}/${f.name}`);
       if (ownFiles.length > 0) {
-        await supabase.storage.from("employee-photos").remove(ownFiles);
+        const { error: removeError } = await supabase.storage.from("employee-photos").remove(ownFiles);
+        if (removeError) console.error("Foto-Löschung beim Endgültig-Löschen fehlgeschlagen:", removeError);
       }
     }
     const { error } = await supabase.from("employees").delete().eq("id", id);
@@ -733,9 +891,11 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
     id: string,
     input: { name: string; icon: string; trainingIds: string[] }
   ) {
+    assertMaxLen(input.name, 120, "Bundle-Name");
+    assertMaxLen(input.icon, 10, "Bundle-Icon");
     const { error } = await supabase
       .from("bundles")
-      .update({ name: input.name, icon: input.icon })
+      .update({ name: input.name.trim(), icon: input.icon })
       .eq("id", id);
     throwIfError(error);
 
@@ -797,9 +957,11 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
     name: string;
     ablaufdatum: string | null;
   }) {
+    assertMaxLen(input.name, 120, "Qualifikations-Name");
+    assertGueltigesDatum(input.ablaufdatum, "Ablaufdatum");
     const { error } = await supabase.from("qualifications").insert({
       employee_id: input.employeeId,
-      name: input.name,
+      name: input.name.trim(),
       ablaufdatum: input.ablaufdatum,
       status: "gueltig",
     });
@@ -813,9 +975,11 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
     id: string,
     input: { name: string; ablaufdatum: string | null }
   ) {
+    assertMaxLen(input.name, 120, "Qualifikations-Name");
+    assertGueltigesDatum(input.ablaufdatum, "Ablaufdatum");
     const { error } = await supabase
       .from("qualifications")
-      .update({ name: input.name, ablaufdatum: input.ablaufdatum })
+      .update({ name: input.name.trim(), ablaufdatum: input.ablaufdatum })
       .eq("id", id)
       .select()
       .single();
@@ -825,6 +989,22 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
 
   async function deleteQualification(id: string) {
     const { error } = await supabase.from("qualifications").delete().eq("id", id);
+    throwIfError(error);
+    await loadData();
+  }
+
+  // [Erinnerungs-Flow] "Termin bereits vereinbart" -- Erinnerung ruht bis
+  // zum Ablaufdatum. Enges RPC statt direktem Update (normale RLS erlaubt
+  // nur Beauftragten Schreibzugriff, s. Migration 0061).
+  async function qualifikationTerminVereinbart(id: string) {
+    const { error } = await supabase.rpc("qualifikation_termin_vereinbart", { p_id: id });
+    throwIfError(error);
+    await loadData();
+  }
+
+  // "Nochmal erinnern" -- Erinnerung ruht 7 Tage.
+  async function qualifikationNochmalErinnern(id: string) {
+    const { error } = await supabase.rpc("qualifikation_nochmal_erinnern", { p_id: id });
     throwIfError(error);
     await loadData();
   }
@@ -887,14 +1067,20 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
   // OFFENEN Zuweisungen dieser Vorlage. Bereits signierte Nachweise bleiben
   // unangetastet (die Delete-Policy aus Migration 0039 erlaubt ohnehin nur
   // status = 'offen').
-  async function withdrawTraining(trainingId: string) {
-    const { error } = await supabase
+  // [Audit-Fund OFFLINE & SYNC, 28.07.2026] Gibt jetzt die Zahl der
+  // tatsächlich zurückgezogenen Zuweisungen zurück (vorher stiller Erfolg
+  // auch bei 0 betroffenen Zeilen, z.B. wenn der Mitarbeiter zeitgleich
+  // signiert hat).
+  async function withdrawTraining(trainingId: string): Promise<number> {
+    const { data, error } = await supabase
       .from("employee_trainings")
       .delete()
       .eq("training_id", trainingId)
-      .eq("status", "offen");
+      .eq("status", "offen")
+      .select("id");
     throwIfError(error);
     await loadData();
+    return data?.length ?? 0;
   }
 
   async function uploadCompanyLogo(file: File) {
@@ -915,9 +1101,54 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
 
   async function updateCompany(input: { name: string; address: string; chefName: string }) {
     if (!company) return;
+    assertMaxLen(input.name, 200, "Firmenname");
+    assertMaxLen(input.address, 300, "Adresse");
+    assertMaxLen(input.chefName, 120, "Name des Chefs");
     const { error } = await supabase
       .from("companies")
-      .update({ name: input.name, address: input.address, chef_name: input.chefName })
+      .update({ name: input.name.trim(), address: input.address.trim(), chef_name: input.chefName.trim() })
+      .eq("id", company.id);
+    throwIfError(error);
+    await loadData();
+  }
+
+  // [M-17] monate = null -> nie automatisch anonymisieren (Standard).
+  // [Audit-Fund SUPABASE & DATEN, 28.07.2026] invite_token wird nicht mehr im
+  // Bulk-Load mitgeladen (s.o.) -- Detail-Seiten, die den Einladungslink
+  // anzeigen wollen, holen ihn jetzt gezielt per ID.
+  async function fetchInviteToken(employeeId: string): Promise<string | null> {
+    const { data, error } = await supabase
+      .from("employees")
+      .select("invite_token")
+      .eq("id", employeeId)
+      .single();
+    throwIfError(error);
+    return data?.invite_token ?? null;
+  }
+
+  // Signatur-Bilddaten/-Siegel werden nicht mehr im Bulk-Load mitgeladen (s.o.
+  // employee_trainings-Query) -- Archiv-Detail-Ansichten holen sie gezielt
+  // nach, sobald ein einzelner Nachweis geöffnet wird.
+  async function fetchSignatureDetails(
+    employeeTrainingId: string
+  ): Promise<{ signaturBildUrl: string | null; signaturHash: string | null }> {
+    const { data, error } = await supabase
+      .from("employee_trainings")
+      .select("signatur_bild_url, signatur_hash")
+      .eq("id", employeeTrainingId)
+      .single();
+    throwIfError(error);
+    return {
+      signaturBildUrl: data?.signatur_bild_url ?? null,
+      signaturHash: data?.signatur_hash ?? null,
+    };
+  }
+
+  async function updateAufbewahrungsfrist(monate: number | null) {
+    if (!company) return;
+    const { error } = await supabase
+      .from("companies")
+      .update({ aufbewahrungsfrist_monate: monate })
       .eq("id", company.id);
     throwIfError(error);
     await loadData();
@@ -936,7 +1167,48 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
     }
   }
 
+  // [N-16] Volle Signier-Historie eines einzelnen Mitarbeiters gezielt
+  // nachladen -- nicht Teil des Bulk-Loads, da dieser jetzt nur "offen" +
+  // kürzlich signiert enthält (s. runLoad oben). Wird von der Archiv-Seite
+  // erst aufgerufen, wenn ein Mitarbeiter tatsächlich geöffnet wird.
+  // [Audit-Fund SUPABASE & DATEN, 28.07.2026] Auch die Archiv-Listen luden
+  // bisher signatur_bild_url/signatur_hash für JEDE Zeile mit, obwohl die
+  // Archiv-Liste selbst nur Metadaten anzeigt -- das Signaturbild/-Siegel
+  // wird erst gebraucht, wenn ein einzelner Nachweis geöffnet wird
+  // (ArchiveDocumentModal holt es dann per fetchSignatureDetails()).
+  const ARCHIVE_LIST_COLUMNS =
+    "id, employee_id, training_id, status, signiert_am, geraet, signiert_als, created_at, updated_at, trainings(ablaufdatum)";
+
+  async function loadEmployeeArchive(employeeId: string): Promise<EmployeeTraining[]> {
+    const { data, error } = await supabase
+      .from("employee_trainings")
+      .select(ARCHIVE_LIST_COLUMNS)
+      .eq("employee_id", employeeId)
+      .order("created_at");
+    throwIfError(error);
+    return (data ?? []).map((et: any) => mapEmployeeTraining(et, et.trainings?.ablaufdatum ?? null));
+  }
+
+  // [N-16] Analog für den Modus "Nach Unterweisung": alle signierten Nachweise
+  // einer Vorlage, über alle Mitarbeiter und Jahre hinweg.
+  async function loadTrainingArchive(trainingId: string): Promise<EmployeeTraining[]> {
+    const { data, error } = await supabase
+      .from("employee_trainings")
+      .select(ARCHIVE_LIST_COLUMNS)
+      .eq("training_id", trainingId)
+      .eq("status", "signiert")
+      .order("created_at");
+    throwIfError(error);
+    return (data ?? []).map((et: any) => mapEmployeeTraining(et, et.trainings?.ablaufdatum ?? null));
+  }
+
   async function signOut() {
+    // Erst hochzählen, damit ein noch laufender runLoad() (gestartet vor
+    // diesem Logout) seine Ergebnisse hinterher erkennbar verwirft, statt sie
+    // in den gleich geleerten State zurückzuschreiben.
+    loadGenerationRef.current += 1;
+    loadChainRef.current = Promise.resolve();
+    loadQueuedRef.current = null;
     await supabase.auth.signOut();
     setCompany(null);
     setEmployees([]);
@@ -971,6 +1243,8 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
         addQualification,
         updateQualification,
         deleteQualification,
+        qualifikationTerminVereinbart,
+        qualifikationNochmalErinnern,
         assignTraining,
         assignBundle,
         regenerateInviteToken,
@@ -984,8 +1258,13 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
         deleteBundle,
         deleteCategory,
         updateCompany,
+        updateAufbewahrungsfrist,
         answerQuestion,
         uploadCompanyLogo,
+        loadEmployeeArchive,
+        loadTrainingArchive,
+        fetchInviteToken,
+        fetchSignatureDetails,
         reload: loadData,
         signOut,
       }}
