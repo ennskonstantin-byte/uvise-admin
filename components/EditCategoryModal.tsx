@@ -5,6 +5,7 @@ import { Search } from "lucide-react";
 import { CATEGORY_ICON_OPTIONS, type Category } from "@/lib/types";
 import { useAppData } from "@/lib/store";
 import { useEscapeClose } from "@/lib/useEscapeClose";
+import { fehlerText } from "@/lib/fehler";
 
 export function EditCategoryModal({
   category,
@@ -27,8 +28,8 @@ export function EditCategoryModal({
     try {
       await updateCategory(category.id, { name, icon });
       onClose();
-    } catch {
-      setError("Speichern fehlgeschlagen. Bist du als Beauftragte/r eingeloggt?");
+    } catch (err) {
+      setError(fehlerText(err, "Speichern"));
     } finally {
       setSaving(false);
     }

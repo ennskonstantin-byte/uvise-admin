@@ -5,6 +5,7 @@ import { useAppData } from "@/lib/store";
 import { useEscapeClose } from "@/lib/useEscapeClose";
 import { SuccessOverlay, SUCCESS_OVERLAY_MS } from "@/components/SuccessOverlay";
 import { BUNDLE_ICONS as ICONS } from "@/lib/types";
+import { fehlerText } from "@/lib/fehler";
 
 export function NewBundleWizard({ onClose }: { onClose: () => void }) {
   useEscapeClose(onClose);
@@ -23,8 +24,8 @@ export function NewBundleWizard({ onClose }: { onClose: () => void }) {
       await addBundle({ name, icon: icon ?? "📦", trainingIds: selected });
       setDone(true);
       setTimeout(onClose, SUCCESS_OVERLAY_MS);
-    } catch {
-      setError("Speichern fehlgeschlagen. Bitte prüfe, ob du als Beauftragte/r eingeloggt bist.");
+    } catch (err) {
+      setError(fehlerText(err, "Speichern"));
     } finally {
       setSaving(false);
     }

@@ -7,6 +7,7 @@ import { useAppData } from "@/lib/store";
 import { useEscapeClose } from "@/lib/useEscapeClose";
 import { EmployeeAvatar } from "@/components/EmployeeAvatar";
 import { TRAINING_ICON_OPTIONS, BUNDLE_ICONS, type Training } from "@/lib/types";
+import { fehlerText } from "@/lib/fehler";
 
 function DistributionDialog({
   training,
@@ -256,8 +257,8 @@ export function NewTrainingWizard({ onClose }: { onClose: () => void }) {
       });
       setSavedTraining(training);
       setShowDistribution(true);
-    } catch {
-      setError("Speichern fehlgeschlagen. Bitte prüfe, ob du als Beauftragte/r eingeloggt bist.");
+    } catch (err) {
+      setError(fehlerText(err, "Speichern"));
     } finally {
       setSaving(false);
     }

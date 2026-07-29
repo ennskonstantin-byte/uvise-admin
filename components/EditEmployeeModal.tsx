@@ -8,6 +8,7 @@ import { DateSelect } from "@/components/DateSelect";
 import { EmployeeAvatar } from "@/components/EmployeeAvatar";
 import { useEscapeClose } from "@/lib/useEscapeClose";
 import { ConfirmModal } from "@/components/ConfirmModal";
+import { fehlerText } from "@/lib/fehler";
 
 export function EditEmployeeModal({
   employee,
@@ -77,7 +78,7 @@ export function EditEmployeeModal({
           ? "Bitte eine gültige E-Mail-Adresse eingeben (z.B. name@firma.de)."
           : istEmailKonflikt(err)
           ? "Diese E-Mail-Adresse wird bereits verwendet. Jede E-Mail kann nur einmal vergeben werden."
-          : "Speichern fehlgeschlagen. Bist du als Beauftragte/r eingeloggt?"
+          : fehlerText(err, "Speichern")
       );
     } finally {
       setSaving(false);

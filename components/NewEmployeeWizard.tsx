@@ -5,6 +5,7 @@ import { CATEGORY_ICON_OPTIONS, QUALIFICATION_PRESETS, istMinderjaehrig as isMin
 import { useAppData, istEmailKonflikt, istEmailFormatFehler } from "@/lib/store";
 import { useEscapeClose } from "@/lib/useEscapeClose";
 import { DateSelect } from "@/components/DateSelect";
+import { fehlerText } from "@/lib/fehler";
 
 export function NewEmployeeWizard({ onClose }: { onClose: () => void }) {
   useEscapeClose(onClose);
@@ -129,7 +130,7 @@ export function NewEmployeeWizard({ onClose }: { onClose: () => void }) {
           ? "Bitte eine gültige E-Mail-Adresse eingeben (z.B. name@firma.de)."
           : istEmailKonflikt(err)
           ? "Diese E-Mail-Adresse wird bereits verwendet. Jede E-Mail kann nur einmal vergeben werden."
-          : "Anlegen fehlgeschlagen. Bitte prüfe, ob du als Beauftragte/r eingeloggt bist."
+          : fehlerText(err, "Anlegen")
       );
     } finally {
       setSaving(false);

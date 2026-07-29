@@ -5,6 +5,7 @@ import { useAppData } from "@/lib/store";
 import { QUALIFICATION_PRESETS, qualIcon, type Qualification } from "@/lib/types";
 import { DateSelect } from "@/components/DateSelect";
 import { useEscapeClose } from "@/lib/useEscapeClose";
+import { fehlerText } from "@/lib/fehler";
 
 // Bearbeiten + Löschen einer bestehenden Qualifikation -- im Web bisher gar
 // nicht möglich (Runde-1/2-Audit, M-08), obwohl die Chef-App beides konnte.
@@ -31,7 +32,7 @@ export function EditQualificationModal({
       await updateQualification(qualification.id, { name, ablaufdatum: ablaufdatum || null });
       onClose();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Speichern fehlgeschlagen. Bist du als Beauftragte/r eingeloggt?");
+      setError(fehlerText(err, "Speichern"));
     } finally {
       setSaving(false);
     }

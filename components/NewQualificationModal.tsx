@@ -7,6 +7,7 @@ import { DateSelect } from "@/components/DateSelect";
 import { EmployeeSearchPicker } from "@/components/EmployeeSearchPicker";
 import { useEscapeClose } from "@/lib/useEscapeClose";
 import { SuccessOverlay, SUCCESS_OVERLAY_MS } from "@/components/SuccessOverlay";
+import { fehlerText } from "@/lib/fehler";
 
 export function NewQualificationModal({
   onClose,
@@ -37,8 +38,8 @@ export function NewQualificationModal({
       });
       setDone(true);
       setTimeout(onClose, SUCCESS_OVERLAY_MS);
-    } catch {
-      setError("Speichern fehlgeschlagen. Bist du als Beauftragte/r eingeloggt?");
+    } catch (err) {
+      setError(fehlerText(err, "Speichern"));
     } finally {
       setSaving(false);
     }

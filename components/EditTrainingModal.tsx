@@ -5,6 +5,7 @@ import { TRAINING_ICON_OPTIONS, type Training } from "@/lib/types";
 import { useAppData } from "@/lib/store";
 import { DateSelect } from "@/components/DateSelect";
 import { useEscapeClose } from "@/lib/useEscapeClose";
+import { fehlerText } from "@/lib/fehler";
 
 // Wandelt ein angezeigtes Datum (dd.mm.yyyy oder "—") in ein <input type=date>-Wert (yyyy-mm-dd)
 function toInputDate(display: string): string {
@@ -44,8 +45,8 @@ export function EditTrainingModal({
         ablaufdatum: ablaufdatum || null,
       });
       onClose();
-    } catch {
-      setError("Speichern fehlgeschlagen. Bist du als Beauftragte/r eingeloggt?");
+    } catch (err) {
+      setError(fehlerText(err, "Speichern"));
     } finally {
       setSaving(false);
     }

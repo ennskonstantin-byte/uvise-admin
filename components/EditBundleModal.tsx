@@ -4,6 +4,7 @@ import { useState } from "react";
 import { BUNDLE_ICONS as ICONS, type Bundle } from "@/lib/types";
 import { useAppData } from "@/lib/store";
 import { useEscapeClose } from "@/lib/useEscapeClose";
+import { fehlerText } from "@/lib/fehler";
 
 export function EditBundleModal({
   bundle,
@@ -26,8 +27,8 @@ export function EditBundleModal({
     try {
       await updateBundle(bundle.id, { name, icon, trainingIds: selected });
       onClose();
-    } catch {
-      setError("Speichern fehlgeschlagen. Bist du als Beauftragte/r eingeloggt?");
+    } catch (err) {
+      setError(fehlerText(err, "Speichern"));
     } finally {
       setSaving(false);
     }
