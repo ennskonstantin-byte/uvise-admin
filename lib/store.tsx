@@ -74,6 +74,19 @@ function assertGueltigesDatum(value: string | null | undefined, feldname: string
   }
 }
 
+// [Nachtrag] Erste, schnelle Rückmeldung im Browser, bevor überhaupt ein
+// Request rausgeht -- die eigentliche, verbindliche Grenze setzt die RPC
+// set_aufbewahrungsfrist (Migration 0065, noch nicht eingespielt) serverseitig
+// nochmal durch. null bleibt immer erlaubt ("nie automatisch anonymisieren").
+function assertGueltigeAufbewahrungsfrist(monate: number | null) {
+  if (monate === null) return;
+  if (!Number.isInteger(monate) || monate < 24 || monate > 120) {
+    throw new Error(
+      'Aufbewahrungsfrist muss zwischen 24 und 120 Monaten liegen (oder leer für „nie automatisch anonymisieren").'
+    );
+  }
+}
+
 type Company = {
   id: string;
   name: string;
@@ -1144,12 +1157,15 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
     };
   }
 
+  // [Nachtrag] Läuft jetzt über die RPC set_aufbewahrungsfrist (Migration
+  // 0065, noch nicht eingespielt) statt eines direkten UPDATEs -- die RPC
+  // erzwingt dieselbe Grenze nochmal serverseitig UND protokolliert Zeitpunkt
+  // (Server-Uhr) sowie handelnden Mitarbeiter (Auth-Kontext), keins von
+  // beidem vom Client behauptet.
   async function updateAufbewahrungsfrist(monate: number | null) {
     if (!company) return;
-    const { error } = await supabase
-      .from("companies")
-      .update({ aufbewahrungsfrist_monate: monate })
-      .eq("id", company.id);
+    assertGueltigeAufbewahrungsfrist(monate);
+    const { error } = await supabase.rpc("set_aufbewahrungsfrist", { p_monate: monate });
     throwIfError(error);
     await loadData();
   }

@@ -9,6 +9,7 @@ import { Card } from "@/components/Card";
 import { useToast } from "@/components/Toast";
 import { ConfirmModal } from "@/components/ConfirmModal";
 import { useAppData, throwIfError } from "@/lib/store";
+import { fehlerText } from "@/lib/fehler";
 import { exportNachweiseCsv, exportQualifikationenCsv } from "@/lib/exportCsv";
 import { exportGesamtBackupZip } from "@/lib/exportZip";
 import { PLANS } from "@/lib/types";
@@ -54,6 +55,11 @@ export default function EinstellungenPage() {
   const [deletingCompany, setDeletingCompany] = useState(false);
   const [showDeleteCompanyModal, setShowDeleteCompanyModal] = useState(false);
   const [savingFrist, setSavingFrist] = useState(false);
+  // Nur für den destruktiven Weg (eine echte Frist aktivieren/verschärfen)
+  // genutzt -- null bedeutet "kein Dialog offen". Der Rückweg auf "nie
+  // automatisch anonymisieren" macht nichts Unwiderrufliches kaputt und
+  // läuft deshalb ohne Bestätigung direkt durch.
+  const [fristConfirmValue, setFristConfirmValue] = useState<number | null>(null);
 
   // DSGVO + Konsistenz zu den Apps: Firma & Konto endgültig löschbar.
   // Tipp-Bestätigung im Modal übernimmt die zweite Sicherheitsabfrage.
@@ -180,13 +186,26 @@ export default function EinstellungenPage() {
     }
   }
 
-  async function handleFristChange(value: string) {
+  // Auswahl im <select>: der sichere Rückweg ("nie") speichert sofort, jede
+  // echte Frist geht erst über den Bestätigungsdialog unten (handleFristSave).
+  function handleFristSelect(value: string) {
+    if (value === "") {
+      handleFristSave(null);
+      return;
+    }
+    setFristConfirmValue(Number(value));
+  }
+
+  async function handleFristSave(monate: number | null) {
     setSavingFrist(true);
     try {
-      await updateAufbewahrungsfrist(value === "" ? null : Number(value));
+      await updateAufbewahrungsfrist(monate);
       showToast("Aufbewahrungsfrist gespeichert.");
+    } catch (e) {
+      showToast(fehlerText(e, "Aufbewahrungsfrist speichern"));
     } finally {
       setSavingFrist(false);
+      setFristConfirmValue(null);
     }
   }
 
@@ -302,7 +321,7 @@ export default function EinstellungenPage() {
             </label>
             <select
               value={company?.aufbewahrungsfristMonate ?? ""}
-              onChange={(e) => handleFristChange(e.target.value)}
+              onChange={(e) => handleFristSelect(e.target.value)}
               disabled={savingFrist}
               className="w-full rounded-full border border-border bg-surface px-4 py-2.5 text-sm outline-none"
             >
@@ -544,6 +563,16 @@ export default function EinstellungenPage() {
         </section>
       </div>
       <ToastView />
+      {fristConfirmValue !== null && (
+        <ConfirmModal
+          title="Aufbewahrungsfrist aktivieren?"
+          message={`Ab sofort werden signierte Nachweise, deren Unterschrift älter als ${fristConfirmValue} Monate ist, bei jedem Lauf automatisch anonymisiert: Signaturbild und der damals festgehaltene Name werden unwiderruflich entfernt und lassen sich danach nicht wiederherstellen. Das betrifft auch bereits bestehende, ältere Nachweise, nicht nur künftige. Dass die Unterweisung stattgefunden hat, bleibt weiterhin nachweisbar.`}
+          confirmLabel="Frist aktivieren"
+          danger
+          onConfirm={() => handleFristSave(fristConfirmValue)}
+          onClose={() => setFristConfirmValue(null)}
+        />
+      )}
       {showDeleteCompanyModal && (
         <ConfirmModal
           title="Firma & Konto endgültig löschen"
