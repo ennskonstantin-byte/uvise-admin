@@ -6,10 +6,6 @@
       "schedule": "0 6 * * 1"
     },
     {
-      "path": "/api/foto-cleanup",
-      "schedule": "0 5 * * 1"
-    },
-    {
       "path": "/api/nachweis-anonymisierung",
       "schedule": "0 4 1 * *"
     }

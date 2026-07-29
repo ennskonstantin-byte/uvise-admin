@@ -4,10 +4,11 @@ import { sendPushNotifications } from "@/lib/expoPush";
 
 // Verschickt Push-Nachrichten an Mitarbeiter*innen einer Firma (neue
 // Zuweisung, neue Rückfrage, neue Antwort). Läuft serverseitig mit dem
-// Service-Role-Key, weil ein normaler Mitarbeiter laut RLS nicht das
-// push_token-Feld von Kolleg*innen lesen darf (nur Beauftragte dürfen das) —
-// hier wird stattdessen geprüft, dass Aufrufer*in und alle Ziel-Mitarbeiter
-// zur selben Firma gehören, bevor irgendetwas verschickt wird.
+// Service-Role-Key, weil ein normaler Mitarbeiter laut RLS nicht die
+// push_tokens-Zeile von Kolleg*innen lesen darf (nur Beauftragte dürfen
+// das) — hier wird stattdessen geprüft, dass Aufrufer*in und alle
+// Ziel-Mitarbeiter zur selben Firma gehören, bevor irgendetwas verschickt
+// wird.
 export async function POST(request: Request) {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
