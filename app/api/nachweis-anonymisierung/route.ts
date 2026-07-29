@@ -14,8 +14,12 @@ import { createClient } from "@supabase/supabase-js";
 // -- Trainingsinhalt, signiert_am und status bleiben als Nachweis "es wurde
 // unterwiesen" erhalten, analog zum bestehenden Löschkonzept (0044/0057).
 //
-// Wird von Vercel Cron aufgerufen (siehe vercel.json). Vercel schickt
-// automatisch "Authorization: Bearer <CRON_SECRET>" mit.
+// [Nachtrag, Freigabe ausstehend] Kein Cron-Eintrag mehr in vercel.json --
+// die Route läuft nur noch, wenn jemand sie händisch aufruft, und selbst
+// dann standardmäßig als Trockenlauf. Echtes Anonymisieren erfordert
+// zusätzlich zum gültigen CRON_SECRET (kein Fallback-Wert, s. Prüfung
+// unten -- ohne gesetztes Secret bricht die Route mit 500 ab, es gibt kein
+// `?? "..."`-Muster) den expliziten Parameter ?bestaetigt=1.
 
 export async function GET(request: Request) {
   const cronSecret = process.env.CRON_SECRET;
@@ -39,7 +43,10 @@ export async function GET(request: Request) {
   }
 
   const db = createClient(supabaseUrl, serviceKey);
-  const dryRun = new URL(request.url).searchParams.get("dryRun") === "1";
+  // Umgekehrtes Vorzeichen zum bisherigen ?dryRun=1: Standard ist jetzt IMMER
+  // der sichere Trockenlauf, echtes Schreiben nur mit diesem einen, explizit
+  // gesetzten Parameter -- zusätzlich zum bereits oben geprüften Secret.
+  const bestaetigt = new URL(request.url).searchParams.get("bestaetigt") === "1";
 
   const { data: companies, error: companiesError } = await db
     .from("companies")
@@ -72,10 +79,10 @@ export async function GET(request: Request) {
     geprueft += count ?? 0;
   }
 
-  if (dryRun) {
+  if (!bestaetigt) {
     return NextResponse.json({
       ok: true,
-      dryRun: true,
+      trockenlauf: true,
       firmenMitFrist: (companies ?? []).length,
       geprueft,
       anonymisiert: 0,
@@ -83,18 +90,19 @@ export async function GET(request: Request) {
     });
   }
 
-  // Das eigentliche Schreiben läuft über die RPC (0060) -- die einzige Stelle,
-  // die den Immutability-Trigger aus 0013 legitim umgehen darf.
+  // Ab hier nur noch mit ?bestaetigt=1 erreichbar. Das eigentliche Schreiben
+  // läuft über die RPC (0060) -- die einzige Stelle, die den
+  // Immutability-Trigger aus 0013 legitim umgehen darf.
   const { data: ergebnis, error: rpcError } = await db.rpc("anonymize_expired_nachweise");
   if (rpcError) {
-    return NextResponse.json({ ok: false, dryRun: false, geprueft, anonymisiert: 0, fehler: [rpcError.message] }, { status: 500 });
+    return NextResponse.json({ ok: false, trockenlauf: false, geprueft, anonymisiert: 0, fehler: [rpcError.message] }, { status: 500 });
   }
 
   const anonymisiert = (ergebnis ?? []).reduce((sum: number, row: { anzahl: number }) => sum + row.anzahl, 0);
 
   return NextResponse.json({
     ok: true,
-    dryRun: false,
+    trockenlauf: false,
     firmenMitFrist: (companies ?? []).length,
     geprueft,
     anonymisiert,
