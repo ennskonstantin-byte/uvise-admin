@@ -25,11 +25,15 @@ const REMINDER_HINT =
 // vorher stand hier immer nur neutral "Offen", ohne Ablauf-Hinweis, was
 // zu Verwirrung führte, wenn die App bereits Rot/Überfällig anzeigte.
 function trainingRowStatus(
-  status: "offen" | "signiert" | "abgelehnt",
+  status: "offen" | "signiert" | "abgelehnt" | "anonymisiert",
   ablaufdatum: string | undefined
 ): { label: string; color: string } {
   if (status === "signiert") return { label: "Signiert", color: "var(--ampel-green)" };
   if (status === "abgelehnt") return { label: "Abgelehnt", color: "var(--ampel-red)" };
+  // [Nachtrag] Eigener Zweig statt Rückfall auf Überfällig/Ausstehend --
+  // sonst würde ein bereits erledigter, nur anonymisierter Nachweis so
+  // aussehen, als müsste er noch nachgeholt werden.
+  if (status === "anonymisiert") return { label: "Anonymisiert (Frist abgelaufen)", color: "#71717a" };
   const overdue = !!ablaufdatum && new Date(ablaufdatum).getTime() < Date.now();
   return overdue
     ? { label: "Überfällig", color: "var(--ampel-red)" }

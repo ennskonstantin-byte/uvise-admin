@@ -114,7 +114,7 @@ export type EmployeeTraining = {
   id: string;
   employeeId: string;
   trainingId: string;
-  status: "offen" | "signiert" | "abgelehnt";
+  status: "offen" | "signiert" | "abgelehnt" | "anonymisiert";
   signiertAm: string | null;
   signaturBildUrl: string | null;
   geraet: string | null;
