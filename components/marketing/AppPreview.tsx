@@ -14,12 +14,16 @@ const APPS = [
     label: "Chef-App",
     src: `/preview-chef/index.html?v=${DEMO_VERSION}`,
     hint: "Angemeldet als Nina Müller (Beauftragte) — Mitarbeiter, Unterweisungen und Qualifikationen der Demo-Firma \"uVise Demo GmbH\".",
+    // Accessible Name des iframes (Pendant zum Bild-alt-Text) — beschreibt,
+    // was in der Vorschau tatsächlich zu sehen ist.
+    frameTitle: "Vorschau der uVise Chef-App: Unterweisungen und Qualifikationen verwalten",
   },
   {
     key: "ma",
     label: "Mitarbeiter-App",
     src: `/preview-ma/index.html?v=${DEMO_VERSION}`,
     hint: "Angemeldet als Lena Bauer (Mitarbeiterin) — probier ruhig \"Jetzt signieren\" und die Vorlese-/Übersetzungsfunktion aus.",
+    frameTitle: "Vorschau der uVise Mitarbeiter-App: Unterweisung signieren",
   },
 ] as const;
 
@@ -109,7 +113,7 @@ export function AppPreview() {
           <iframe
             key={a.key}
             src={a.src}
-            title={a.label}
+            title={a.frameTitle}
             onLoad={() => setLoaded((p) => ({ ...p, [a.key]: true }))}
             className="w-full h-full border-none bg-background"
             style={{ display: active === a.key ? "block" : "none" }}
