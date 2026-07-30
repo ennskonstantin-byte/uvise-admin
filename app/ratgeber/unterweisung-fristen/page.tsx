@@ -6,6 +6,10 @@ const TITEL = "Wie oft muss unterwiesen werden? Alle Fristen auf einen Blick (20
 const BESCHREIBUNG =
   "Jährlich, halbjährlich oder sofort? Alle Unterweisungs-Fristen im Arbeitsschutz mit Paragrafen: jährliche Wiederholung, Jugendliche, Gefahrstoffe, neue Mitarbeiter und anlassbezogene Unterweisungen.";
 
+// ISR statt vollstatisch — siehe app/page.tsx für die ausführliche Begründung
+// (Vercels 1-Jahr-Edge-Cache für vollstatische Seiten sonst zu träge nach Deploys).
+export const revalidate = 3600;
+
 export const metadata: Metadata = {
   title: TITEL,
   description: BESCHREIBUNG,

@@ -10,6 +10,13 @@ const BESCHREIBUNG =
 // Eigene Metadaten für die öffentliche Startseite (statt des generischen
 // "uVise Admin"-Titels aus dem Root-Layout) — wichtig für Google-Suche
 // und die Vorschau, wenn der Link z.B. in WhatsApp/Slack geteilt wird.
+// ISR statt vollstatisch: ohne "revalidate" liefert Vercel diese Seite mit
+// einem 1-Jahr-Edge-Cache aus, der nach einem Deploy erst über eine neue
+// Deployment-ID oder einen manuellen Purge aktualisiert — Inhaltsänderungen
+// wären also tagelang unsichtbar. Mit revalidate=3600 erneuert Vercel den
+// Edge-Cache spätestens stündlich von selbst (stale-while-revalidate).
+export const revalidate = 3600;
+
 export const metadata: Metadata = {
   title: TITEL,
   description: BESCHREIBUNG,

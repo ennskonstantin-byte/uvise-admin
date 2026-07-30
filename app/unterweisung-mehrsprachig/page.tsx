@@ -10,6 +10,11 @@ const BESCHREIBUNG =
 // Muttersprache" und "Unterweisung fremdsprachige Mitarbeiter". Gleiches
 // Design-System wie die Startseite (components/marketing/MarketingHome.tsx),
 // eigener Inhalt.
+//
+// ISR statt vollstatisch — siehe app/page.tsx für die ausführliche Begründung
+// (Vercels 1-Jahr-Edge-Cache für vollstatische Seiten sonst zu träge nach Deploys).
+export const revalidate = 3600;
+
 export const metadata: Metadata = {
   title: TITEL,
   description: BESCHREIBUNG,

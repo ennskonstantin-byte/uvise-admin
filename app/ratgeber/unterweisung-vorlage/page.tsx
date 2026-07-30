@@ -6,6 +6,10 @@ const TITEL = "Unterweisung Vorlage: kostenloses Muster + Anleitung (2026)";
 const BESCHREIBUNG =
   "Kostenlose Vorlage für die Unterweisung deiner Mitarbeiter zum Kopieren, plus Anleitung: Pflichten nach ArbSchG, wie oft unterwiesen werden muss und was in den Unterweisungsnachweis gehört.";
 
+// ISR statt vollstatisch — siehe app/page.tsx für die ausführliche Begründung
+// (Vercels 1-Jahr-Edge-Cache für vollstatische Seiten sonst zu träge nach Deploys).
+export const revalidate = 3600;
+
 export const metadata: Metadata = {
   title: TITEL,
   description: BESCHREIBUNG,

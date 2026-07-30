@@ -6,6 +6,10 @@ const TITEL = "Erstunterweisung neuer Mitarbeiter: Ablauf + Checkliste (2026)";
 const BESCHREIBUNG =
   "Wann muss der Neue unterwiesen werden, was gehört rein und was passiert, wenn am ersten Tag etwas schiefgeht? Ablauf, Checkliste zum Abhaken und die häufigsten Fehler bei der Erstunterweisung.";
 
+// ISR statt vollstatisch — siehe app/page.tsx für die ausführliche Begründung
+// (Vercels 1-Jahr-Edge-Cache für vollstatische Seiten sonst zu träge nach Deploys).
+export const revalidate = 3600;
+
 export const metadata: Metadata = {
   title: TITEL,
   description: BESCHREIBUNG,

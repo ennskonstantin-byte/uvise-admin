@@ -6,6 +6,10 @@ const TITEL = "Unterweisung für fremdsprachige Mitarbeiter: Was das Gesetz wirk
 const BESCHREIBUNG =
   "Muss die Unterweisung übersetzt werden? Was gilt bei Mitarbeitern, die kaum Deutsch sprechen? Rechtslage (ArbSchG, BetrSichV, GefStoffV), typische Fehler und praktische Wege, wie du es sauber löst.";
 
+// ISR statt vollstatisch — siehe app/page.tsx für die ausführliche Begründung
+// (Vercels 1-Jahr-Edge-Cache für vollstatische Seiten sonst zu träge nach Deploys).
+export const revalidate = 3600;
+
 export const metadata: Metadata = {
   title: TITEL,
   description: BESCHREIBUNG,

@@ -6,6 +6,10 @@ const TITEL = "Unterweisung vergessen – was jetzt? (2026)";
 const BESCHREIBUNG =
   "Die jährliche Unterweisung ist überfällig oder ganz vergessen worden? Was du jetzt sofort tun solltest, warum Rückdatieren die schlechteste aller Ideen ist und welche Bußgelder wirklich drohen.";
 
+// ISR statt vollstatisch — siehe app/page.tsx für die ausführliche Begründung
+// (Vercels 1-Jahr-Edge-Cache für vollstatische Seiten sonst zu träge nach Deploys).
+export const revalidate = 3600;
+
 export const metadata: Metadata = {
   title: TITEL,
   description: BESCHREIBUNG,

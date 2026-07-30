@@ -6,6 +6,10 @@ const TITEL = "Gefährdungsbeurteilung und Unterweisung: Was hängt wie zusammen
 const BESCHREIBUNG =
   "Die beiden werden immer zusammen genannt, aber selten erklärt. Wer braucht eine Gefährdungsbeurteilung, warum liefert sie den Inhalt der Unterweisung – und was passiert, wenn sie fehlt?";
 
+// ISR statt vollstatisch — siehe app/page.tsx für die ausführliche Begründung
+// (Vercels 1-Jahr-Edge-Cache für vollstatische Seiten sonst zu träge nach Deploys).
+export const revalidate = 3600;
+
 export const metadata: Metadata = {
   title: TITEL,
   description: BESCHREIBUNG,
