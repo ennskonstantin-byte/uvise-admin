@@ -11,7 +11,17 @@ import { PasswordInput } from "@/components/PasswordInput";
 // Diese Seiten sind gesetzlich ohne Login erreichbar (Impressumspflicht)
 // + die Passwort-zurücksetzen-Seite (E-Mail-Link) + die öffentliche
 // Marketing-Startseite, von der aus man sich anmelden/registrieren kann.
-const PUBLIC_PATHS = ["/", "/impressum", "/datenschutz", "/agb", "/passwort-zuruecksetzen", "/kontakt", "/partner", "/ratgeber/unterweisung-vorlage", "/unterweisung-mehrsprachig", "/unterweisung-handwerk"];
+const PUBLIC_PATHS = ["/", "/impressum", "/datenschutz", "/agb", "/passwort-zuruecksetzen", "/kontakt", "/partner", "/unterweisung-mehrsprachig", "/unterweisung-handwerk"];
+
+// Öffentlich, ohne dass jeder Slug einzeln eingetragen werden muss: die
+// Ratgeber-Artikel sind reiner SEO-/Marketing-Content ohne geschützte Daten.
+// Vorher stand hier nur "/ratgeber/unterweisung-vorlage" einzeln in
+// PUBLIC_PATHS — die anderen 6 Artikel (und die Übersichtsseite /ratgeber
+// selbst) waren dadurch versehentlich hinter dem Login-Gate verborgen und
+// lieferten bei einem rohen HTTP-Abruf nur "Lädt…" statt Artikeltext aus.
+function istOeffentlicherPfad(pathname: string) {
+  return PUBLIC_PATHS.includes(pathname) || pathname.startsWith("/ratgeber");
+}
 
 function AuthForm() {
   const { reload } = useAppData();
@@ -374,7 +384,7 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
     };
   }, [session]);
 
-  if (PUBLIC_PATHS.includes(pathname)) {
+  if (istOeffentlicherPfad(pathname)) {
     return <>{children}</>;
   }
 
