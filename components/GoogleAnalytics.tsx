@@ -4,6 +4,15 @@ import { useEffect, useState } from "react";
 import Script from "next/script";
 import { getConsent, onConsentChange } from "@/lib/consent";
 
+// Global verfügbar, sobald diese Komponente das gtag.js-Snippet geladen hat
+// (siehe unten) — andere Stellen im Code (z.B. AuthGate.tsx fürs "sign_up"-
+// Event) greifen nur über die typeof-Guard-Abfrage darauf zu.
+declare global {
+  interface Window {
+    gtag?: (...args: unknown[]) => void;
+  }
+}
+
 // Lädt Google Analytics 4 (gtag.js) über next/script, damit es auf allen
 // Seiten nur einmal geladen wird — und erst, wenn der Nutzer per
 // CookieConsentBanner zugestimmt hat (Art. 6 Abs. 1 lit. a DSGVO, § 25

@@ -59,6 +59,13 @@ function AuthForm() {
     setLoading(true);
     setError(null);
 
+    // GA4: Formular abgeschickt, Konto/Firma noch nicht angelegt — nur ein
+    // Zwischenschritt-Signal, kein Conversion-Event. Feuert nur, wenn GA4 per
+    // Cookie-Consent geladen wurde (siehe components/GoogleAnalytics.tsx).
+    if (typeof window !== "undefined" && typeof window.gtag === "function") {
+      window.gtag("event", "begin_registration");
+    }
+
     const { data, error } = await supabase.auth.signUp({
       email: email.trim().toLowerCase(),
       password,
@@ -85,6 +92,14 @@ function AuthForm() {
       setError(rpcError.message);
       setLoading(false);
       return;
+    }
+
+    // GA4-Conversion: Firma + Chef-Konto erfolgreich angelegt. Empfohlenes
+    // Standard-Event "sign_up" (siehe Google-Doku). Feuert nur, wenn GA4 per
+    // Cookie-Consent geladen wurde — ohne Zustimmung existiert window.gtag
+    // nicht, die Guard-Abfrage verhindert dann jeden Fehler.
+    if (typeof window !== "undefined" && typeof window.gtag === "function") {
+      window.gtag("event", "sign_up", { method: "email" });
     }
 
     // Kam der Besuch über einen Partner-Link (?ref=CODE)? Dann die neue Firma
