@@ -96,9 +96,11 @@ Diese Website und die uVise-Apps nutzen aus Sicherheitsgründen eine SSL- bzw. T
 
 9. Cookies
 
-Für die Anmeldung wird kein Cookie, sondern eine Speicherung im localStorage Ihres Browsers/Geräts verwendet (technisch notwendig für die Login-Sitzung). Es findet kein Tracking und keine Werbung über Cookies statt.
+Für die Anmeldung wird kein Cookie, sondern eine Speicherung im localStorage Ihres Browsers/Geräts verwendet (technisch notwendig für die Login-Sitzung). Es findet keine Werbung über Cookies statt.
 
-Zur Reichweitenmessung der öffentlichen Website zählen wir Seitenaufrufe in anonymisierter Form: ohne Cookies, ohne Speicherung der IP-Adresse. Besucher werden ausschließlich über einen täglich wechselnden, nicht zurückrechenbaren Hash-Wert gezählt — eine Wiedererkennung über mehrere Tage oder eine Zuordnung zu einer Person ist damit nicht möglich. Rechtsgrundlage: Art. 6 Abs. 1 lit. f DSGVO (berechtigtes Interesse an der Messung der Reichweite unseres Angebots). Die "Do Not Track"-Einstellung Ihres Browsers wird respektiert.
+Zur Reichweitenmessung der öffentlichen Website zählen wir Seitenaufrufe zusätzlich in anonymisierter Form: ohne Cookies, ohne Speicherung der IP-Adresse. Besucher werden ausschließlich über einen täglich wechselnden, nicht zurückrechenbaren Hash-Wert gezählt — eine Wiedererkennung über mehrere Tage oder eine Zuordnung zu einer Person ist damit nicht möglich. Rechtsgrundlage: Art. 6 Abs. 1 lit. f DSGVO (berechtigtes Interesse an der Messung der Reichweite unseres Angebots). Die "Do Not Track"-Einstellung Ihres Browsers wird respektiert.
+
+Google Analytics: Mit Ihrer Einwilligung setzen wir zusätzlich Google Analytics 4 ein, einen Webanalysedienst der Google Ireland Limited (Gordon House, Barrow Street, Dublin 4, Irland; im Namen von Google LLC, USA). Google Analytics verwendet Cookies, die eine Analyse der Websitenutzung ermöglichen (u. a. Seitenaufrufe, Verweildauer, ungefähre Herkunft). Die dabei erzeugten Informationen werden an einen Server von Google übertragen und dort gespeichert; für die Übermittlung in die USA gelten das EU-US Data Privacy Framework bzw. die EU-Standardvertragsklauseln. Google Analytics wird ausschließlich geladen, wenn Sie im Cookie-Banner „Akzeptieren" ausgewählt haben. Rechtsgrundlage ist in diesem Fall Ihre Einwilligung (Art. 6 Abs. 1 lit. a DSGVO, § 25 Abs. 1 TTDSG). Sie können Ihre Einwilligung jederzeit mit Wirkung für die Zukunft widerrufen, indem Sie im Browser den localStorage-Eintrag „uvise-consent" löschen und die Auswahl im Banner erneut treffen.
 
 10. Ihre Rechte
 

@@ -2,6 +2,8 @@ import type { Metadata, Viewport } from "next";
 import { Inter, Space_Grotesk } from "next/font/google";
 import { AppDataProvider } from "@/lib/store";
 import { AuthGate } from "@/components/AuthGate";
+import { GoogleAnalytics } from "@/components/GoogleAnalytics";
+import { CookieConsentBanner } from "@/components/CookieConsentBanner";
 import "./globals.css";
 
 const inter = Inter({
@@ -50,9 +52,11 @@ export default function RootLayout({
         />
       </head>
       <body className="min-h-full flex flex-col">
+        <GoogleAnalytics />
         <AppDataProvider>
           <AuthGate>{children}</AuthGate>
         </AppDataProvider>
+        <CookieConsentBanner />
       </body>
     </html>
   );
