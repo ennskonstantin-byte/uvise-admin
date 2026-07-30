@@ -16,6 +16,10 @@ import {
   Check,
   Menu,
   X,
+  HardHat,
+  Zap,
+  HeartPulse,
+  UtensilsCrossed,
 } from "lucide-react";
 import { LogoMark } from "@/components/Logo";
 import { Switch } from "@/components/Switch";
@@ -95,6 +99,15 @@ const PRODUCTS = [
   },
 ];
 
+const BRANCHEN = [
+  { icon: HardHat, title: "Handwerk", href: "/unterweisung-handwerk" },
+  { icon: HardHat, title: "Baustelle", href: "/unterweisung-baustelle" },
+  { icon: Zap, title: "Elektro", href: "/unterweisung-elektro" },
+  { icon: HeartPulse, title: "Pflege", href: "/unterweisung-pflege" },
+  { icon: UtensilsCrossed, title: "Gastronomie", href: "/unterweisung-gastronomie" },
+  { icon: Languages, title: "Mehrsprachige Teams", href: "/unterweisung-mehrsprachig" },
+];
+
 // Placard-Tag: ersetzt die generische Pill-Badge-Optik durch ein
 // schmales, mono-gesetztes Etikett — wie eine Kennzeichnung auf einem
 // echten Werkstatt-/Baustellenschild statt eines SaaS-Chips.
@@ -159,6 +172,7 @@ export function MarketingHome() {
             <a href="#ausprobieren" className="whitespace-nowrap hover:text-[var(--mk-ink)]">Live ausprobieren</a>
             <a href="#vorlesen" className="whitespace-nowrap hover:text-[var(--mk-ink)]">Vorlesen & Übersetzen</a>
             <a href="#funktionen" className="whitespace-nowrap hover:text-[var(--mk-ink)]">Funktionen</a>
+            <a href="#branchen" className="whitespace-nowrap hover:text-[var(--mk-ink)]">Branchen</a>
             <a href="#preise" className="whitespace-nowrap hover:text-[var(--mk-ink)]">Preise</a>
             <a href="#faq" className="whitespace-nowrap hover:text-[var(--mk-ink)]">FAQ</a>
           </nav>
@@ -243,6 +257,9 @@ export function MarketingHome() {
           </a>
           <a href="#funktionen" onClick={() => setMenuOpen(false)} className="rounded-[8px] px-3 py-3 text-sm font-medium text-[var(--mk-ink-70)]">
             Funktionen
+          </a>
+          <a href="#branchen" onClick={() => setMenuOpen(false)} className="rounded-[8px] px-3 py-3 text-sm font-medium text-[var(--mk-ink-70)]">
+            Branchen
           </a>
           <a href="#preise" onClick={() => setMenuOpen(false)} className="rounded-[8px] px-3 py-3 text-sm font-medium text-[var(--mk-ink-70)]">
             Preise
@@ -476,6 +493,43 @@ export function MarketingHome() {
           </div>
         </section>
 
+        {/* Branchen */}
+        <section id="branchen" className="scroll-mt-16">
+          <SignalRule />
+          <div className="mx-auto max-w-6xl px-5 sm:px-8 py-28 sm:py-32">
+            <Reveal className="max-w-xl mb-12">
+              <h2 className="mk-display text-3xl font-bold mb-3">Für deine Branche</h2>
+              <p className="text-[var(--mk-ink-65)]">
+                uVise passt sich keiner bestimmten Branche an — die Unterweisungsinhalte bringst du
+                selbst mit. Typische Gefährdungen und Anforderungen unterscheiden sich trotzdem je
+                nach Branche:
+              </p>
+            </Reveal>
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+              {BRANCHEN.map((b, i) => (
+                <Reveal key={b.href} delay={(i % 3) * 0.06}>
+                  <Link href={b.href} className="block h-full">
+                    <motion.div
+                      whileHover={{ y: -4 }}
+                      transition={{ duration: 0.2 }}
+                      className="h-full rounded-[14px] border p-6 flex items-center gap-4"
+                      style={{ borderColor: "var(--mk-line)", background: "var(--mk-panel)" }}
+                    >
+                      <div
+                        className="h-11 w-11 shrink-0 rounded-[8px] flex items-center justify-center border"
+                        style={{ borderColor: "var(--mk-line-strong)", color: "var(--mk-ink)" }}
+                      >
+                        <b.icon size={20} />
+                      </div>
+                      <span className="font-semibold">{b.title}</span>
+                    </motion.div>
+                  </Link>
+                </Reveal>
+              ))}
+            </div>
+          </div>
+        </section>
+
         {/* Preise */}
         <section id="preise" className="scroll-mt-16">
           <SignalRule />
@@ -684,8 +738,12 @@ export function MarketingHome() {
               </a>
             </div>
           </div>
-          <nav aria-label="Rechtliches" className="flex gap-5 text-xs text-[var(--mk-ink-60)]">
+          <nav aria-label="Rechtliches" className="flex flex-wrap justify-center gap-x-5 gap-y-2 text-xs text-[var(--mk-ink-60)]">
             <Link href="/unterweisung-handwerk" className="hover:text-[var(--mk-ink)]">Unterweisung Handwerk</Link>
+            <Link href="/unterweisung-baustelle" className="hover:text-[var(--mk-ink)]">Unterweisung Baustelle</Link>
+            <Link href="/unterweisung-elektro" className="hover:text-[var(--mk-ink)]">Unterweisung Elektro</Link>
+            <Link href="/unterweisung-pflege" className="hover:text-[var(--mk-ink)]">Unterweisung Pflege</Link>
+            <Link href="/unterweisung-gastronomie" className="hover:text-[var(--mk-ink)]">Unterweisung Gastronomie</Link>
             <Link href="/unterweisung-mehrsprachig" className="hover:text-[var(--mk-ink)]">Unterweisung mehrsprachig</Link>
             <Link href="/ratgeber/unterweisung-vorlage" className="hover:text-[var(--mk-ink)]">Unterweisung-Vorlage</Link>
             <Link href="/kontakt" className="hover:text-[var(--mk-ink)]">Kontakt</Link>
