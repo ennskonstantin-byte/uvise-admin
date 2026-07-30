@@ -16,6 +16,12 @@ export const ARTIKEL = [
     dauer: "6 Min.",
   },
   {
+    slug: "sicherheitsunterweisung",
+    titel: "Sicherheitsunterweisung: Pflicht, Inhalte und Ablauf",
+    text: "Was der gängige Begriff „Sicherheitsunterweisung“ rechtlich bedeutet, welche Themen typisch reingehören und wie der Ablauf sauber dokumentiert wird.",
+    dauer: "6 Min.",
+  },
+  {
     slug: "unterweisung-vorlage",
     titel: "Unterweisung Vorlage: kostenloses Muster + Anleitung",
     text: "Fertige Muster-Vorlage zum Kopieren, plus Anleitung: Wie oft musst du unterweisen und was gehört rechtlich in den Nachweis?",
