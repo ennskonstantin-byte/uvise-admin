@@ -334,9 +334,9 @@ export function MarketingHome() {
                 <span style={{ color: "var(--mk-blue)" }}>von selbst erledigt.</span>
               </h1>
               <p className="text-lg text-[var(--mk-ink-65)] mb-9 max-w-md leading-relaxed">
-                Die digitale Unterweisungs-Software für den Arbeitsschutz kümmert sich selbst um
-                Fristen, Erinnerungen und rechtssichere Unterschriften — mehrsprachig und ohne
-                Papierkram.
+                Die Unterweisungssoftware für den Arbeitsschutz kümmert sich selbst um Fristen,
+                Erinnerungen und rechtssichere Unterschriften — mehrsprachig und erledigt den
+                Papierkram für dich.
               </p>
               <div className="flex flex-wrap gap-3">
                 {/* Haupt-CTA mit umlaufendem Leuchtpunkt in Warngelb —

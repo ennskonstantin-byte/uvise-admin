@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { LogoMark } from "@/components/Logo";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
+import { ShareButtons } from "@/components/ShareButtons";
 
 const TITEL = "Gefährdungsbeurteilung und Unterweisung: Was hängt wie zusammen? (2026)";
 const BESCHREIBUNG =
@@ -257,6 +258,8 @@ export default function GefaehrdungsbeurteilungPage() {
             sind die jeweils geltenden Gesetze und die für deinen Betrieb zuständige Berufsgenossenschaft.
           </p>
         </div>
+
+        <ShareButtons url="https://www.uvise.de/ratgeber/gefaehrdungsbeurteilung-unterweisung" title={TITEL} />
 
         <nav className="flex flex-wrap gap-4 mt-6 text-sm text-foreground/60">
           <Link href="/ratgeber" className="hover:text-foreground underline-offset-4 hover:underline">

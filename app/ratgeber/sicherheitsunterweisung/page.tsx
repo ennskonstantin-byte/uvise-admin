@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { LogoMark } from "@/components/Logo";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
+import { ShareButtons } from "@/components/ShareButtons";
 
 const TITEL = "Sicherheitsunterweisung: Pflicht, Inhalte, Ablauf";
 const BESCHREIBUNG =
@@ -258,6 +259,8 @@ export default function SicherheitsunterweisungPage() {
             Berufsgenossenschaft oder Unfallkasse.
           </p>
         </div>
+
+        <ShareButtons url="https://www.uvise.de/ratgeber/sicherheitsunterweisung" title={TITEL} />
 
         <nav className="flex flex-wrap gap-4 mt-6 text-sm text-foreground/60">
           <Link href="/ratgeber" className="hover:text-foreground underline-offset-4 hover:underline">
