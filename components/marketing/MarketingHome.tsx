@@ -20,6 +20,10 @@ import {
   Zap,
   HeartPulse,
   UtensilsCrossed,
+  Car,
+  Wrench,
+  Warehouse,
+  TreeDeciduous,
 } from "lucide-react";
 import { LogoMark } from "@/components/Logo";
 import { Switch } from "@/components/Switch";
@@ -105,6 +109,10 @@ const BRANCHEN = [
   { icon: Zap, title: "Elektro", href: "/unterweisung-elektro" },
   { icon: HeartPulse, title: "Pflege", href: "/unterweisung-pflege" },
   { icon: UtensilsCrossed, title: "Gastronomie", href: "/unterweisung-gastronomie" },
+  { icon: Car, title: "KFZ-Werkstatt", href: "/unterweisung-kfz" },
+  { icon: Wrench, title: "SHK", href: "/unterweisung-shk" },
+  { icon: Warehouse, title: "Lager & Logistik", href: "/unterweisung-lager-logistik" },
+  { icon: TreeDeciduous, title: "GaLaBau", href: "/unterweisung-galabau" },
   { icon: Languages, title: "Mehrsprachige Teams", href: "/unterweisung-mehrsprachig" },
 ];
 
@@ -744,6 +752,10 @@ export function MarketingHome() {
             <Link href="/unterweisung-elektro" className="hover:text-[var(--mk-ink)]">Unterweisung Elektro</Link>
             <Link href="/unterweisung-pflege" className="hover:text-[var(--mk-ink)]">Unterweisung Pflege</Link>
             <Link href="/unterweisung-gastronomie" className="hover:text-[var(--mk-ink)]">Unterweisung Gastronomie</Link>
+            <Link href="/unterweisung-kfz" className="hover:text-[var(--mk-ink)]">Unterweisung KFZ</Link>
+            <Link href="/unterweisung-shk" className="hover:text-[var(--mk-ink)]">Unterweisung SHK</Link>
+            <Link href="/unterweisung-lager-logistik" className="hover:text-[var(--mk-ink)]">Unterweisung Lager & Logistik</Link>
+            <Link href="/unterweisung-galabau" className="hover:text-[var(--mk-ink)]">Unterweisung GaLaBau</Link>
             <Link href="/unterweisung-mehrsprachig" className="hover:text-[var(--mk-ink)]">Unterweisung mehrsprachig</Link>
             <Link href="/ratgeber/unterweisung-vorlage" className="hover:text-[var(--mk-ink)]">Unterweisung-Vorlage</Link>
             <Link href="/kontakt" className="hover:text-[var(--mk-ink)]">Kontakt</Link>

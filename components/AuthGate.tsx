@@ -11,7 +11,7 @@ import { PasswordInput } from "@/components/PasswordInput";
 // Diese Seiten sind gesetzlich ohne Login erreichbar (Impressumspflicht)
 // + die Passwort-zurücksetzen-Seite (E-Mail-Link) + die öffentliche
 // Marketing-Startseite, von der aus man sich anmelden/registrieren kann.
-const PUBLIC_PATHS = ["/", "/impressum", "/datenschutz", "/agb", "/passwort-zuruecksetzen", "/kontakt", "/partner", "/unterweisung-mehrsprachig", "/unterweisung-handwerk", "/unterweisung-baustelle", "/unterweisung-elektro", "/unterweisung-pflege", "/unterweisung-gastronomie"];
+const PUBLIC_PATHS = ["/", "/impressum", "/datenschutz", "/agb", "/passwort-zuruecksetzen", "/kontakt", "/partner", "/unterweisung-mehrsprachig", "/unterweisung-handwerk", "/unterweisung-baustelle", "/unterweisung-elektro", "/unterweisung-pflege", "/unterweisung-gastronomie", "/unterweisung-kfz", "/unterweisung-shk", "/unterweisung-lager-logistik", "/unterweisung-galabau"];
 
 // Öffentlich, ohne dass jeder Slug einzeln eingetragen werden muss: die
 // Ratgeber-Artikel sind reiner SEO-/Marketing-Content ohne geschützte Daten.
