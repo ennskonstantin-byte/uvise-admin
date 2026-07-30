@@ -22,6 +22,24 @@ export const ARTIKEL = [
     dauer: "6 Min.",
   },
   {
+    slug: "brandschutzunterweisung",
+    titel: "Brandschutzunterweisung: Pflicht, Inhalte und Häufigkeit",
+    text: "Was ASR A2.2 und DGUV Vorschrift 1 zur Brandschutzunterweisung verlangen, wie oft sie fällig ist und was Brandschutzhelfer damit zu tun haben.",
+    dauer: "6 Min.",
+  },
+  {
+    slug: "erste-hilfe-unterweisung",
+    titel: "Erste-Hilfe-Unterweisung und Ersthelfer im Betrieb",
+    text: "Wie viele Ersthelfer dein Betrieb braucht, wie oft die Ausbildung aufgefrischt werden muss und was zur betrieblichen Ersten Hilfe noch dazugehört.",
+    dauer: "6 Min.",
+  },
+  {
+    slug: "gefahrstoffunterweisung",
+    titel: "Gefahrstoffunterweisung: Pflicht, Betriebsanweisung, Ablauf",
+    text: "Warum die Gefahrstoffunterweisung mündlich und stoffbezogen erfolgen muss, wie sie mit der Betriebsanweisung zusammenhängt und wie oft sie fällig ist.",
+    dauer: "6 Min.",
+  },
+  {
     slug: "unterweisung-vorlage",
     titel: "Unterweisung Vorlage: kostenloses Muster + Anleitung",
     text: "Fertige Muster-Vorlage zum Kopieren, plus Anleitung: Wie oft musst du unterweisen und was gehört rechtlich in den Nachweis?",
