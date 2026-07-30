@@ -63,7 +63,7 @@ export function ArchiveDocumentModal({
     setVerifyResult(null);
     const { data, error } = await supabase
       .rpc("verify_training_signature", { p_employee_training_id: entry.id })
-      .maybeSingle();
+      .maybeSingle<{ gueltig: boolean; grund: string }>();
     setChecking(false);
     if (error || !data) {
       setVerifyResult({ gueltig: false, grund: "Prüfung fehlgeschlagen. Bitte erneut versuchen." });
