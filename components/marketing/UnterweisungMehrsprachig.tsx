@@ -15,6 +15,7 @@ import {
   X,
 } from "lucide-react";
 import { LogoMark } from "@/components/Logo";
+import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { Switch } from "@/components/Switch";
 import { Reveal } from "@/components/marketing/Reveal";
 import { VorlesenDemo } from "@/components/marketing/VorlesenDemo";
@@ -231,6 +232,15 @@ export function UnterweisungMehrsprachig({ faq }: { faq: FaqItem[] }) {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
             >
+              <Breadcrumbs
+                items={[
+                  { label: "Startseite", href: "/" },
+                  { label: "Unterweisung mehrsprachig" },
+                ]}
+                className="mb-5 flex flex-wrap items-center gap-1.5 text-xs text-[var(--mk-ink-50)]"
+                currentClassName="text-[var(--mk-ink-70)]"
+                linkClassName="hover:text-[var(--mk-ink)] hover:underline underline-offset-4"
+              />
               <PlacardTag>
                 <Languages size={13} /> 41 Sprachen
               </PlacardTag>

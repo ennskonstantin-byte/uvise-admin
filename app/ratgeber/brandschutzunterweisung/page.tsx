@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { LogoMark } from "@/components/Logo";
+import { Breadcrumbs } from "@/components/Breadcrumbs";
 
 const TITEL = "Brandschutzunterweisung: Pflicht, Inhalte, Häufigkeit";
 const BESCHREIBUNG =
@@ -93,6 +94,14 @@ export default function BrandschutzunterweisungPage() {
           <LogoMark size={40} />
           <span className="text-lg font-semibold">uVise</span>
         </Link>
+
+        <Breadcrumbs
+          items={[
+            { label: "Startseite", href: "/" },
+            { label: "Ratgeber", href: "/ratgeber" },
+            { label: "Brandschutzunterweisung: Pflicht, Inhalte und Häufigkeit" },
+          ]}
+        />
 
         <div className="rounded-3xl bg-background border border-border p-6 sm:p-10 leading-7 text-foreground/85">
           <p className="text-xs font-medium uppercase tracking-wide text-foreground/50 mb-3">
