@@ -5,6 +5,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   const base = "https://www.uvise.de";
   return [
     { url: base, lastModified: new Date(), changeFrequency: "weekly", priority: 1 },
+    { url: `${base}/preise`, lastModified: new Date(), changeFrequency: "monthly", priority: 0.9 },
     { url: `${base}/unterweisung-mehrsprachig`, lastModified: new Date(), changeFrequency: "monthly", priority: 0.9 },
     { url: `${base}/unterweisung-handwerk`, lastModified: new Date(), changeFrequency: "monthly", priority: 0.9 },
     { url: `${base}/unterweisung-baustelle`, lastModified: new Date(), changeFrequency: "monthly", priority: 0.9 },

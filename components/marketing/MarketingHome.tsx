@@ -645,6 +645,11 @@ export function MarketingHome() {
                   {ENTERPRISE_KONTAKT.linkText}
                 </Link>
               </p>
+              <p className="mt-2 text-center text-sm">
+                <Link href="/preise" className="font-semibold hover:underline" style={{ color: "var(--mk-blue-strong)" }}>
+                  Alle Details & Tarifvergleich →
+                </Link>
+              </p>
             </Reveal>
           </div>
         </section>
