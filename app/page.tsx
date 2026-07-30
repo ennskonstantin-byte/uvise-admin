@@ -2,14 +2,16 @@ import type { Metadata } from "next";
 import { MarketingHome } from "@/components/marketing/MarketingHome";
 import { FAQ } from "@/components/marketing/faqData";
 
+const TITEL = "Unterweisungssoftware für Handwerk & kleine Betriebe – uVise";
+
 const BESCHREIBUNG =
-  "uVise digitalisiert Mitarbeiter-Unterweisungen und Qualifikationen: Erinnerungen, rechtssichere Unterschriften und Vorlesefunktion in 41 Sprachen.";
+  "uVise: Unterweisungssoftware für Handwerk & kleine Betriebe. Digitale Unterweisung in 41 Sprachen, rechtssicher signiert. 7 Tage kostenlos testen.";
 
 // Eigene Metadaten für die öffentliche Startseite (statt des generischen
 // "uVise Admin"-Titels aus dem Root-Layout) — wichtig für Google-Suche
 // und die Vorschau, wenn der Link z.B. in WhatsApp/Slack geteilt wird.
 export const metadata: Metadata = {
-  title: "uVise — Digitale Unterweisungen, Nachweise & Erinnerungen",
+  title: TITEL,
   description: BESCHREIBUNG,
   // Meta-Keywords werden von Google zwar kaum noch gewichtet, schaden aber
   // nicht und helfen manchen kleineren Suchmaschinen.
@@ -35,17 +37,24 @@ export const metadata: Metadata = {
     canonical: "https://www.uvise.de",
   },
   openGraph: {
-    title: "uVise — Digitale Unterweisungen, Nachweise & Erinnerungen",
+    title: TITEL,
     description: BESCHREIBUNG,
     url: "https://www.uvise.de",
     siteName: "uVise",
     locale: "de_DE",
     type: "website",
-    images: [{ url: "https://www.uvise.de/og-banner.png", width: 1200, height: 630, alt: "uVise — Digitale Unterweisungen" }],
+    images: [
+      {
+        url: "https://www.uvise.de/og-banner.png",
+        width: 1200,
+        height: 630,
+        alt: "uVise — Unterweisungssoftware für Handwerk & kleine Betriebe",
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "uVise — Digitale Unterweisungen, Nachweise & Erinnerungen",
+    title: TITEL,
     description: BESCHREIBUNG,
     images: ["https://www.uvise.de/og-banner.png"],
   },

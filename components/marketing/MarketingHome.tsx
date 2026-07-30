@@ -305,8 +305,8 @@ export function MarketingHome() {
                 className="mk-display font-bold tracking-[-0.03em] leading-[1.04] mt-7 mb-6"
                 style={{ fontSize: "clamp(2.25rem, 3.8vw, 3.25rem)" }}
               >
-                Unterweisungen, die sich{" "}
-                <span style={{ color: "var(--mk-blue)" }}>von selbst erledigen.</span>
+                Die Unterweisungssoftware, die sich{" "}
+                <span style={{ color: "var(--mk-blue)" }}>von selbst erledigt.</span>
               </h1>
               <p className="text-lg text-[var(--mk-ink-65)] mb-9 max-w-md leading-relaxed">
                 Die digitale Unterweisungs-Software für den Arbeitsschutz kümmert sich selbst um
@@ -357,9 +357,9 @@ export function MarketingHome() {
                 <Languages size={13} /> Verstanden wird jeder
               </PlacardTag>
               <h2 className="mk-display text-3xl sm:text-4xl font-bold mb-4 mt-5 leading-tight">
-                Vorlesen & Übersetzen —
+                Unterweisungen in 41 Sprachen —
                 <br />
-                für jedes Team im Betrieb.
+                rechtssicher für fremdsprachige Mitarbeiter.
               </h2>
               <p className="text-[var(--mk-ink-65)] mb-6 max-w-md">
                 Nicht jeder liest gern lange Texte, nicht jeder spricht perfekt Deutsch. Mitarbeiter
@@ -390,7 +390,7 @@ export function MarketingHome() {
           <SignalRule />
           <div className="mx-auto max-w-6xl px-5 sm:px-8 py-28 sm:py-32">
             <Reveal className="max-w-xl mb-12">
-              <h2 className="mk-display text-3xl font-bold mb-3">Alles, was eine Unterweisung braucht</h2>
+              <h2 className="mk-display text-3xl font-bold mb-3">Digitale Unterweisung für Handwerk & Kleinbetriebe</h2>
               <p className="text-[var(--mk-ink-65)]">
                 Sicherheitsunterweisungen, Qualifikationen und Nachweise an einem Ort — von der
                 Erinnerung bis zur rechtssicheren Unterschrift. Konzipiert für Handwerk und kleine
