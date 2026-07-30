@@ -2,102 +2,55 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { motion, useReducedMotion } from "framer-motion";
 import {
+  Scale,
+  Languages,
   ShieldCheck,
-  BellRing,
   Smartphone,
-  MessageCircleQuestion,
-  FileDown,
+  Check,
   Moon,
   Sun,
-  Languages,
-  Check,
   Menu,
   X,
 } from "lucide-react";
 import { LogoMark } from "@/components/Logo";
 import { Switch } from "@/components/Switch";
-import { useAppData } from "@/lib/store";
-import { PLANS } from "@/lib/types";
 import { Reveal } from "@/components/marketing/Reveal";
 import { VorlesenDemo } from "@/components/marketing/VorlesenDemo";
-import { AppPreview } from "@/components/marketing/AppPreview";
 import { SignalRule } from "@/components/marketing/SignalRule";
 import { Button as MovingBorderButton } from "@/components/ui/moving-border";
-import { AmpelDots } from "@/components/marketing/AmpelDots";
 import { SUPPORT_EMAIL, FACEBOOK_URL, INSTAGRAM_URL } from "@/lib/legal";
 import { TrackPageView } from "@/components/TrackPageView";
 import { AffiliateRef } from "@/components/AffiliateRef";
 import { ChatWidget } from "@/components/marketing/ChatWidget";
-import { FAQ } from "@/components/marketing/faqData";
 
-const FEATURES = [
+type FaqItem = { q: string; a: string };
+
+const VORTEILE = [
+  {
+    icon: Scale,
+    title: "Rechtssicher",
+    text: "Erfüllt die Vorgabe aus ArbSchG & DGUV Vorschrift 1, dass die Unterweisung in einer für den Mitarbeiter verständlichen Sprache erfolgen muss.",
+  },
   {
     icon: ShieldCheck,
-    title: "Rechtssichere Signatur",
-    text: "Unterweisungen werden nach eIDAS-Grundsätzen digital unterschrieben — Zeitstempel, Gerät und Unterschrift unveränderlich gespeichert.",
+    title: "Lückenlos dokumentiert",
+    text: "Gewählte Sprache, Zeitstempel und Unterschrift landen automatisch im Nachweis — startklar für die Berufsgenossenschaft.",
   },
   {
-    icon: BellRing,
-    title: "Automatische Erinnerungen",
-    text: "Läuft eine Qualifikation oder Unterweisung bald ab, bekommen Chef und Mitarbeiter rechtzeitig eine E-Mail.",
-  },
-  {
-    icon: MessageCircleQuestion,
-    title: "Rückfragen in Echtzeit",
-    text: "Unklarheiten direkt aus der Unterweisung heraus klären — die Antwort kommt sofort auf dem Handy an.",
-  },
-  {
-    // Einzige Karte mit eigenem Ampel-Symbol statt Icon-Kachel: die
-    // Funktion, die dem gesamten Seiten-Leitmotiv (der Ampel-Leiste)
-    // ihren Namen gibt, bekommt auch visuell die echte Ampel.
-    special: "ampel" as const,
-    title: "Ampel-System",
-    text: "Auf einen Blick sehen, wer offene Punkte hat — sortiert nach Kategorie, Abteilung oder Standort.",
-  },
-  {
-    icon: FileDown,
-    title: "Export für Prüfungen",
-    text: "Nachweise und Qualifikationen als CSV oder gebündeltes ZIP-Backup — startklar für die Berufsgenossenschaft.",
+    icon: Languages,
+    title: "Kein Dolmetscher nötig",
+    text: "uVise übersetzt und liest jede Unterweisung selbst vor — ohne externen Übersetzer und ohne Wartezeit.",
   },
   {
     icon: Smartphone,
-    title: "Eigene Mitarbeiter-App",
-    text: "Kein Firmen-Laptop nötig — dein Team erledigt Unterweisungen bequem auf dem eigenen Handy.",
-  },
-  {
-    icon: Moon,
-    title: "Hell & Dunkel",
-    text: "Durchdachtes Design für Büro und Werkstatt — mit vollem Dark-Mode-Support in jeder App.",
+    title: "Auf jedem Handy",
+    text: "Jeder Mitarbeiter wählt seine Sprache selbst in der eigenen App — kein Firmen-Gerät nötig.",
   },
 ];
 
-const PRODUCTS = [
-  {
-    tag: "Für Beauftragte & Chefs",
-    edge: "blue" as const,
-    title: "Web-Dashboard",
-    text: "Mitarbeiter anlegen, Unterweisungen verteilen, Qualifikationen im Blick behalten — genau das, was du gerade ansiehst.",
-  },
-  {
-    tag: "Für Beauftragte & Chefs",
-    edge: "blue" as const,
-    title: "Chef-App fürs Handy",
-    text: "Dieselbe Verwaltung wie das Dashboard, aber unterwegs — z.B. direkt in der Werkstatt oder auf der Baustelle.",
-  },
-  {
-    tag: "Für dein Team",
-    edge: "green" as const,
-    title: "Mitarbeiter-App",
-    text: "Unterweisungen ansehen, vorlesen lassen, unterschreiben, Rückfragen stellen — komplett von unterwegs, ohne Papier.",
-  },
-];
-
-// Placard-Tag: ersetzt die generische Pill-Badge-Optik durch ein
-// schmales, mono-gesetztes Etikett — wie eine Kennzeichnung auf einem
-// echten Werkstatt-/Baustellenschild statt eines SaaS-Chips.
+// Placard-Tag im selben Stil wie auf der Startseite (components/marketing/MarketingHome.tsx).
 function PlacardTag({ children }: { children: React.ReactNode }) {
   return (
     <span
@@ -109,16 +62,14 @@ function PlacardTag({ children }: { children: React.ReactNode }) {
   );
 }
 
-export function MarketingHome() {
-  const { session, loading } = useAppData();
-  const router = useRouter();
+// Eigenständige Landingpage für die Ziel-Keywords rund um mehrsprachige
+// Unterweisungen — nutzt exakt dieselben Bausteine, Farben (--mk-*-Variablen)
+// und denselben Hell/Dunkel-Support wie die Startseite (MarketingHome.tsx),
+// damit sie sich nahtlos einfügt, ohne deren Code zu verändern.
+export function UnterweisungMehrsprachig({ faq }: { faq: FaqItem[] }) {
   const [menuOpen, setMenuOpen] = useState(false);
-  const [billing, setBilling] = useState<"monatlich" | "jaehrlich">("monatlich");
   const [openFaq, setOpenFaq] = useState<number | null>(0);
 
-  // Hell/Dunkel — dieselbe Umschaltung wie im Chef-Dashboard (Sidebar.tsx)
-  // und in den beiden Apps, damit die Wahl konsistent auf der ganzen
-  // Domain gilt (gleicher localStorage-Schlüssel "uvise-theme").
   const [dark, setDark] = useState(false);
   useEffect(() => {
     setDark(document.documentElement.classList.contains("dark"));
@@ -130,36 +81,26 @@ export function MarketingHome() {
     document.documentElement.classList.add(mode);
     localStorage.setItem("uvise-theme", mode);
   }
-  // Barrierefreiheit: wer in den Systemeinstellungen Animationen reduziert
-  // hat, bekommt keine Bewegung — nur ein einfaches Einblenden.
   const reduceMotion = useReducedMotion();
-
-  // Wer schon eingeloggt ist, landet direkt im Dashboard statt auf der
-  // Marketing-Seite (die trotzdem kurz sichtbar sein kann, während die
-  // Sitzung im Hintergrund geprüft wird).
-  useEffect(() => {
-    if (!loading && session) router.replace("/dashboard");
-  }, [loading, session, router]);
 
   return (
     <div className="uv-mk min-h-screen overflow-x-hidden">
-      <TrackPageView path="/" />
+      <TrackPageView path="/unterweisung-mehrsprachig" />
       <AffiliateRef />
       <header
         className="sticky top-0 z-40 border-b backdrop-blur"
         style={{ borderColor: "var(--mk-line)", background: "color-mix(in srgb, var(--mk-panel) 85%, transparent)" }}
       >
         <div className="mx-auto max-w-6xl px-5 sm:px-8 h-16 flex items-center justify-between">
-          <a href="#top" className="flex items-center gap-2.5">
+          <Link href="/" className="flex items-center gap-2.5">
             <LogoMark size={34} />
             <span className="mk-display text-lg font-bold tracking-tight">uVise</span>
-          </a>
+          </Link>
 
           <nav className="hidden lg:flex items-center gap-8 text-sm text-[var(--mk-ink-70)]">
-            <a href="#ausprobieren" className="whitespace-nowrap hover:text-[var(--mk-ink)]">Live ausprobieren</a>
-            <a href="#vorlesen" className="whitespace-nowrap hover:text-[var(--mk-ink)]">Vorlesen & Übersetzen</a>
-            <a href="#funktionen" className="whitespace-nowrap hover:text-[var(--mk-ink)]">Funktionen</a>
-            <a href="#preise" className="whitespace-nowrap hover:text-[var(--mk-ink)]">Preise</a>
+            <a href="#rechtslage" className="whitespace-nowrap hover:text-[var(--mk-ink)]">Die Rechtslage</a>
+            <a href="#loesung" className="whitespace-nowrap hover:text-[var(--mk-ink)]">Wie uVise das löst</a>
+            <a href="#vorteile" className="whitespace-nowrap hover:text-[var(--mk-ink)]">Vorteile</a>
             <a href="#faq" className="whitespace-nowrap hover:text-[var(--mk-ink)]">FAQ</a>
           </nav>
 
@@ -201,11 +142,6 @@ export function MarketingHome() {
         <SignalRule />
       </header>
 
-      {/* Immer im DOM (nicht bedingt gemountet) und rein über CSS-Transitions
-          ein-/ausgeklappt — robuster als framer-motion für ein fixed-position
-          Element. Als Geschwister-Element außerhalb des Headers, weil dessen
-          "backdrop-blur" sonst zum containing block für "position: fixed"
-          wird und das Menü dadurch am Header statt am ganzen Bildschirm klebt. */}
       <div
         onClick={() => setMenuOpen(false)}
         aria-hidden={!menuOpen}
@@ -220,10 +156,10 @@ export function MarketingHome() {
         style={{ background: "var(--mk-panel)" }}
       >
         <div className="flex items-center justify-between mb-8">
-          <a href="#top" className="flex items-center gap-2">
+          <Link href="/" className="flex items-center gap-2">
             <LogoMark size={28} />
             <span className="mk-display font-bold text-lg tracking-tight">uVise</span>
-          </a>
+          </Link>
           <button
             onClick={() => setMenuOpen(false)}
             className="h-10 w-10 flex items-center justify-center rounded-[8px] border"
@@ -235,17 +171,14 @@ export function MarketingHome() {
         </div>
 
         <nav className="flex flex-col gap-1">
-          <a href="#ausprobieren" onClick={() => setMenuOpen(false)} className="rounded-[8px] px-3 py-3 text-sm font-medium text-[var(--mk-ink-70)]">
-            Live ausprobieren
+          <a href="#rechtslage" onClick={() => setMenuOpen(false)} className="rounded-[8px] px-3 py-3 text-sm font-medium text-[var(--mk-ink-70)]">
+            Die Rechtslage
           </a>
-          <a href="#vorlesen" onClick={() => setMenuOpen(false)} className="rounded-[8px] px-3 py-3 text-sm font-medium text-[var(--mk-ink-70)]">
-            Vorlesen & Übersetzen
+          <a href="#loesung" onClick={() => setMenuOpen(false)} className="rounded-[8px] px-3 py-3 text-sm font-medium text-[var(--mk-ink-70)]">
+            Wie uVise das löst
           </a>
-          <a href="#funktionen" onClick={() => setMenuOpen(false)} className="rounded-[8px] px-3 py-3 text-sm font-medium text-[var(--mk-ink-70)]">
-            Funktionen
-          </a>
-          <a href="#preise" onClick={() => setMenuOpen(false)} className="rounded-[8px] px-3 py-3 text-sm font-medium text-[var(--mk-ink-70)]">
-            Preise
+          <a href="#vorteile" onClick={() => setMenuOpen(false)} className="rounded-[8px] px-3 py-3 text-sm font-medium text-[var(--mk-ink-70)]">
+            Vorteile
           </a>
           <a href="#faq" onClick={() => setMenuOpen(false)} className="rounded-[8px] px-3 py-3 text-sm font-medium text-[var(--mk-ink-70)]">
             FAQ
@@ -279,10 +212,8 @@ export function MarketingHome() {
       </div>
 
       <main id="top">
-        {/* Hero — startet direkt mit der klickbaren Live-Vorschau statt einem Fake-Mockup */}
-        <section id="ausprobieren" className="scroll-mt-16 relative">
-          {/* Warnschild-Silhouette statt Farbverlaufs-Blobs: ruhiges,
-              gegenstandsbezogenes Wasserzeichen statt generischem Glow. */}
+        {/* Hero */}
+        <section className="scroll-mt-16 relative">
           <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
             <svg
               className="absolute -top-16 -right-28 opacity-[0.05]"
@@ -300,22 +231,23 @@ export function MarketingHome() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
             >
-              <PlacardTag>🇩🇪 Gemacht für deutsche Betriebe</PlacardTag>
+              <PlacardTag>
+                <Languages size={13} /> 41 Sprachen
+              </PlacardTag>
               <h1
                 className="mk-display font-bold tracking-[-0.03em] leading-[1.04] mt-7 mb-6"
                 style={{ fontSize: "clamp(2.25rem, 3.8vw, 3.25rem)" }}
               >
-                Die Unterweisungssoftware, die sich{" "}
-                <span style={{ color: "var(--mk-blue)" }}>von selbst erledigt.</span>
+                Unterweisungen, die auch{" "}
+                <span style={{ color: "var(--mk-blue)" }}>fremdsprachige Mitarbeiter verstehen.</span>
               </h1>
               <p className="text-lg text-[var(--mk-ink-65)] mb-9 max-w-md leading-relaxed">
-                Die digitale Unterweisungs-Software für den Arbeitsschutz kümmert sich selbst um
-                Fristen, Erinnerungen und rechtssichere Unterschriften — mehrsprachig und ohne
-                Papierkram.
+                Eine Unterweisung mehrsprachig durchzuführen ist keine Kür, sondern für viele Betriebe
+                Pflicht: Wer nicht ausreichend Deutsch versteht, muss die Unterweisung in seiner
+                Muttersprache oder in verständlicher Form erhalten. uVise übersetzt und liest jede
+                Unterweisung automatisch in 41 Sprachen vor.
               </p>
               <div className="flex flex-wrap gap-3">
-                {/* Haupt-CTA mit umlaufendem Leuchtpunkt in Warngelb —
-                    Text und App-Vorschau daneben bleiben unverändert. */}
                 <MovingBorderButton
                   as={Link}
                   href="/login?mode=register"
@@ -337,19 +269,83 @@ export function MarketingHome() {
               </div>
             </motion.div>
 
-            {/* Echte, klickbare App-Vorschau statt eines Fake-Mockups */}
             <motion.div
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.15 }}
             >
-              <AppPreview />
+              <VorlesenDemo />
             </motion.div>
           </div>
         </section>
 
-        {/* Vorlesen & Übersetzen — zentrales Feature, eigener Bereich */}
-        <section id="vorlesen" className="scroll-mt-16">
+        {/* Die Rechtslage */}
+        <section id="rechtslage" className="scroll-mt-16">
+          <SignalRule />
+          <div className="mx-auto max-w-3xl px-5 sm:px-8 py-28 sm:py-32">
+            <Reveal>
+              <PlacardTag>
+                <Scale size={13} /> Gesetzliche Pflicht
+              </PlacardTag>
+              <h2 className="mk-display text-3xl sm:text-4xl font-bold mb-6 mt-5 leading-tight">
+                Die Rechtslage: Unterweisung in verständlicher Sprache
+              </h2>
+              <p className="text-[var(--mk-ink-65)] mb-4 leading-relaxed">
+                Nach{" "}
+                <a
+                  href="https://www.gesetze-im-internet.de/arbschg/__12.html"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="underline hover:no-underline"
+                  style={{ color: "var(--mk-blue)" }}
+                >
+                  § 12 Arbeitsschutzgesetz (ArbSchG)
+                </a>{" "}
+                muss ein Arbeitgeber seine Beschäftigten „ausreichend und angemessen" unterweisen.
+                „Angemessen" bedeutet dabei auch: verständlich für die Person, die davor sitzt. Ergänzt
+                wird das durch § 4 DGUV Vorschrift 1, der ausdrücklich verlangt, dass Unterweisungen „in
+                für die Versicherten verständlicher Form und Sprache" erfolgen.
+              </p>
+              <p className="text-[var(--mk-ink-65)] mb-4 leading-relaxed">
+                Das Gesetz schreibt damit keine bestimmte Sprache vor — es schreibt das Ergebnis vor:
+                der Mitarbeiter muss die Unterweisung tatsächlich verstehen können. Reicht das
+                Deutsch dafür nicht aus, muss die Unterweisung in der Muttersprache oder auf andere
+                Weise verständlich gemacht werden. Die Verantwortung dafür liegt beim Arbeitgeber,
+                nicht beim Mitarbeiter.
+              </p>
+              <p className="text-[var(--mk-ink-65)] mb-4 leading-relaxed">
+                Eine Unterschrift allein ist dafür kein ausreichender Nachweis: Sie belegt, dass jemand
+                unterschrieben hat, nicht dass er den Inhalt verstanden hat. Wer im Betrieb erkennbar
+                kaum Deutsch spricht und trotzdem nur einen deutschen Text unterschreibt, hat rechtlich
+                weiterhin ein offenes Risiko — bis hin zu Bußgeldern oder persönlicher Haftung nach
+                einem Arbeitsunfall.
+              </p>
+              <p className="text-[var(--mk-ink-65)] leading-relaxed">
+                Mehr zu Fristen, Inhalt und Nachweis einer Unterweisung findest du in unserer{" "}
+                <Link
+                  href="/ratgeber/unterweisung-vorlage"
+                  className="underline hover:no-underline"
+                  style={{ color: "var(--mk-blue)" }}
+                >
+                  Unterweisung-Vorlage
+                </Link>
+                . Eine ausführlichere Einordnung der Rechtslage bei fremdsprachigen Teams gibt es im
+                Ratgeber{" "}
+                <Link
+                  href="/ratgeber/unterweisung-fremdsprachige-mitarbeiter"
+                  className="underline hover:no-underline"
+                  style={{ color: "var(--mk-blue)" }}
+                >
+                  Unterweisung für fremdsprachige Mitarbeiter
+                </Link>
+                .
+              </p>
+            </Reveal>
+          </div>
+        </section>
+
+        {/* Wie uVise das löst */}
+        <section id="loesung" className="scroll-mt-16">
           <SignalRule />
           <div className="mx-auto max-w-6xl px-5 sm:px-8 grid lg:grid-cols-2 gap-14 items-center py-28 sm:py-32">
             <Reveal>
@@ -357,20 +353,19 @@ export function MarketingHome() {
                 <Languages size={13} /> Verstanden wird jeder
               </PlacardTag>
               <h2 className="mk-display text-3xl sm:text-4xl font-bold mb-4 mt-5 leading-tight">
-                Unterweisungen in 41 Sprachen —
-                <br />
-                rechtssicher für fremdsprachige Mitarbeiter.
+                Wie uVise das löst
               </h2>
               <p className="text-[var(--mk-ink-65)] mb-6 max-w-md">
-                Nicht jeder liest gern lange Texte, nicht jeder spricht perfekt Deutsch. Mitarbeiter
-                können sich jede Unterweisung in 41 Sprachen vorlesen lassen — verständlich,
-                bevor unterschrieben wird.
+                Statt Übersetzer zu organisieren oder auf gut Glück zu unterschreiben, übernimmt uVise
+                die Verständlichkeit direkt in der App — für jeden Mitarbeiter in seiner eigenen
+                Sprache.
               </p>
               <ul className="space-y-3">
                 {[
-                  "41 Sprachen zur Auswahl, inkl. Türkisch, Ukrainisch, Arabisch, Polnisch",
-                  "Text wird laut vorgelesen — mit natürlicher Systemstimme",
-                  "Erst nach vollständigem Lesen oder Vorlesen wird die Unterschrift freigeschaltet",
+                  "41 Sprachen zur Auswahl, u. a. Türkisch, Ukrainisch, Arabisch, Polnisch und Rumänisch",
+                  "Jede Unterweisung wird automatisch übersetzt und laut vorgelesen",
+                  "Die Unterschrift wird erst freigeschaltet, nachdem der Text vollständig gelesen oder vorgelesen wurde",
+                  "Die gewählte Sprache wird zusammen mit Zeitstempel und Unterschrift im Nachweis dokumentiert",
                 ].map((t) => (
                   <li key={t} className="flex items-start gap-2.5 text-sm">
                     <Check size={16} className="shrink-0 mt-0.5" style={{ color: "var(--mk-green)" }} />
@@ -378,13 +373,6 @@ export function MarketingHome() {
                   </li>
                 ))}
               </ul>
-              <Link
-                href="/unterweisung-mehrsprachig"
-                className="inline-block mt-5 text-sm font-medium underline hover:no-underline"
-                style={{ color: "var(--mk-blue)" }}
-              >
-                Mehr zur mehrsprachigen Unterweisung erfahren →
-              </Link>
             </Reveal>
             <Reveal delay={0.1}>
               <VorlesenDemo />
@@ -392,181 +380,37 @@ export function MarketingHome() {
           </div>
         </section>
 
-        {/* Funktionen */}
-        <section id="funktionen" className="scroll-mt-16">
+        {/* Vorteile */}
+        <section id="vorteile" className="scroll-mt-16">
           <SignalRule />
           <div className="mx-auto max-w-6xl px-5 sm:px-8 py-28 sm:py-32">
             <Reveal className="max-w-xl mb-12">
-              <h2 className="mk-display text-3xl font-bold mb-3">Digitale Unterweisung für Handwerk & Kleinbetriebe</h2>
+              <h2 className="mk-display text-3xl font-bold mb-3">Vorteile einer mehrsprachigen Unterweisung mit uVise</h2>
               <p className="text-[var(--mk-ink-65)]">
-                Sicherheitsunterweisungen, Qualifikationen und Nachweise an einem Ort — von der
-                Erinnerung bis zur rechtssicheren Unterschrift. Konzipiert für Handwerk und kleine
-                Betriebe, nicht für die IT-Abteilung.
+                Verständlich für jeden Mitarbeiter, rechtssicher dokumentiert — ohne zusätzlichen
+                Aufwand für dich.
               </p>
             </Reveal>
             <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
-              {FEATURES.map((f, i) => (
-                <Reveal key={f.title} delay={(i % 4) * 0.06}>
+              {VORTEILE.map((v, i) => (
+                <Reveal key={v.title} delay={(i % 4) * 0.06}>
                   <motion.div
                     whileHover={{ y: -4 }}
                     transition={{ duration: 0.2 }}
                     className="h-full rounded-[14px] border p-6"
                     style={{ borderColor: "var(--mk-line)", background: "var(--mk-panel)" }}
                   >
-                    {"special" in f && f.special === "ampel" ? (
-                      <div className="mb-4">
-                        <AmpelDots size={20} />
-                      </div>
-                    ) : (
-                      <div
-                        className="h-11 w-11 rounded-[8px] flex items-center justify-center mb-4 border"
-                        style={{ borderColor: "var(--mk-line-strong)", color: "var(--mk-ink)" }}
-                      >
-                        {"icon" in f && <f.icon size={20} />}
-                      </div>
-                    )}
-                    <h3 className="font-semibold mb-1.5">{f.title}</h3>
-                    <p className="text-sm text-[var(--mk-ink-60)] leading-relaxed">{f.text}</p>
-                  </motion.div>
-                </Reveal>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* Die App / Produkte */}
-        <section id="app" className="scroll-mt-16">
-          <SignalRule />
-          <div className="mx-auto max-w-6xl px-5 sm:px-8 py-28 sm:py-32">
-            <Reveal className="max-w-xl mb-12">
-              <h2 className="mk-display text-3xl font-bold mb-3">Ein System, drei Oberflächen</h2>
-              <p className="text-[var(--mk-ink-65)]">
-                Chefs verwalten am Rechner oder unterwegs auf dem Handy — Mitarbeiter erledigen alles in
-                ihrer eigenen App.
-              </p>
-            </Reveal>
-            <div className="grid md:grid-cols-3 gap-5">
-              {PRODUCTS.map((p, i) => (
-                <Reveal key={p.title} delay={i * 0.08}>
-                  <motion.div
-                    whileHover={{ y: -4 }}
-                    transition={{ duration: 0.2 }}
-                    className="h-full rounded-[14px] p-7 text-white border-t-4"
-                    style={{
-                      background: "#14171a",
-                      borderTopColor: p.edge === "blue" ? "var(--mk-blue)" : "var(--mk-green)",
-                    }}
-                  >
-                    <span className="mk-mono inline-block text-[11px] uppercase tracking-wide text-white/50 mb-4">
-                      {p.tag}
-                    </span>
-                    <h3 className="mk-display text-xl font-bold mb-2">{p.title}</h3>
-                    <p className="text-sm text-white/70 leading-relaxed">{p.text}</p>
-                  </motion.div>
-                </Reveal>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* Preise */}
-        <section id="preise" className="scroll-mt-16">
-          <SignalRule />
-          <div className="mx-auto max-w-6xl px-5 sm:px-8 py-28 sm:py-32">
-            <Reveal className="max-w-xl mb-8">
-              <h2 className="mk-display text-3xl font-bold mb-3">Ein Preis pro Team-Größe</h2>
-              <p className="text-[var(--mk-ink-65)]">
-                7 Tage kostenlos testen, danach monatlich kündbar. Keine Einrichtungsgebühr.
-              </p>
-            </Reveal>
-            <Reveal className="mb-8">
-              <div className="inline-flex rounded-[10px] border p-1 text-sm" style={{ borderColor: "var(--mk-line)" }}>
-                <button
-                  onClick={() => setBilling("monatlich")}
-                  className={`rounded-[8px] px-4 py-1.5 font-medium transition-colors ${
-                    billing === "monatlich" ? "text-white" : "text-[var(--mk-ink-60)]"
-                  }`}
-                  style={billing === "monatlich" ? { background: "var(--mk-blue-strong)" } : undefined}
-                >
-                  Monatlich
-                </button>
-                <button
-                  onClick={() => setBilling("jaehrlich")}
-                  className={`rounded-[8px] px-4 py-1.5 font-medium transition-colors ${
-                    billing === "jaehrlich" ? "text-white" : "text-[var(--mk-ink-60)]"
-                  }`}
-                  style={billing === "jaehrlich" ? { background: "var(--mk-blue-strong)" } : undefined}
-                >
-                  Jährlich <span className="opacity-80">· 20% sparen</span>
-                </button>
-              </div>
-            </Reveal>
-            <div className="grid md:grid-cols-3 gap-5">
-              {PLANS.map((plan, i) => {
-                const featured = i === 1;
-                return (
-                  <Reveal key={plan.name} delay={i * 0.08}>
-                    <motion.div
-                      whileHover={{ y: -4 }}
-                      transition={{ duration: 0.2 }}
-                      className={`relative h-full rounded-[14px] p-7 border ${
-                        featured ? "border-transparent text-white shadow-xl md:-translate-y-2" : ""
-                      }`}
-                      style={featured ? { background: "var(--mk-blue-strong)" } : { borderColor: "var(--mk-line)", background: "var(--mk-panel)" }}
+                    <div
+                      className="h-11 w-11 rounded-[8px] flex items-center justify-center mb-4 border"
+                      style={{ borderColor: "var(--mk-line-strong)", color: "var(--mk-ink)" }}
                     >
-                      {featured && (
-                        <span
-                          className="mk-mono absolute -top-3 left-7 inline-block rounded-[4px] px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide"
-                          style={{ background: "var(--mk-yellow)", color: "#14171a" }}
-                        >
-                          Am beliebtesten
-                        </span>
-                      )}
-                      <h3 className="mk-display text-xl font-bold mb-1">{plan.name}</h3>
-                      <p className={`text-sm mb-5 ${featured ? "text-white/80" : "text-[var(--mk-ink-60)]"}`}>
-                        {plan.limit}
-                      </p>
-                      <p className="mb-6">
-                        {billing === "monatlich" ? (
-                          <>
-                            <span className="text-4xl font-bold">{plan.preis}€</span>
-                            <span className={`text-sm ${featured ? "text-white/70" : "text-[var(--mk-ink-55)]"}`}>
-                              {" "}
-                              /Monat
-                            </span>
-                          </>
-                        ) : (
-                          <>
-                            <span className="text-4xl font-bold">{plan.preisJaehrlich}€</span>
-                            <span className={`text-sm ${featured ? "text-white/70" : "text-[var(--mk-ink-55)]"}`}>
-                              {" "}
-                              /Jahr
-                            </span>
-                          </>
-                        )}
-                      </p>
-                      <ul className="space-y-2.5 mb-7">
-                        {plan.features.map((f) => (
-                          <li key={f} className="flex items-start gap-2 text-sm">
-                            <Check size={16} className="shrink-0 mt-0.5" style={{ color: featured ? "#ffffff" : "var(--mk-green)" }} />
-                            <span className={featured ? "text-white/90" : "text-[var(--mk-ink-70)]"}>{f}</span>
-                          </li>
-                        ))}
-                      </ul>
-                      <Link
-                        href="/login?mode=register"
-                        rel="nofollow"
-                        className={`btn-feedback block text-center rounded-[10px] px-5 py-2.5 text-sm font-semibold ${
-                          featured ? "bg-white" : "text-white"
-                        }`}
-                        style={featured ? { color: "var(--mk-blue-strong)" } : { background: "var(--mk-blue-strong)" }}
-                      >
-                        Jetzt starten
-                      </Link>
-                    </motion.div>
-                  </Reveal>
-                );
-              })}
+                      <v.icon size={20} />
+                    </div>
+                    <h3 className="font-semibold mb-1.5">{v.title}</h3>
+                    <p className="text-sm text-[var(--mk-ink-60)] leading-relaxed">{v.text}</p>
+                  </motion.div>
+                </Reveal>
+              ))}
             </div>
           </div>
         </section>
@@ -577,10 +421,10 @@ export function MarketingHome() {
           <div className="mx-auto max-w-3xl px-5 sm:px-8 py-28 sm:py-32">
             <Reveal className="mb-10">
               <h2 className="mk-display text-3xl font-bold mb-3">Häufige Fragen</h2>
-              <p className="text-[var(--mk-ink-65)]">Was uVise-Kunden uns am häufigsten fragen.</p>
+              <p className="text-[var(--mk-ink-65)]">Zur Unterweisung fremdsprachiger Mitarbeiter.</p>
             </Reveal>
             <div className="space-y-3">
-              {FAQ.map((item, i) => {
+              {faq.map((item, i) => {
                 const open = openFaq === i;
                 return (
                   <Reveal key={item.q} delay={i * 0.04}>
@@ -599,20 +443,6 @@ export function MarketingHome() {
                         }`}
                       >
                         {item.a}
-                        {"link" in item && item.link && (
-                          <>
-                            {" "}
-                            <a
-                              href={item.link.href}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="hover:underline"
-                              style={{ color: "var(--mk-blue)" }}
-                            >
-                              {item.link.label}
-                            </a>
-                          </>
-                        )}
                       </p>
                     </div>
                   </Reveal>
@@ -626,7 +456,9 @@ export function MarketingHome() {
         <section>
           <SignalRule />
           <Reveal className="mx-auto max-w-3xl px-5 sm:px-8 py-28 sm:py-32 text-center">
-            <h2 className="mk-display text-3xl font-bold mb-4">Bereit, das Ordner-Chaos zu beenden?</h2>
+            <h2 className="mk-display text-3xl font-bold mb-4">
+              Unterweisungen, die jeder Mitarbeiter versteht
+            </h2>
             <p className="text-[var(--mk-ink-65)] mb-8">
               In wenigen Minuten eingerichtet — leg direkt los, keine Kreditkarte nötig.
             </p>
@@ -636,8 +468,15 @@ export function MarketingHome() {
               className="btn-feedback inline-block rounded-[10px] px-7 py-3.5 text-sm font-semibold text-white"
               style={{ background: "var(--mk-blue-strong)" }}
             >
-              Firma kostenlos anlegen
+              7 Tage kostenlos testen
             </Link>
+            <p className="text-sm text-[var(--mk-ink-60)] mt-8">
+              Zurück zur{" "}
+              <Link href="/" className="underline hover:no-underline" style={{ color: "var(--mk-blue)" }}>
+                uVise-Startseite
+              </Link>
+              .
+            </p>
           </Reveal>
         </section>
       </main>
@@ -646,10 +485,10 @@ export function MarketingHome() {
         <SignalRule />
         <div className="mx-auto max-w-6xl px-5 sm:px-8 py-10 flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-4">
-            <a href="#top" className="flex items-center gap-2.5">
+            <Link href="/" className="flex items-center gap-2.5">
               <LogoMark size={26} />
               <span className="mk-display text-sm font-bold">uVise</span>
-            </a>
+            </Link>
             <div className="flex items-center gap-2">
               <a
                 href={FACEBOOK_URL}
@@ -678,7 +517,6 @@ export function MarketingHome() {
             </div>
           </div>
           <nav aria-label="Rechtliches" className="flex gap-5 text-xs text-[var(--mk-ink-60)]">
-            <Link href="/unterweisung-mehrsprachig" className="hover:text-[var(--mk-ink)]">Unterweisung mehrsprachig</Link>
             <Link href="/ratgeber/unterweisung-vorlage" className="hover:text-[var(--mk-ink)]">Unterweisung-Vorlage</Link>
             <Link href="/kontakt" className="hover:text-[var(--mk-ink)]">Kontakt</Link>
             <a href={`mailto:${SUPPORT_EMAIL}?subject=uVise%20Support`} className="hover:text-[var(--mk-ink)]">Support</a>
