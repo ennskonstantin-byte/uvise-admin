@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Check } from "lucide-react";
 import { Button as MovingBorderButton } from "@/components/ui/moving-border";
-import { PLANS } from "@/lib/types";
+import { PLANS, CHEF_GRATIS_HINWEIS, ENTERPRISE_KONTAKT } from "@/lib/types";
 import { useToast } from "@/components/Toast";
 import { useEscapeClose } from "@/lib/useEscapeClose";
 import { supabase } from "@/lib/supabase";
@@ -124,6 +124,13 @@ export function PlanModal({ onClose }: { onClose: () => void }) {
             );
           })}
         </div>
+
+        <p className="text-xs text-foreground/55 mb-4">
+          {CHEF_GRATIS_HINWEIS} {ENTERPRISE_KONTAKT.text}{" "}
+          <a href={ENTERPRISE_KONTAKT.href} className="underline hover:text-foreground/80">
+            {ENTERPRISE_KONTAKT.linkText}
+          </a>
+        </p>
 
         <MovingBorderButton
           onClick={startCheckout}

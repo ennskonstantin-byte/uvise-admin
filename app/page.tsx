@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { MarketingHome } from "@/components/marketing/MarketingHome";
 import { FAQ } from "@/components/marketing/faqData";
+import { PLANS } from "@/lib/types";
 
 const TITEL = "Unterweisungssoftware für Handwerk & kleine Betriebe – uVise";
 
@@ -112,29 +113,13 @@ const strukturierteDaten = {
         "Qualifikationen verwalten",
         "Vorlesefunktion und Übersetzung in 41 Sprachen",
       ],
-      offers: [
-        {
-          "@type": "Offer",
-          name: "Starter",
-          price: "19",
-          priceCurrency: "EUR",
-          description: "bis 5 Mitarbeiter, pro Monat",
-        },
-        {
-          "@type": "Offer",
-          name: "Team",
-          price: "29",
-          priceCurrency: "EUR",
-          description: "bis 15 Mitarbeiter, pro Monat",
-        },
-        {
-          "@type": "Offer",
-          name: "Betrieb",
-          price: "49",
-          priceCurrency: "EUR",
-          description: "bis 30 Mitarbeiter, pro Monat",
-        },
-      ],
+      offers: PLANS.map((plan) => ({
+        "@type": "Offer",
+        name: plan.name,
+        price: plan.preis,
+        priceCurrency: "EUR",
+        description: `${plan.limit}, pro Monat`,
+      })),
     },
     {
       "@type": "FAQPage",

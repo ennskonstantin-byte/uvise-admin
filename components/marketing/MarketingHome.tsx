@@ -28,7 +28,7 @@ import {
 import { LogoMark } from "@/components/Logo";
 import { Switch } from "@/components/Switch";
 import { useAppData } from "@/lib/store";
-import { PLANS } from "@/lib/types";
+import { PLANS, CHEF_GRATIS_HINWEIS, ENTERPRISE_KONTAKT } from "@/lib/types";
 import { Reveal } from "@/components/marketing/Reveal";
 import { VorlesenDemo } from "@/components/marketing/VorlesenDemo";
 import { AppPreview } from "@/components/marketing/AppPreview";
@@ -637,6 +637,15 @@ export function MarketingHome() {
                 );
               })}
             </div>
+            <Reveal delay={0.2}>
+              <p className="mt-6 text-center text-sm text-[var(--mk-ink-60)]">{CHEF_GRATIS_HINWEIS}</p>
+              <p className="mt-2 text-center text-sm text-[var(--mk-ink-60)]">
+                {ENTERPRISE_KONTAKT.text}{" "}
+                <Link href={ENTERPRISE_KONTAKT.href} className="font-semibold hover:underline" style={{ color: "var(--mk-blue-strong)" }}>
+                  {ENTERPRISE_KONTAKT.linkText}
+                </Link>
+              </p>
+            </Reveal>
           </div>
         </section>
 

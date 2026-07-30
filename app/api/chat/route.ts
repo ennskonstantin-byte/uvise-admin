@@ -3,6 +3,7 @@ import Anthropic from "@anthropic-ai/sdk";
 import { createClient } from "@supabase/supabase-js";
 import { resend, RESEND_FROM } from "@/lib/resend";
 import { CONTACT_EMAIL } from "@/lib/legal";
+import { PLANS, CHEF_GRATIS_HINWEIS, ENTERPRISE_KONTAKT } from "@/lib/types";
 
 // Öffentlicher Chat-Assistent für die Landingpage, betrieben mit Claude
 // (Anthropic). Es werden nur die eingegebenen Chat-Texte an Anthropic
@@ -14,6 +15,11 @@ import { CONTACT_EMAIL } from "@/lib/legal";
 // Besucher eine Nachricht hinterlassen will, sammelt der Bot Name, E-Mail und
 // Anliegen ein und ruft das Werkzeug "ticket_aufnehmen" auf. Die Route
 // verschickt das Ticket dann per Resend an CONTACT_EMAIL.
+
+const PREISE_TEXT = PLANS.map(
+  (p) => `- **${p.name}**: ${p.preis} €/Monat, ${p.limit} – ${p.features.join(", ")}.`
+).join("\n");
+const PREISE_JAEHRLICH_TEXT = PLANS.map((p) => `${p.name} ${p.preisJaehrlich} €`).join(", ");
 
 const SYSTEM_PROMPT = `Du bist der freundliche Chat-Assistent auf der Website von uVise (uvise.de).
 Du kennst das Produkt in- und auswendig und beantwortest Fragen von Website-Besuchern.
@@ -47,10 +53,10 @@ man sich in der falschen App/Ansicht an, erscheint ein freundlicher Hinweis.
 - **Mitarbeiter einladen**: per Einladungscode; Mitarbeiter ohne Smartphone können auch nur mit Telefonnummer geführt werden.
 
 # Preise (7 Tage kostenlos testen, monatlich kündbar, keine Mindestlaufzeit)
-- **Starter**: 19 €/Monat, bis 5 Mitarbeiter – Unterweisungen & Fristen, Ampelsystem & Badges, E-Mail- & App-Push-Erinnerungen.
-- **Team**: 29 €/Monat, bis 15 Mitarbeiter – alles aus Starter + Bundle-Vorlagen.
-- **Betrieb**: 49 €/Monat, bis 30 Mitarbeiter – alles aus Team + priorisierter Support + erweitertes Archiv.
-- Bei jährlicher Zahlung 20 % günstiger (Starter 182 €, Team 278 €, Betrieb 470 € pro Jahr).
+${PREISE_TEXT}
+- Bei jährlicher Zahlung 20 % günstiger (${PREISE_JAEHRLICH_TEXT} pro Jahr).
+- ${CHEF_GRATIS_HINWEIS}
+- ${ENTERPRISE_KONTAKT.text} ${ENTERPRISE_KONTAKT.linkText} (${ENTERPRISE_KONTAKT.href}).
 - Bezahlung sicher über Stripe (Karte, Apple Pay, Google Pay, Lastschrift, PayPal, Klarna) – Kartendaten werden nie bei uVise gespeichert.
 
 # Support-Ticket aufnehmen (Werkzeug "ticket_aufnehmen")

@@ -12,7 +12,7 @@ import { useAppData, throwIfError } from "@/lib/store";
 import { fehlerText } from "@/lib/fehler";
 import { exportNachweiseCsv, exportQualifikationenCsv } from "@/lib/exportCsv";
 import { exportGesamtBackupZip } from "@/lib/exportZip";
-import { PLANS } from "@/lib/types";
+import { PLANS, CHEF_GRATIS_HINWEIS, ENTERPRISE_KONTAKT } from "@/lib/types";
 import { supabase } from "@/lib/supabase";
 
 const ABO_STATUS_LABELS: Record<string, string> = {
@@ -537,6 +537,14 @@ export default function EinstellungenPage() {
               );
             })}
           </div>
+
+          <p className="text-xs text-foreground/65 max-w-xl mb-2">{CHEF_GRATIS_HINWEIS}</p>
+          <p className="text-xs text-foreground/65 max-w-xl mb-2">
+            {ENTERPRISE_KONTAKT.text}{" "}
+            <a href={ENTERPRISE_KONTAKT.href} className="underline hover:text-foreground/80">
+              {ENTERPRISE_KONTAKT.linkText}
+            </a>
+          </p>
 
           <p className="text-xs text-foreground/65 max-w-xl">
             Zahlung und Kartendaten werden sicher über Stripe abgewickelt — nie direkt bei uVise

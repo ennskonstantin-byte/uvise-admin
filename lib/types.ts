@@ -252,29 +252,43 @@ export function qualIcon(name: string): string {
 }
 
 // Jahrespreis = 12 Monate mit 20% Rabatt, auf volle Euro gerundet.
+// Chef-/Admin-Zugang ist in jedem Paket gratis und zählt nicht ins
+// Mitarbeiter-Limit (siehe chefGratisHinweis).
 export const PLANS = [
   {
-    name: "Starter",
-    preis: "19",
-    preisJaehrlich: 182,
-    limit: "bis 5 Mitarbeiter",
+    name: "Team",
+    preis: "49",
+    preisJaehrlich: 470,
+    limit: "bis 10 Mitarbeiter",
     features: ["Unterweisungen & Fristen", "Ampelsystem & Badges", "E-Mail- & App-Push-Erinnerungen"],
   },
   {
-    name: "Team",
-    preis: "29",
-    preisJaehrlich: 278,
-    limit: "bis 15 Mitarbeiter",
-    features: ["Alles aus Starter", "Bundle-Vorlagen"],
+    name: "Betrieb",
+    preis: "99",
+    preisJaehrlich: 950,
+    limit: "bis 25 Mitarbeiter",
+    features: ["Alles aus Team", "Bundle-Vorlagen"],
   },
   {
-    name: "Betrieb",
-    preis: "49",
-    preisJaehrlich: 470,
-    limit: "bis 30 Mitarbeiter",
-    features: ["Alles aus Team", "Priorisierter Support", "Erweitertes Archiv"],
+    name: "Unternehmen",
+    preis: "149",
+    preisJaehrlich: 1430,
+    limit: "bis 50 Mitarbeiter",
+    features: ["Alles aus Betrieb", "Priorisierter Support", "Erweitertes Archiv"],
   },
 ];
+
+// Hinweistext für alle Preis-Anzeigen: Chef-/Admin-Zugang ist gratis.
+export const CHEF_GRATIS_HINWEIS = "Chef-/Admin-Zugang ist immer gratis und zählt nicht ins Mitarbeiter-Limit.";
+
+// Ab wie vielen Mitarbeitern gibt es kein Selbstbedienungs-Paket mehr —
+// stattdessen ein "Sprich uns an"-Hinweis mit Link zu /kontakt.
+export const ENTERPRISE_KONTAKT = {
+  ab: 50,
+  text: "Über 50 Mitarbeiter?",
+  linkText: "Sprich uns an",
+  href: "/kontakt",
+};
 
 // true wenn unter 18 (dann Unterweisung 2× jährlich)
 export function istMinderjaehrig(geburtsdatum: string | null): boolean {
