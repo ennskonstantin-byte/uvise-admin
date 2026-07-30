@@ -114,8 +114,26 @@ export default function UnterweisungVorlagePage() {
             Du brauchst eine Vorlage, um die Unterweisung deiner Mitarbeiter sauber zu
             dokumentieren? Hier findest du eine kostenlose Muster-Vorlage zum Kopieren – plus eine
             verständliche Anleitung, wie oft du unterweisen musst und was rechtlich in den
-            Unterweisungsnachweis gehört.
+            Unterweisungsnachweis gehört. Die Vorlage gibt es auch fertig formatiert als PDF zum
+            Download.
           </p>
+
+          <div className="rounded-2xl border border-border bg-page-bg p-5 mb-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div>
+              <p className="font-semibold text-foreground">Unterweisungsnachweis-Vorlage (PDF)</p>
+              <p className="text-sm text-foreground/60">
+                Fertig formatiert zum Ausdrucken – Betrieb, Datum, Thema und Unterschriftenliste.
+              </p>
+            </div>
+            <a
+              href="/uVise-Unterweisungsnachweis-Vorlage.pdf"
+              download
+              className="inline-block shrink-0 rounded-full px-6 py-3 text-sm font-medium text-white whitespace-nowrap"
+              style={{ background: "var(--accent-gradient)" }}
+            >
+              Kostenlose Vorlage als PDF herunterladen
+            </a>
+          </div>
 
           <h2 className="text-xl font-semibold text-foreground mt-8 mb-3">
             Was ist eine Unterweisung?
@@ -218,6 +236,14 @@ Unterschrift unterweisende Person: ______________`}
             Tipp: Über die Druckfunktion deines Browsers (Strg + P bzw. ⌘ + P) kannst du die Vorlage
             auch direkt als Papierbogen ausdrucken.
           </p>
+          <a
+            href="/uVise-Unterweisungsnachweis-Vorlage.pdf"
+            download
+            className="inline-block rounded-full px-6 py-3 text-sm font-medium text-white mb-4"
+            style={{ background: "var(--accent-gradient)" }}
+          >
+            Kostenlose Vorlage als PDF herunterladen
+          </a>
 
           <h2 className="text-xl font-semibold text-foreground mt-8 mb-3">
             Häufige Fehler bei der Unterweisung
