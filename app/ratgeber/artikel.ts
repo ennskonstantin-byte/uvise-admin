@@ -10,6 +10,12 @@ export const ARTIKEL = [
     dauer: "6 Min.",
   },
   {
+    slug: "dguv-vorschrift-1-unterweisung",
+    titel: "DGUV Vorschrift 1: Unterweisungspflicht einfach erklärt",
+    text: "Was § 4 DGUV Vorschrift 1 wirklich verlangt: Fristen, Ausnahmen für Jugendliche, Dokumentationspflicht und die häufigsten Fehler.",
+    dauer: "6 Min.",
+  },
+  {
     slug: "unterweisung-vorlage",
     titel: "Unterweisung Vorlage: kostenloses Muster + Anleitung",
     text: "Fertige Muster-Vorlage zum Kopieren, plus Anleitung: Wie oft musst du unterweisen und was gehört rechtlich in den Nachweis?",
