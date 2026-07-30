@@ -471,7 +471,7 @@ export function MarketingHome() {
           <SignalRule />
           <div className="mx-auto max-w-6xl px-5 sm:px-8 py-28 sm:py-32">
             <Reveal className="max-w-xl mb-12">
-              <h2 className="mk-display text-3xl font-bold mb-3">Ein System, drei Oberflächen</h2>
+              <h2 className="mk-display text-3xl font-bold mb-3">Deine Unterweisungen in einem System, drei Oberflächen</h2>
               <p className="text-[var(--mk-ink-65)]">
                 Chefs verwalten am Rechner oder unterwegs auf dem Handy — Mitarbeiter erledigen alles in
                 ihrer eigenen App.
