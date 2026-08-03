@@ -596,6 +596,68 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [session?.user.id]);
 
+  // [Fix-Cluster 6, Punkt 11] Live-Update, sobald ein Mitarbeiter signiert —
+  // vorher sah der Chef eine neue Signatur erst nach manuellem Neuladen
+  // (loadData lief bisher nur einmal beim Mounten). Nur die Felder patchen,
+  // die der Bulk-Load ohnehin lädt — signaturBildUrl/signaturHash bleiben
+  // wie gehabt Lazy-Load über fetchSignatureDetails().
+  useEffect(() => {
+    if (!session) return;
+    const channel = supabase
+      .channel("employee-trainings-updates")
+      .on(
+        "postgres_changes",
+        { event: "UPDATE", schema: "public", table: "employee_trainings" },
+        (payload) => {
+          const row = payload.new as {
+            id: string;
+            employee_id: string;
+            training_id: string;
+            status: "offen" | "signiert" | "abgelehnt" | "anonymisiert";
+            signiert_am: string | null;
+            geraet: string | null;
+            signiert_als: string | null;
+          };
+          setEmployeeTrainings((prev) => {
+            const bestehend = prev.find((et) => et.id === row.id);
+            // ablaufdatumIso kommt normalerweise aus den rohen trainingRows
+            // (s. mapEmployeeTraining oben) -- hier nicht griffbereit, aber
+            // die Zuweisung existiert bereits VOR dem Signieren, also bleibt
+            // der bereits geladene Wert einfach erhalten statt neu geholt.
+            const gepatcht: EmployeeTraining = {
+              id: row.id,
+              employeeId: row.employee_id,
+              trainingId: row.training_id,
+              status: row.status,
+              signiertAm: row.signiert_am ? formatDate(row.signiert_am) : null,
+              signaturBildUrl: bestehend?.signaturBildUrl ?? null,
+              geraet: row.geraet ?? null,
+              signaturHash: bestehend?.signaturHash ?? null,
+              signiertAls: row.signiert_als ?? null,
+              ablaufdatumIso: bestehend?.ablaufdatumIso ?? null,
+            };
+            return bestehend
+              ? prev.map((et) => (et.id === row.id ? gepatcht : et))
+              : [...prev, gepatcht];
+          });
+          if (row.status === "signiert") {
+            const emp = employeesRef.current.find((e) => e.id === row.employee_id);
+            const training = trainingsRef.current.find((t) => t.id === row.training_id);
+            showToast(
+              `✍️ Neue Signatur${emp ? ` von ${emp.vorname} ${emp.nachname}` : ""}${
+                training ? ` zu „${training.name}"` : ""
+              }`
+            );
+          }
+        }
+      )
+      .subscribe();
+    return () => {
+      supabase.removeChannel(channel);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [session?.user.id]);
+
   // Eine E-Mail darf nur einmal vergeben werden (siehe Migration 0038).
   // Vorab-Prüfung gegen die geladene Liste liefert eine verständliche
   // Meldung; der Unique-Index in der Datenbank fängt den Rest ab.
