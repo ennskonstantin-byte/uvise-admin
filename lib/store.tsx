@@ -779,6 +779,37 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
       throw err;
     }
 
+    // [Migration 0068] Text aus der PDF ziehen, damit die Mitarbeiter-App die
+    // Unterweisung vorlesen kann. Läuft serverseitig (pdf-parse ist eine
+    // Node-Bibliothek und kann im Browser nicht laufen).
+    //
+    // BEWUSST AUSSERHALB des try/catch oben: Ein Fehlschlag hier darf die
+    // gerade angelegte Unterweisung NICHT wieder löschen. Ohne Text ist die
+    // Unterweisung vollständig nutzbar, nur das Vorlesen bleibt inaktiv --
+    // das ist ein akzeptabler Zustand, ein verlorenes Training nicht.
+    if (pdfPath) {
+      try {
+        const {
+          data: { session },
+        } = await supabase.auth.getSession();
+        if (session?.access_token) {
+          await fetch("/api/pdf-text", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${session.access_token}`,
+            },
+            body: JSON.stringify({ trainingId: data.id }),
+          });
+        }
+      } catch (err) {
+        // Nur protokollieren -- der Nutzer soll für eine nicht vorlesbare PDF
+        // keine Fehlermeldung sehen. Die App zeigt dann die ehrliche
+        // "kein Text"-Meldung, was der korrekte Zustand ist.
+        console.error("[pdf-text] Aufruf der Textextraktion fehlgeschlagen", err);
+      }
+    }
+
     await loadData();
     return {
       id: data.id,
