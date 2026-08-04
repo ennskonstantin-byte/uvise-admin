@@ -42,6 +42,29 @@ function DistributionDialog({
     );
   }
 
+  // Dieselbe Filterung wie in der Liste unten -- "Alle auswählen" bezieht sich
+  // bewusst nur auf die gerade sichtbaren/gefilterten Mitarbeiter, nicht auf
+  // die gesamte Firma (analog zur bestehenden Vorsicht: leer starten statt
+  // versehentlich die ganze Belegschaft zu erfassen).
+  const gefilterteMitarbeiter = employees.filter((e) =>
+    `${e.vorname} ${e.nachname}`.toLowerCase().includes(memberQuery.toLowerCase())
+  );
+  const alleGefiltertenAusgewaehlt =
+    gefilterteMitarbeiter.length > 0 &&
+    gefilterteMitarbeiter.every((e) => selectedEmployees.includes(e.id));
+
+  function toggleAlleGefiltert() {
+    setSelectedEmployees((prev) => {
+      if (alleGefiltertenAusgewaehlt) {
+        const gefilterteIds = new Set(gefilterteMitarbeiter.map((e) => e.id));
+        return prev.filter((id) => !gefilterteIds.has(id));
+      }
+      const neu = new Set(prev);
+      gefilterteMitarbeiter.forEach((e) => neu.add(e.id));
+      return Array.from(neu);
+    });
+  }
+
   async function handleSend() {
     setSending(true);
     setDistributionError(null);
@@ -118,24 +141,31 @@ function DistributionDialog({
         </div>
 
         {tab === "mitarbeiter" && (
-          <div className="relative mb-3">
-            <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-foreground/65" />
-            <input
-              value={memberQuery}
-              onChange={(e) => setMemberQuery(e.target.value)}
-              placeholder="Mitarbeiter suchen…"
-              className="w-full rounded-full border border-border bg-surface pl-9 pr-4 py-2 text-sm outline-none"
-            />
-          </div>
+          <>
+            <div className="relative mb-3">
+              <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-foreground/65" />
+              <input
+                value={memberQuery}
+                onChange={(e) => setMemberQuery(e.target.value)}
+                placeholder="Mitarbeiter suchen…"
+                className="w-full rounded-full border border-border bg-surface pl-9 pr-4 py-2 text-sm outline-none"
+              />
+            </div>
+            <label className="flex items-center gap-3 px-3 py-2 text-sm cursor-pointer text-foreground/70">
+              <input
+                type="checkbox"
+                checked={alleGefiltertenAusgewaehlt}
+                onChange={toggleAlleGefiltert}
+                disabled={gefilterteMitarbeiter.length === 0}
+              />
+              Alle auswählen{memberQuery ? " (gefiltert)" : ""}
+            </label>
+          </>
         )}
 
         <div className="max-h-72 overflow-y-auto space-y-2 mb-6">
           {tab === "mitarbeiter"
-            ? employees
-                .filter((e) =>
-                  `${e.vorname} ${e.nachname}`.toLowerCase().includes(memberQuery.toLowerCase())
-                )
-                .map((e) => (
+            ? gefilterteMitarbeiter.map((e) => (
                   <label
                     key={e.id}
                     className="flex items-center gap-3 rounded-2xl border border-border px-3 py-2 text-sm cursor-pointer hover:border-foreground/30"
