@@ -108,7 +108,7 @@ export default function DashboardPage() {
             onClick={() => setShowPlanModal(true)}
             borderRadius="9999px"
             duration={3000}
-            containerClassName="h-9 w-auto shrink-0"
+            containerClassName="h-11 w-auto shrink-0"
             borderClassName="bg-[radial-gradient(#ffffff_40%,transparent_60%)]"
             className="px-4 font-medium text-white bg-white/20 hover:bg-white/30 transition-colors border-white/30"
           >
@@ -123,7 +123,7 @@ export default function DashboardPage() {
         <div className="mb-6 rounded-2xl border border-amber-300/60 bg-amber-50 px-5 py-4">
           <button
             onClick={() => setRemindersOpen((v) => !v)}
-            className="w-full flex items-center justify-between text-left"
+            className="min-h-11 w-full flex items-center justify-between text-left"
             aria-expanded={remindersOpen}
           >
             <p className="text-sm font-semibold text-amber-900">
@@ -188,7 +188,7 @@ export default function DashboardPage() {
               <button
                 key={c}
                 onClick={() => setCategory(c)}
-                className={`rounded-full px-4 py-2 text-sm transition-colors ${
+                className={`min-h-11 rounded-full px-4 py-2 text-sm transition-colors ${
                   category === c
                     ? "text-white"
                     : "border border-border text-foreground/70 hover:border-foreground/30"
