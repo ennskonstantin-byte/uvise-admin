@@ -1,12 +1,6 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  // pdf-parse (app/api/pdf-text) hängt intern an pdfjs-dist, das eigene
-  // Worker-Dateien und dynamische require()s mitbringt. Steht nicht auf
-  // Next.js' Auto-Ausschlussliste (next/dist/docs/.../serverExternalPackages.md)
-  // -- ohne diesen Eintrag bündelt Next die Route-Handler-Bundling-Logik
-  // hinein, was auf Vercel entweder den Build oder die Laufzeit brechen kann.
-  serverExternalPackages: ["pdf-parse"],
   async headers() {
     return [
       // Die Einstiegs-Seiten der eingebetteten App-Builds dürfen NIE aus dem
