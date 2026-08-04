@@ -792,6 +792,7 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
         const {
           data: { session },
         } = await supabase.auth.getSession();
+        console.error("[pdf-text] Session-Check:", { hatToken: !!session?.access_token, pdfPath });
         if (session?.access_token) {
           await fetch("/api/pdf-text", {
             method: "POST",
