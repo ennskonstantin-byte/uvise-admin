@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
-import { PDFParse } from "pdf-parse";
+import { extractText, getDocumentProxy } from "unpdf";
 
 // Extrahiert den Text aus einer bereits hochgeladenen PDF-Unterweisung und
 // legt ihn in trainings.pdf_text ab (Migration 0068), damit die Mitarbeiter-App
@@ -21,7 +21,9 @@ import { PDFParse } from "pdf-parse";
 // Nutzers gearbeitet. Damit greifen die normalen RLS- und Storage-Regeln --
 // wer die Unterweisung nicht lesen darf, kommt auch hier nicht an die PDF.
 
-// pdf-parse ist eine Node-Bibliothek (kein Edge-Runtime).
+// unpdf ist eine reine JS-Bibliothek um PDF.js -- läuft eigentlich auch auf
+// Edge, aber Node bleibt hier, um Verhalten und Umgebung nicht gleichzeitig
+// mit dem Bibliothekswechsel zu ändern.
 export const runtime = "nodejs";
 // PDF-Parsen kann bei großen Dokumenten ein paar Sekunden dauern.
 // Achtung: Auf dem Vercel-Hobby-Plan ist das Limit niedriger als hier
@@ -66,7 +68,7 @@ export async function POST(request: Request) {
   if (!trainingId) return NextResponse.json({ error: "trainingId fehlt." }, { status: 400 });
 
   // Ab hier gilt: kein harter Fehler mehr nach außen (siehe Kopfkommentar).
-  let parser: PDFParse | null = null;
+  let pdf: Awaited<ReturnType<typeof getDocumentProxy>> | null = null;
   try {
     const { data: training, error: leseFehler } = await db
       .from("trainings")
@@ -96,8 +98,8 @@ export async function POST(request: Request) {
     }
 
     const bytes = new Uint8Array(await datei.arrayBuffer());
-    parser = new PDFParse({ data: bytes });
-    const ergebnis = await parser.getText();
+    pdf = await getDocumentProxy(bytes);
+    const ergebnis = await extractText(pdf, { mergePages: true });
 
     // Mehrfache Leerzeichen/Zeilenumbrüche zusammenfassen: PDF-Text kommt oft
     // mit Spaltenumbrüchen aus dem Layout, die eine Vorlesestimme sonst als
@@ -135,7 +137,9 @@ export async function POST(request: Request) {
     });
     return NextResponse.json({ ok: false, grund: "extraktion-fehlgeschlagen" });
   } finally {
-    // pdfjs hält einen Worker offen -- ohne destroy() bleibt der Prozess belegt.
-    await parser?.destroy().catch(() => {});
+    // PDFDocumentProxy hat kein destroy() (das gehört zur internen Loading
+    // Task, die getDocumentProxy() nicht zurückgibt) -- cleanup() gibt
+    // geladene Fonts/Ressourcen frei.
+    await pdf?.cleanup().catch(() => {});
   }
 }
