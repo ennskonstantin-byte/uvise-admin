@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { MessageCircle, X, Send } from "lucide-react";
+import { ChevronDown, ChevronUp, MessageCircle, X, Send } from "lucide-react";
 
 type Msg = { role: "user" | "assistant"; content: string };
 
@@ -12,6 +12,11 @@ const BEGRUESSUNG: Msg = {
 
 export function ChatWidget() {
   const [offen, setOffen] = useState(false);
+  // [Fix-Cluster 8, Punkt 24] Einklappen (nur Kopfzeile sichtbar) statt
+  // komplettem Schließen -- bei langen Verläufen soll man das Fenster
+  // verkleinern können, ohne den Gesprächsverlauf zu verlassen/verlieren.
+  // Standardzustand beim Öffnen ist immer ausgeklappt.
+  const [eingeklappt, setEingeklappt] = useState(false);
   const [messages, setMessages] = useState<Msg[]>([BEGRUESSUNG]);
   const [eingabe, setEingabe] = useState("");
   const [laedt, setLaedt] = useState(false);
@@ -63,7 +68,10 @@ export function ChatWidget() {
       {/* Schwebender Öffnen-Knopf */}
       {!offen && (
         <button
-          onClick={() => setOffen(true)}
+          onClick={() => {
+            setOffen(true);
+            setEingeklappt(false);
+          }}
           aria-label="Chat öffnen"
           className="fixed bottom-5 right-5 z-50 flex items-center gap-2 rounded-full bg-gradient-to-r from-violet-600 to-sky-400 px-5 py-3.5 text-white shadow-lg hover:scale-105 transition-transform"
         >
@@ -74,15 +82,33 @@ export function ChatWidget() {
 
       {/* Chat-Fenster */}
       {offen && (
-        <div className="fixed bottom-5 right-5 z-50 flex flex-col w-[min(92vw,380px)] h-[min(70vh,560px)] rounded-3xl border border-border bg-background shadow-2xl overflow-hidden">
+        <div
+          className={`fixed bottom-5 right-5 z-50 flex flex-col w-[min(92vw,380px)] rounded-3xl border border-border bg-background shadow-2xl overflow-hidden ${
+            eingeklappt ? "h-auto" : "h-[min(70vh,560px)]"
+          }`}
+        >
           <div className="flex items-center gap-2 px-4 py-3 bg-gradient-to-r from-violet-600 to-sky-400 text-white shrink-0">
-            <MessageCircle size={18} />
-            <span className="font-semibold text-sm flex-1">uVise-Assistent</span>
-            <button onClick={() => setOffen(false)} aria-label="Chat schließen" className="p-1 rounded-full hover:bg-white/20">
+            <button
+              onClick={() => setEingeklappt((v) => !v)}
+              aria-expanded={!eingeklappt}
+              aria-label={eingeklappt ? "Chat ausklappen" : "Chat einklappen"}
+              className="flex items-center gap-2 flex-1 text-left min-w-0"
+            >
+              <MessageCircle size={18} className="shrink-0" />
+              <span className="font-semibold text-sm flex-1 truncate">uVise-Assistent</span>
+              {eingeklappt ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+            </button>
+            <button
+              onClick={() => setOffen(false)}
+              aria-label="Chat schließen"
+              className="p-1 rounded-full hover:bg-white/20 shrink-0"
+            >
               <X size={18} />
             </button>
           </div>
 
+          {!eingeklappt && (
+            <>
           <div className="flex-1 overflow-y-auto px-4 py-4 flex flex-col gap-3">
             {messages.map((m, i) => (
               <div
@@ -132,6 +158,8 @@ export function ChatWidget() {
           <p className="text-[10px] text-foreground/40 text-center pb-2 px-4">
             KI-Assistent — Angaben ohne Gewähr. Kein Chatverlauf wird gespeichert.
           </p>
+            </>
+          )}
         </div>
       )}
     </>
