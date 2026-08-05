@@ -78,6 +78,18 @@ export async function POST(request: Request) {
 
   const tokens = (tokenRows ?? []).map((t) => t.token);
   const gueltigeTokens = tokens.filter((t): t is string => !!t && t.startsWith("ExponentPushToken"));
+  // [Fix-Cluster 8, Punkt 23] Protokolliert, WER als Zielgruppe aufgelöst
+  // wurde -- ohne diese Zeile ließe sich ein falsch adressierter Push (z.B.
+  // "geht an die fragende Person statt an die Beauftragten") nachträglich
+  // nicht mehr nachvollziehen, weil weder Client noch DB einen Empfänger-
+  // Datensatz je Push-Versand führen.
+  console.error("[notify-push] Zielgruppe aufgelöst", {
+    aufrufer: user.id,
+    modus: notifyBeauftragte ? "notifyBeauftragte" : "employeeIds",
+    zielAuthUserIds: userIds,
+    aufruferInZielliste: userIds.includes(user.id),
+    gueltigeTokenAnzahl: gueltigeTokens.length,
+  });
   await sendPushNotifications(tokens, title, body);
 
   return NextResponse.json({ ok: true, empfaenger: gueltigeTokens.length });
