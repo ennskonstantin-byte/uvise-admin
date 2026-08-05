@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { AlertTriangle, Pencil, Printer, Send, Trash2, Undo2 } from "lucide-react";
+import { AlertTriangle, Bell, Pencil, Printer, Send, Trash2, Undo2 } from "lucide-react";
 import { DashboardShell } from "@/components/DashboardShell";
 import { PageHeader } from "@/components/PageHeader";
 import { Card } from "@/components/Card";
@@ -13,6 +13,7 @@ import { AssignTrainingModal } from "@/components/AssignTrainingModal";
 import { AssignBundleModal } from "@/components/AssignBundleModal";
 import type { Bundle, Training } from "@/lib/types";
 import { useAppData } from "@/lib/store";
+import { supabase } from "@/lib/supabase";
 import { printTraining } from "@/lib/printTraining";
 
 export default function UnterweisungenPage() {
@@ -26,6 +27,8 @@ export default function UnterweisungenPage() {
   const [assigningTraining, setAssigningTraining] = useState<Training | null>(null);
   const [assigningBundle, setAssigningBundle] = useState<Bundle | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [erinnernId, setErinnernId] = useState<string | null>(null);
+  const [erinnernHinweis, setErinnernHinweis] = useState<{ id: string; text: string } | null>(null);
   const expiringSoon = trainings.filter(
     (t) => t.status === "laeuft_ab" || t.status === "abgelaufen"
   );
@@ -50,6 +53,46 @@ export default function UnterweisungenPage() {
   function offeneZuweisungen(trainingId: string) {
     return employeeTrainings.filter((et) => et.trainingId === trainingId && et.status === "offen")
       .length;
+  }
+
+  // Rücklaufquote: "X von Y zurück" -- Y = alle Zuweisungen dieser Vorlage,
+  // X = davon bereits signiert. [Fix-Cluster 8, Punkt 19]
+  function ruecklauf(trainingId: string) {
+    const zuweisungen = employeeTrainings.filter((et) => et.trainingId === trainingId);
+    const signiert = zuweisungen.filter((et) => et.status === "signiert").length;
+    return { signiert, gesamt: zuweisungen.length };
+  }
+
+  async function handleErneutErinnern(id: string, name: string) {
+    setErinnernId(id);
+    setErinnernHinweis(null);
+    try {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      if (!session?.access_token) throw new Error("Nicht angemeldet.");
+      const res = await fetch("/api/erinnerungen/sofort", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${session.access_token}` },
+        body: JSON.stringify({ trainingId: id }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error ?? "Erinnerung fehlgeschlagen.");
+      setErinnernHinweis({
+        id,
+        text:
+          json.angeschrieben === 0
+            ? `„${name}" — niemand mehr zu erinnern.`
+            : `${json.angeschrieben} Mitarbeiter zu „${name}" erinnert.`,
+      });
+    } catch (err) {
+      setErinnernHinweis({
+        id,
+        text: err instanceof Error ? err.message : "Erinnerung fehlgeschlagen.",
+      });
+    } finally {
+      setErinnernId(null);
+    }
   }
 
   async function handleWithdrawTraining(id: string, name: string) {
@@ -146,7 +189,13 @@ export default function UnterweisungenPage() {
                     <p className="font-medium truncate">{t.name}</p>
                     <p className="text-xs text-foreground/65">
                       Erstellt: {t.erstelltAm} · Läuft ab: {t.ablaufdatum}
+                      {ruecklauf(t.id).gesamt > 0 && (
+                        <> · {ruecklauf(t.id).signiert} von {ruecklauf(t.id).gesamt} zurück</>
+                      )}
                     </p>
+                    {erinnernHinweis?.id === t.id && (
+                      <p className="text-xs text-foreground/70 mt-1">{erinnernHinweis.text}</p>
+                    )}
                   </div>
                   {t.status === "laeuft_ab" && (
                     <span className="text-xs rounded-full bg-amber-500/15 text-amber-700 px-3 py-1">
@@ -174,6 +223,17 @@ export default function UnterweisungenPage() {
                   >
                     <Send size={14} />
                   </button>
+                  {offeneZuweisungen(t.id) > 0 && (
+                    <button
+                      onClick={() => handleErneutErinnern(t.id, t.name)}
+                      disabled={erinnernId === t.id}
+                      className="h-8 w-8 rounded-full border border-border flex items-center justify-center text-blue-500 hover:border-foreground/30 disabled:opacity-40"
+                      aria-label={`${t.name} — erneut erinnern`}
+                      title={`${t.name} — ${offeneZuweisungen(t.id)} Mitarbeiter erneut per Mail/Push erinnern`}
+                    >
+                      <Bell size={14} />
+                    </button>
+                  )}
                   {offeneZuweisungen(t.id) > 0 && (
                     <button
                       onClick={() => handleWithdrawTraining(t.id, t.name)}
