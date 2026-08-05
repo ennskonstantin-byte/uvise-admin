@@ -58,10 +58,16 @@ export async function POST(request: Request) {
   // (user_id), nicht am fachlichen Mitarbeiter-Datensatz — genau deshalb
   // gibt es zwischen employees und push_tokens keine FK-Beziehung, über die
   // PostgREST automatisch verschachteln könnte (s. Migration 0064).
+  // [Fix-Cluster 8, Punkt 5] Aufrufer*in nie selbst benachrichtigen -- ohne
+  // diesen Ausschluss bekam eine fragende Person, die zufällig SELBST
+  // Beauftragte*r ist (z.B. eine Führungskraft, die auch als Mitarbeiter*in
+  // in der App signiert), ihre eigene "Neue Rückfrage"-Push-Meldung, weil
+  // sie in der eigenen Zielliste (ist_beauftragter = true) mit auftauchte.
   let query = db
     .from("employees")
     .select("auth_user_id")
-    .eq("company_id", caller.company_id);
+    .eq("company_id", caller.company_id)
+    .neq("auth_user_id", user.id);
   query = notifyBeauftragte ? query.eq("ist_beauftragter", true) : query.in("id", employeeIds);
   const { data: targets } = await query;
 
