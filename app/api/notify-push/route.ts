@@ -76,7 +76,24 @@ export async function POST(request: Request) {
     ? await db.from("push_tokens").select("token").in("user_id", userIds)
     : { data: [] };
 
-  const tokens = (tokenRows ?? []).map((t) => t.token);
+  // [Fix-Cluster 9, Punkt 23 — Nachbesserung] Der Ausschluss oben filtert nur
+  // nach AUTH-KONTO (auth_user_id). push_tokens hängt aber am GERÄT: läuft auf
+  // demselben Telefon sowohl das Mitarbeiter- als auch ein Beauftragten-Konto
+  // (Führungskraft, die zugleich als MA signiert), ist DERSELBE Expo-Token
+  // unter BEIDEN user_ids gespeichert. Der fragende MA wurde per auth_user_id
+  // zwar ausgeschlossen, sein Gerätetoken tauchte aber über das zweite Konto
+  // wieder in der Zielliste auf -> das eigene Telefon bekam die "Neue
+  // Rückfrage"-Push. Deshalb zusätzlich auf TOKEN-Ebene das/die eigene(n)
+  // Gerätetoken der aufrufenden Person entfernen.
+  const { data: eigeneTokenRows } = await db
+    .from("push_tokens")
+    .select("token")
+    .eq("user_id", user.id);
+  const eigeneTokens = new Set((eigeneTokenRows ?? []).map((t) => t.token));
+
+  const tokens = (tokenRows ?? [])
+    .map((t) => t.token)
+    .filter((t): t is string => !!t && !eigeneTokens.has(t));
   const gueltigeTokens = tokens.filter((t): t is string => !!t && t.startsWith("ExponentPushToken"));
   // [Fix-Cluster 8, Punkt 23] Protokolliert, WER als Zielgruppe aufgelöst
   // wurde -- ohne diese Zeile ließe sich ein falsch adressierter Push (z.B.
@@ -88,6 +105,7 @@ export async function POST(request: Request) {
     modus: notifyBeauftragte ? "notifyBeauftragte" : "employeeIds",
     zielAuthUserIds: userIds,
     aufruferInZielliste: userIds.includes(user.id),
+    eigeneGeraeteTokenEntfernt: eigeneTokens.size,
     gueltigeTokenAnzahl: gueltigeTokens.length,
   });
   await sendPushNotifications(tokens, title, body);
