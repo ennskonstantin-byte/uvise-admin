@@ -101,7 +101,14 @@ export function AppPreview() {
         ))}
       </div>
 
-      <div className="relative w-[330px] sm:w-[360px] rounded-[2.5rem] border-[10px] border-neutral-900 bg-neutral-900 shadow-2xl overflow-hidden" style={{ aspectRatio: "375 / 812" }}>
+      <div
+        className="relative w-[330px] sm:w-[360px] rounded-[2.5rem] border-[10px] bg-neutral-900 shadow-2xl overflow-hidden"
+        style={{
+          aspectRatio: "375 / 812",
+          borderColor: "#c9ccd2",
+          borderImage: "linear-gradient(155deg, #e8eaee 0%, #b7bac1 45%, #dcdee2 55%, #9a9ea6 100%) 1",
+        }}
+      >
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-28 h-5 bg-neutral-900 rounded-b-2xl z-10" />
         {!loaded[active] && (
           <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 text-xs" style={{ background: "var(--mk-paper)", color: "var(--mk-ink-50)" }}>
