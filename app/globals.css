@@ -368,3 +368,38 @@ h1, h2, h3, h4 {
 }
 .uv-fade { animation: uvFadeIn 0.18s ease-out; }
 .uv-pop { animation: uvPopIn 0.22s cubic-bezier(0.16, 1, 0.3, 1); }
+
+/* Drift-Hintergrund (Startseite): dunkler Grund mit langsam driftenden
+   Glow-Blobs + schwebenden Glas-Kärtchen — Nachbau der 8-Sekunden-Loop-
+   Design-Referenz (hintergrund2.png), auf eine ruhigere Dauer gestreckt,
+   damit sie beim Lesen/Scrollen einer ganzen Seite nicht unruhig wirkt. */
+@keyframes uvDriftBlobA {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(3%, -4%) scale(1.08); }
+}
+@keyframes uvDriftBlobB {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(-4%, 3%) scale(0.94); }
+}
+@keyframes uvCardFloatA {
+  0%, 100% { transform: translate(0, 0); }
+  50% { transform: translate(1.2%, -1.6%); }
+}
+@keyframes uvCardFloatB {
+  0%, 100% { transform: translate(0, 0); }
+  50% { transform: translate(-1.4%, 1.3%); }
+}
+@keyframes uvCardFloatC {
+  0%, 100% { transform: translate(0, 0); }
+  50% { transform: translate(1.6%, 1.2%); }
+}
+.uv-drift-blob-a { animation: uvDriftBlobA 26s ease-in-out infinite; }
+.uv-drift-blob-b { animation: uvDriftBlobB 32s ease-in-out infinite; }
+.uv-drift-card-a { animation: uvCardFloatA 22s ease-in-out infinite; }
+.uv-drift-card-b { animation: uvCardFloatB 27s ease-in-out infinite; }
+.uv-drift-card-c { animation: uvCardFloatC 24s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) {
+  .uv-drift-blob-a, .uv-drift-blob-b, .uv-drift-card-a, .uv-drift-card-b, .uv-drift-card-c {
+    animation: none;
+  }
+}

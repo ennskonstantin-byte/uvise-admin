@@ -37,6 +37,7 @@ import { TrackPageView } from "@/components/TrackPageView";
 import { AffiliateRef } from "@/components/AffiliateRef";
 import { ChatWidget } from "@/components/marketing/ChatWidget";
 import { FAQ } from "@/components/marketing/faqData";
+import { DriftBackground } from "@/components/marketing/DriftBackground";
 
 // Akzent je Bereich (STYLE.md: Unterweisungen=Blau, Rückfragen=Cyan,
 // Mitarbeiter=Grün, Erinnerungen=Amber) — als 3D-Glas-Kachel-Verlauf +
@@ -227,6 +228,7 @@ export function MarketingHome() {
 
   return (
     <div className="uv-glass min-h-screen overflow-x-hidden">
+      <DriftBackground />
       <TrackPageView path="/" />
       <AffiliateRef />
       <header
