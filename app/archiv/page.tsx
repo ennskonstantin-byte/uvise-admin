@@ -13,6 +13,45 @@ import { RECENT_SIGNED_DAYS, isRecentlySigned } from "@/lib/recentlySigned";
 
 const YEARS = ["2026", "2025", "2024"];
 
+// Jahres-Ordner im Ordner-Look (STYLE.md): kühle Tönung je Ordner (Blau/
+// Cyan/Indigo), Lasche oben, große Jahreszahl. Gilt für Chef- UND
+// Mitarbeiter-Archiv gleichermaßen.
+const YEAR_FOLDER_ACCENTS = [
+  { tab: "#3AA0FF", glow: "rgba(10,108,255,0.32)" },
+  { tab: "#5BD7FF", glow: "rgba(23,193,254,0.28)" },
+  { tab: "#7C8CFF", glow: "rgba(90,100,255,0.28)" },
+];
+
+function YearFolderGrid({ years, onSelect }: { years: string[]; onSelect: (y: string) => void }) {
+  return (
+    <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+      {years.map((y, i) => {
+        const accent = YEAR_FOLDER_ACCENTS[i % YEAR_FOLDER_ACCENTS.length];
+        return (
+          <button
+            key={y}
+            onClick={() => onSelect(y)}
+            className="uv-glass-panel relative pt-8 pb-6 px-5 text-left hover:-translate-y-0.5 transition-transform overflow-hidden"
+            style={{ ["--glow" as string]: accent.glow }}
+          >
+            <span
+              className="absolute top-0 left-6 h-2.5 w-16 rounded-b-lg"
+              style={{ background: accent.tab }}
+              aria-hidden="true"
+            />
+            <p className="mk-display text-3xl font-bold" style={{ color: "var(--mk-ink)" }}>
+              {y}
+            </p>
+            <p className="text-xs mt-1" style={{ color: "var(--mk-ink-60)" }}>
+              Jahr öffnen
+            </p>
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
 export default function ArchivPage() {
   const { employees, employeeTrainings, trainings, categories, loadEmployeeArchive, loadTrainingArchive } = useAppData();
   const [mode, setMode] = useState<"mitarbeiter" | "unterweisung">("mitarbeiter");
@@ -144,7 +183,7 @@ export default function ArchivPage() {
             </button>
           </div>
 
-          <div className="rounded-3xl border border-border divide-y divide-border overflow-hidden">
+          <div className="uv-list-zebra rounded-3xl border border-border overflow-hidden">
             {entries.map((et) => {
               const emp = employees.find((e) => e.id === et.employeeId);
               return (
@@ -206,17 +245,7 @@ export default function ArchivPage() {
           </h1>
 
           <p className="text-sm text-foreground/60 mb-3">Jahr wählen</p>
-          <div className="flex flex-wrap gap-2">
-            {YEARS.map((y) => (
-              <button
-                key={y}
-                onClick={() => setYear(y)}
-                className="rounded-full border border-border px-5 py-2.5 text-sm hover:border-foreground/30"
-              >
-                {y}
-              </button>
-            ))}
-          </div>
+          <YearFolderGrid years={YEARS} onSelect={setYear} />
         </Card>
       </DashboardShell>
     );
@@ -236,7 +265,7 @@ export default function ArchivPage() {
               <button
                 key={t.id}
                 onClick={() => setTrainingId(t.id)}
-                className="text-left rounded-3xl border border-border bg-surface p-5 hover:shadow-md transition-shadow"
+                className="uv-glass-panel text-left p-5 hover:-translate-y-0.5 transition-transform" style={{ ["--glow" as string]: "var(--uv-glow-blue)" }}
               >
                 <p className="text-2xl mb-3">{t.icon}</p>
                 <p className="font-medium">{t.name}</p>
@@ -297,7 +326,7 @@ export default function ArchivPage() {
             className="w-full rounded-full border border-border bg-surface px-5 py-2.5 text-sm mb-4 outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
           />
 
-          <div className="rounded-3xl border border-border divide-y divide-border overflow-hidden">
+          <div className="uv-list-zebra rounded-3xl border border-border overflow-hidden">
             {entries.map((et) => (
               <div key={et.id} className="flex items-center gap-4 px-5 py-4">
                 <div className="flex-1 min-w-0">
@@ -363,17 +392,7 @@ export default function ArchivPage() {
           </h1>
 
           <p className="text-sm text-foreground/60 mb-3">Jahr wählen</p>
-          <div className="flex flex-wrap gap-2">
-            {YEARS.map((y) => (
-              <button
-                key={y}
-                onClick={() => setYear(y)}
-                className="rounded-full border border-border px-5 py-2.5 text-sm hover:border-foreground/30"
-              >
-                {y}
-              </button>
-            ))}
-          </div>
+          <YearFolderGrid years={YEARS} onSelect={setYear} />
         </Card>
       </DashboardShell>
     );
@@ -425,7 +444,7 @@ export default function ArchivPage() {
             <button
               key={e.id}
               onClick={() => setEmployeeId(e.id)}
-              className="relative text-left rounded-3xl border border-border bg-surface p-5 hover:shadow-md transition-shadow"
+              className="uv-glass-panel relative text-left p-5 hover:-translate-y-0.5 transition-transform" style={{ ["--glow" as string]: "var(--uv-glow-blue)" }}
             >
               {employeeHasRecentlySigned(e.id) && (
                 <span
@@ -480,7 +499,7 @@ export default function ArchivPage() {
               <button
                 key={e.id}
                 onClick={() => setEmployeeId(e.id)}
-                className="text-left rounded-3xl border border-border bg-surface p-5 hover:shadow-md transition-shadow opacity-60"
+                className="uv-glass-panel text-left p-5 opacity-60"
               >
                 <div className="mb-3">
                   <EmployeeAvatar vorname={e.vorname} nachname={e.nachname} fotoUrl={e.fotoUrl} size={48} grayscale />

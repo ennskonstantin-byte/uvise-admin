@@ -149,19 +149,27 @@ export default function UnterweisungenPage() {
       <div className="flex gap-2 mb-6">
         <button
           onClick={() => setTab("vorlagen")}
-          className={`rounded-full px-4 py-2 text-sm ${
-            tab === "vorlagen" ? "text-white" : "border border-border text-foreground/70"
+          className={`rounded-full px-4 py-2 text-sm transition-colors ${
+            tab === "vorlagen" ? "uv-glass-tile text-white font-medium" : "border border-border text-foreground/70"
           }`}
-          style={tab === "vorlagen" ? { background: "var(--accent-gradient)" } : undefined}
+          style={
+            tab === "vorlagen"
+              ? { ["--tile-from" as string]: "#3AA0FF", ["--tile-to" as string]: "#0A5BFF", borderRadius: "9999px" }
+              : undefined
+          }
         >
           Vorlagen
         </button>
         <button
           onClick={() => setTab("bundles")}
-          className={`rounded-full px-4 py-2 text-sm ${
-            tab === "bundles" ? "text-white" : "border border-border text-foreground/70"
+          className={`rounded-full px-4 py-2 text-sm transition-colors ${
+            tab === "bundles" ? "uv-glass-tile text-white font-medium" : "border border-border text-foreground/70"
           }`}
-          style={tab === "bundles" ? { background: "var(--accent-gradient)" } : undefined}
+          style={
+            tab === "bundles"
+              ? { ["--tile-from" as string]: "#3AA0FF", ["--tile-to" as string]: "#0A5BFF", borderRadius: "9999px" }
+              : undefined
+          }
         >
           Bundles
         </button>
@@ -181,7 +189,7 @@ export default function UnterweisungenPage() {
               </div>
             )}
 
-            <div className="rounded-3xl border border-border divide-y divide-border overflow-hidden">
+            <div className="uv-list-zebra rounded-3xl border border-border overflow-hidden">
               {trainings.map((t) => (
                 <div key={t.id} className="flex items-center gap-4 px-5 py-4">
                   <span className="text-lg">{t.icon}</span>
@@ -269,7 +277,7 @@ export default function UnterweisungenPage() {
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {bundles.map((b) => (
-              <div key={b.id} className="rounded-3xl border border-border bg-surface p-5">
+              <div key={b.id} className="uv-glass-panel p-5" style={{ ["--glow" as string]: "var(--uv-glow-cyan)" }}>
                 <div className="flex items-start justify-between">
                   <span className="text-2xl">{b.icon}</span>
                   <div className="flex gap-2">

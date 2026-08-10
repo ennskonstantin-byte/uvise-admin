@@ -87,7 +87,7 @@ export default function QualifikationenPage() {
       />
 
       <Card>
-        <div className="rounded-3xl border border-border divide-y divide-border overflow-hidden">
+        <div className="uv-list-zebra rounded-3xl border border-border overflow-hidden">
           {qualifications.map((q) => {
             const meta = STATUS_META[q.status];
             const emp = employees.find((e) => e.id === q.employeeId);

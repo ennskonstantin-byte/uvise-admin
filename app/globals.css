@@ -351,6 +351,12 @@ h1, h2, h3, h4 {
     inset 0 -4px 7px rgba(0, 0, 0, 0.4);
 }
 
+/* Listen-Zebra (STYLE.md): abwechselnde Zeilen-Helligkeit auf Glas-Listen,
+   damit man jede Zeile klar vom Nachbarn unterscheidet. Statuswerte/Ampel
+   bleiben unverändert — die Zebra-Tönung dient nur der Trennung. */
+.uv-list-zebra > * { background: rgba(255, 255, 255, 0.045); }
+.uv-list-zebra > *:nth-child(even) { background: rgba(255, 255, 255, 0.13); }
+
 /* Animationen für den Redaktionsplan (Pop-up + Aktionen) */
 @keyframes uvFadeIn {
   from { opacity: 0; }

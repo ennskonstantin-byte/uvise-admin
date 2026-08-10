@@ -67,7 +67,7 @@ export default function RueckfragenPage() {
           {threads.map((t) => {
             const isOpen = openThreads.has(t.key);
             return (
-              <div key={t.key} className="rounded-3xl border border-border overflow-hidden">
+              <div key={t.key} className="uv-glass-panel overflow-hidden" style={{ ["--glow" as string]: "var(--uv-glow-cyan)" }}>
                 <button
                   onClick={() => toggle(t.key)}
                   aria-expanded={isOpen}
@@ -105,7 +105,10 @@ export default function RueckfragenPage() {
                       <div key={q.id}>
                         <p className="text-[11px] text-foreground/65 mb-1.5">{q.gestelltAm}</p>
                         <div className="flex justify-start mb-2">
-                          <div className="max-w-md rounded-2xl rounded-bl-sm bg-surface px-4 py-2.5 text-sm">
+                          <div
+                            className="max-w-md rounded-2xl rounded-bl-sm px-4 py-2.5 text-sm"
+                            style={{ background: "var(--uv-glass-bg-strong, rgba(255,255,255,0.08))", border: "1px solid var(--uv-glass-border, rgba(255,255,255,0.14))" }}
+                          >
                             {q.frage}
                           </div>
                         </div>

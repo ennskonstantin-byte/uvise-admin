@@ -10,7 +10,8 @@ export function EmployeeCard({ employee }: { employee: Employee }) {
   return (
     <Link
       href={`/mitarbeiter/${id}`}
-      className="btn-feedback text-left rounded-3xl border border-border bg-surface p-5 hover:shadow-md transition-shadow block"
+      className="uv-glass-panel btn-feedback text-left p-5 block transition-transform hover:-translate-y-0.5"
+      style={{ ["--glow" as string]: ampel === "rot" ? "var(--uv-glow-amber, rgba(245,179,1,0.28))" : "var(--uv-glow-green, rgba(23,178,106,0.3))" }}
     >
       <div className="flex items-start justify-between">
         <div className="relative">
