@@ -109,7 +109,7 @@ button:not(:disabled):active {
     backdrop-filter: none !important;
     background: linear-gradient(90deg, var(--sidebar-from), var(--sidebar-to)) !important;
   }
-  .uv-mk header.backdrop-blur {
+  .uv-mk header.backdrop-blur, .uv-glass header.backdrop-blur {
     backdrop-filter: none !important;
     background: var(--mk-panel) !important;
   }
@@ -193,58 +193,155 @@ h1, h2, h3, h4 {
   background: var(--mk-paper);
   color: var(--mk-ink);
 }
-.uv-mk .mk-display {
+.uv-mk .mk-display, .uv-glass .mk-display {
   font-family: var(--font-mk-display), var(--font-body), system-ui, sans-serif;
 }
 /* Etiketten/Labels: Space Grotesk in Versalien mit weiter Laufweite
    (die Brand kennt nur Space Grotesk + Inter — keine Monospace-Schrift). */
-.uv-mk .mk-mono {
+.uv-mk .mk-mono, .uv-glass .mk-mono {
   font-family: var(--font-mk-display), var(--font-body), system-ui, sans-serif;
 }
 
 /* Die Ampel-Leiste: durchgehendes Signatur-Element der Seite, ersetzt
    generische Trennlinien zwischen Abschnitten durch die drei echten
    Ampel-Farben des Produkts. */
-.uv-mk .mk-rule {
+.uv-mk .mk-rule, .uv-glass .mk-rule {
   display: flex;
   width: 100%;
   height: 3px;
 }
-.uv-mk .mk-rule span {
+.uv-mk .mk-rule span, .uv-glass .mk-rule span {
   flex: 1;
   transform-origin: left;
 }
-.uv-mk .mk-rule span:nth-child(1) { background: var(--mk-red); }
-.uv-mk .mk-rule span:nth-child(2) { background: var(--mk-yellow); }
-.uv-mk .mk-rule span:nth-child(3) { background: var(--mk-green); }
+.uv-mk .mk-rule span:nth-child(1), .uv-glass .mk-rule span:nth-child(1) { background: var(--mk-red); }
+.uv-mk .mk-rule span:nth-child(2), .uv-glass .mk-rule span:nth-child(2) { background: var(--mk-yellow); }
+.uv-mk .mk-rule span:nth-child(3), .uv-glass .mk-rule span:nth-child(3) { background: var(--mk-green); }
 
 @keyframes mkRuleOn {
   from { transform: scaleX(0); }
   to { transform: scaleX(1); }
 }
-.uv-mk .mk-rule.mk-rule-animate span {
+.uv-mk .mk-rule.mk-rule-animate span, .uv-glass .mk-rule.mk-rule-animate span {
   animation: mkRuleOn 0.5s ease-out both;
 }
-.uv-mk .mk-rule.mk-rule-animate span:nth-child(1) { animation-delay: 0s; }
-.uv-mk .mk-rule.mk-rule-animate span:nth-child(2) { animation-delay: 0.15s; }
-.uv-mk .mk-rule.mk-rule-animate span:nth-child(3) { animation-delay: 0.3s; }
+.uv-mk .mk-rule.mk-rule-animate span:nth-child(1), .uv-glass .mk-rule.mk-rule-animate span:nth-child(1) { animation-delay: 0s; }
+.uv-mk .mk-rule.mk-rule-animate span:nth-child(2), .uv-glass .mk-rule.mk-rule-animate span:nth-child(2) { animation-delay: 0.15s; }
+.uv-mk .mk-rule.mk-rule-animate span:nth-child(3), .uv-glass .mk-rule.mk-rule-animate span:nth-child(3) { animation-delay: 0.3s; }
 
 @media (prefers-reduced-motion: reduce) {
-  .uv-mk .mk-rule.mk-rule-animate span { animation: none; }
+  .uv-mk .mk-rule.mk-rule-animate span, .uv-glass .mk-rule.mk-rule-animate span { animation: none; }
 }
 
 /* Premium-Politur: Marketing-Links/Buttons bekommen eine weiche eigene
    Bewegungskurve und eine spürbare „Press"-Physik beim Klicken/Antippen. */
-.uv-mk a, .uv-mk button {
+.uv-mk a, .uv-mk button, .uv-glass a, .uv-glass button {
   transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1),
               color 0.3s ease, background-color 0.3s ease, border-color 0.3s ease;
 }
-.uv-mk a:active, .uv-mk button:active {
+.uv-mk a:active, .uv-mk button:active, .uv-glass a:active, .uv-glass button:active {
   transform: scale(0.98);
 }
 @media (prefers-reduced-motion: reduce) {
-  .uv-mk a, .uv-mk button { transition: none; }
-  .uv-mk a:active, .uv-mk button:active { transform: none; }
+  .uv-mk a, .uv-mk button, .uv-glass a, .uv-glass button { transition: none; }
+  .uv-mk a:active, .uv-mk button:active, .uv-glass a:active, .uv-glass button:active { transform: none; }
+}
+
+/* ---------------------------------------------------------------------
+   Glas-3D-Design (nur unter .uv-glass aktiv) — Design-Wahrheit:
+   Cloude/design-uvise-glass/STYLE.md. Portiert 1:1 die Tokens aus
+   sicherakte/lib/theme.ts (App) auf die Website. Bewusst NUR dunkel
+   (kein Hell/Dunkel-Umschalter mehr) — genau wie die App seit dem
+   Redesign. Variablen tragen absichtlich dieselben Namen wie --mk-*,
+   damit bestehende Marketing-Komponenten (SignalRule, AmpelDots,
+   AppPreview, Preise, VorlesenDemo, faqData) ohne Codeänderung die
+   neue Palette übernehmen, sobald der Scope von .uv-mk auf .uv-glass
+   wechselt.
+   --------------------------------------------------------------------- */
+.uv-glass {
+  --mk-ink: #eaf2ff;
+  --mk-paper: #05060f;
+  --mk-panel: #0c1120;
+  --mk-line: rgba(255, 255, 255, 0.14);
+  --mk-line-strong: rgba(255, 255, 255, 0.22);
+
+  --mk-blue: #4d9bff;
+  --mk-green: #3ec98a;
+  --mk-red: #f0616f;
+  --mk-yellow: #f5c343;
+
+  --mk-blue-strong: #0a6cff;
+  --mk-green-strong: #17b26a;
+
+  --mk-ink-70: color-mix(in srgb, var(--mk-ink) 70%, transparent);
+  --mk-ink-65: color-mix(in srgb, var(--mk-ink) 65%, transparent);
+  --mk-ink-60: color-mix(in srgb, var(--mk-ink) 60%, transparent);
+  --mk-ink-55: color-mix(in srgb, var(--mk-ink) 55%, transparent);
+  --mk-ink-50: color-mix(in srgb, var(--mk-ink) 50%, transparent);
+  --mk-ink-45: color-mix(in srgb, var(--mk-ink) 45%, transparent);
+  --mk-ink-30: color-mix(in srgb, var(--mk-ink) 30%, transparent);
+
+  /* Glas-Fläche + Glow-Rezepte aus theme.ts */
+  --uv-glass-bg: rgba(255, 255, 255, 0.055);
+  --uv-glass-bg-strong: rgba(255, 255, 255, 0.08);
+  --uv-glass-border: rgba(255, 255, 255, 0.14);
+  --uv-glass-border-strong: rgba(255, 255, 255, 0.16);
+  --uv-glow-blue: rgba(10, 108, 255, 0.38);
+  --uv-glow-cyan: rgba(23, 193, 254, 0.26);
+  --uv-glow-navy: rgba(18, 48, 126, 0.55);
+  --uv-glow-green: rgba(23, 178, 106, 0.3);
+  --uv-glow-amber: rgba(245, 179, 1, 0.3);
+}
+
+.uv-glass {
+  background: var(--mk-paper);
+  color: var(--mk-ink);
+  position: relative;
+}
+
+/* Radialer Blau/Cyan-Glow-Hintergrund — fix positioniert hinter allem, statt
+   sich mit dem Seiteninhalt mitzuscrollen (sonst müsste jeder Screen seinen
+   eigenen Glow mitbringen). */
+.uv-glass::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(60vmax 60vmax at 12% -10%, var(--uv-glow-blue), transparent 60%),
+    radial-gradient(50vmax 50vmax at 100% 15%, var(--uv-glow-cyan), transparent 55%),
+    radial-gradient(70vmax 70vmax at 50% 120%, var(--uv-glow-navy), transparent 60%);
+}
+.uv-glass > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* Glas-Fläche (Karte/Panel) — Rezept aus STYLE.md. Glow-Farbe je Bereich
+   per --glow-Override am Element selbst setzen. */
+.uv-glass-panel {
+  background: var(--uv-glass-bg);
+  border: 1px solid var(--uv-glass-border);
+  border-radius: 22px;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  box-shadow:
+    0 24px 60px rgba(0, 0, 0, 0.65),
+    0 0 46px var(--glow, var(--uv-glow-blue)),
+    inset 0 1px 0 rgba(255, 255, 255, 0.28),
+    inset 0 -14px 30px rgba(0, 0, 0, 0.3);
+}
+
+/* Erhabene 3D-„Taste" (Icon-Chip, aktiver Menüpunkt, primäre Buttons) */
+.uv-glass-tile {
+  background: linear-gradient(160deg, var(--tile-from, #3aa0ff), var(--tile-to, #0a5bff));
+  border-radius: 14px;
+  box-shadow:
+    0 7px 13px rgba(0, 0, 0, 0.5),
+    0 0 20px var(--glow, var(--uv-glow-blue)),
+    inset 0 2px 3px rgba(255, 255, 255, 0.6),
+    inset 0 -4px 7px rgba(0, 0, 0, 0.4);
 }
 
 /* Animationen für den Redaktionsplan (Pop-up + Aktionen) */

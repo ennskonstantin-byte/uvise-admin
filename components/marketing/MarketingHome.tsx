@@ -10,8 +10,6 @@ import {
   Smartphone,
   MessageCircleQuestion,
   FileDown,
-  Moon,
-  Sun,
   Languages,
   Check,
   Menu,
@@ -26,7 +24,6 @@ import {
   TreeDeciduous,
 } from "lucide-react";
 import { LogoMark } from "@/components/Logo";
-import { Switch } from "@/components/Switch";
 import { useAppData } from "@/lib/store";
 import { PLANS, CHEF_GRATIS_HINWEIS, ENTERPRISE_KONTAKT } from "@/lib/types";
 import { Reveal } from "@/components/marketing/Reveal";
@@ -41,19 +38,32 @@ import { AffiliateRef } from "@/components/AffiliateRef";
 import { ChatWidget } from "@/components/marketing/ChatWidget";
 import { FAQ } from "@/components/marketing/faqData";
 
+// Akzent je Bereich (STYLE.md: Unterweisungen=Blau, Rückfragen=Cyan,
+// Mitarbeiter=Grün, Erinnerungen=Amber) — als 3D-Glas-Kachel-Verlauf +
+// passender Glow hinter der jeweiligen Feature-Karte.
+const ACCENTS = {
+  blau: { from: "#3AA0FF", to: "#0A5BFF", glow: "rgba(10,108,255,0.38)" },
+  cyan: { from: "#5BD7FF", to: "#17A8E8", glow: "rgba(23,193,254,0.3)" },
+  gruen: { from: "#3FD98A", to: "#12945A", glow: "rgba(23,178,106,0.32)" },
+  amber: { from: "#FFD05A", to: "#F0A000", glow: "rgba(245,179,1,0.32)" },
+} as const;
+
 const FEATURES = [
   {
     icon: ShieldCheck,
+    accent: "blau" as const,
     title: "Rechtssichere Signatur",
     text: "Unterweisungen werden nach eIDAS-Grundsätzen digital unterschrieben — Zeitstempel, Gerät und Unterschrift unveränderlich gespeichert.",
   },
   {
     icon: BellRing,
+    accent: "amber" as const,
     title: "Automatische Erinnerungen",
     text: "Läuft eine Qualifikation oder Unterweisung bald ab, bekommen Chef und Mitarbeiter rechtzeitig eine E-Mail.",
   },
   {
     icon: MessageCircleQuestion,
+    accent: "cyan" as const,
     title: "Rückfragen in Echtzeit",
     text: "Unklarheiten direkt aus der Unterweisung heraus klären — die Antwort kommt sofort auf dem Handy an.",
   },
@@ -62,42 +72,46 @@ const FEATURES = [
     // Funktion, die dem gesamten Seiten-Leitmotiv (der Ampel-Leiste)
     // ihren Namen gibt, bekommt auch visuell die echte Ampel.
     special: "ampel" as const,
+    accent: "blau" as const,
     title: "Ampel-System",
     text: "Auf einen Blick sehen, wer offene Punkte hat — sortiert nach Kategorie, Abteilung oder Standort.",
   },
   {
     icon: FileDown,
+    accent: "gruen" as const,
     title: "Export für Prüfungen",
     text: "Nachweise und Qualifikationen als CSV oder gebündeltes ZIP-Backup — startklar für die Berufsgenossenschaft.",
   },
   {
     icon: Smartphone,
+    accent: "blau" as const,
     title: "Eigene Mitarbeiter-App",
     text: "Kein Firmen-Laptop nötig — dein Team erledigt Unterweisungen bequem auf dem eigenen Handy.",
   },
   {
-    icon: Moon,
-    title: "Hell & Dunkel",
-    text: "Durchdachtes Design für Büro und Werkstatt — mit vollem Dark-Mode-Support in jeder App.",
+    icon: Languages,
+    accent: "cyan" as const,
+    title: "Vorlesen & 41 Sprachen",
+    text: "Jede Unterweisung wird laut vorgelesen und verstanden — auch von fremdsprachigen Mitarbeitern.",
   },
 ];
 
 const PRODUCTS = [
   {
     tag: "Für Beauftragte & Chefs",
-    edge: "blue" as const,
+    accent: "blau" as const,
     title: "Web-Dashboard",
     text: "Mitarbeiter anlegen, Unterweisungen verteilen, Qualifikationen im Blick behalten — genau das, was du gerade ansiehst.",
   },
   {
     tag: "Für Beauftragte & Chefs",
-    edge: "blue" as const,
+    accent: "cyan" as const,
     title: "Chef-App fürs Handy",
     text: "Dieselbe Verwaltung wie das Dashboard, aber unterwegs — z.B. direkt in der Werkstatt oder auf der Baustelle.",
   },
   {
     tag: "Für dein Team",
-    edge: "green" as const,
+    accent: "gruen" as const,
     title: "Mitarbeiter-App",
     text: "Unterweisungen ansehen, vorlesen lassen, unterschreiben, Rückfragen stellen — komplett von unterwegs, ohne Papier.",
   },
@@ -116,17 +130,73 @@ const BRANCHEN = [
   { icon: Languages, title: "Mehrsprachige Teams", href: "/unterweisung-mehrsprachig" },
 ];
 
-// Placard-Tag: ersetzt die generische Pill-Badge-Optik durch ein
-// schmales, mono-gesetztes Etikett — wie eine Kennzeichnung auf einem
-// echten Werkstatt-/Baustellenschild statt eines SaaS-Chips.
+// Eyebrow-Pille: schmales Glas-Etikett mit Cyan-Rand-Glow (STYLE.md:
+// "Eyebrow-Pille"), ersetzt das frühere Werkstattschild-Etikett.
 function PlacardTag({ children }: { children: React.ReactNode }) {
   return (
     <span
-      className="mk-mono inline-flex items-center gap-2 rounded-[6px] border px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wide"
-      style={{ borderColor: "var(--mk-line-strong)", color: "var(--mk-ink)" }}
+      className="mk-mono inline-flex items-center gap-2 rounded-full px-3.5 py-1.5 text-[11px] font-semibold uppercase tracking-wide backdrop-blur-md"
+      style={{
+        background: "var(--uv-glass-bg)",
+        border: "1px solid var(--uv-glass-border)",
+        color: "var(--mk-ink-70)",
+        boxShadow: "0 0 20px var(--uv-glow-cyan), inset 0 1px 0 rgba(255,255,255,0.2)",
+      }}
     >
       {children}
     </span>
+  );
+}
+
+// Kleine Trust-Pille (eIDAS · 41 Sprachen · Fristen) — dezenter als die
+// Eyebrow-Pille, ohne Glow, für die ruhige Vertrauens-Zeile im Hero.
+function TrustPill({ children }: { children: React.ReactNode }) {
+  return (
+    <span
+      className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium"
+      style={{ background: "var(--uv-glass-bg)", border: "1px solid var(--mk-line)", color: "var(--mk-ink-65)" }}
+    >
+      {children}
+    </span>
+  );
+}
+
+// Glas-Karte (Feature/Branchen/FAQ) — echtes Milchglas mit Lichtkante +
+// Glow statt eines flachen Border-Kartons.
+function GlassCard({
+  children,
+  glow = "var(--uv-glow-blue)",
+  className = "",
+}: {
+  children: React.ReactNode;
+  glow?: string;
+  className?: string;
+}) {
+  return (
+    <div className={`uv-glass-panel ${className}`} style={{ ["--glow" as string]: glow }}>
+      {children}
+    </div>
+  );
+}
+
+// Erhabene 3D-Icon-Kachel (Feature-Karten, Branchen, Produkt-Akzent).
+function AccentTile({
+  icon: Icon,
+  accent,
+  size = 20,
+}: {
+  icon: React.ComponentType<{ size?: number }>;
+  accent: keyof typeof ACCENTS;
+  size?: number;
+}) {
+  const a = ACCENTS[accent];
+  return (
+    <div
+      className="uv-glass-tile h-11 w-11 shrink-0 flex items-center justify-center text-white"
+      style={{ ["--tile-from" as string]: a.from, ["--tile-to" as string]: a.to, ["--glow" as string]: a.glow }}
+    >
+      <Icon size={size} />
+    </div>
   );
 }
 
@@ -137,20 +207,13 @@ export function MarketingHome() {
   const [billing, setBilling] = useState<"monatlich" | "jaehrlich">("monatlich");
   const [openFaq, setOpenFaq] = useState<number | null>(0);
 
-  // Hell/Dunkel — dieselbe Umschaltung wie im Chef-Dashboard (Sidebar.tsx)
-  // und in den beiden Apps, damit die Wahl konsistent auf der ganzen
-  // Domain gilt (gleicher localStorage-Schlüssel "uvise-theme").
-  const [dark, setDark] = useState(false);
+  // Die Website trägt jetzt durchgehend das dunkle Glas-3D-Design der App
+  // (STYLE.md) — kein Hell/Dunkel-Umschalter mehr, genau wie in der App
+  // seit dem Redesign selbst nicht mehr wählbar.
   useEffect(() => {
-    setDark(document.documentElement.classList.contains("dark"));
+    document.documentElement.classList.remove("light");
+    document.documentElement.classList.add("dark");
   }, []);
-  function toggleTheme(nextDark: boolean) {
-    setDark(nextDark);
-    const mode = nextDark ? "dark" : "light";
-    document.documentElement.classList.remove("light", "dark");
-    document.documentElement.classList.add(mode);
-    localStorage.setItem("uvise-theme", mode);
-  }
   // Barrierefreiheit: wer in den Systemeinstellungen Animationen reduziert
   // hat, bekommt keine Bewegung — nur ein einfaches Einblenden.
   const reduceMotion = useReducedMotion();
@@ -163,12 +226,12 @@ export function MarketingHome() {
   }, [loading, session, router]);
 
   return (
-    <div className="uv-mk min-h-screen overflow-x-hidden">
+    <div className="uv-glass min-h-screen overflow-x-hidden">
       <TrackPageView path="/" />
       <AffiliateRef />
       <header
         className="sticky top-0 z-40 border-b backdrop-blur"
-        style={{ borderColor: "var(--mk-line)", background: "color-mix(in srgb, var(--mk-panel) 85%, transparent)" }}
+        style={{ borderColor: "var(--mk-line)", background: "color-mix(in srgb, var(--mk-paper) 78%, transparent)" }}
       >
         <div className="mx-auto max-w-6xl px-5 sm:px-8 h-16 flex items-center justify-between">
           <a href="#top" className="flex items-center gap-2.5">
@@ -186,26 +249,18 @@ export function MarketingHome() {
           </nav>
 
           <div className="hidden lg:flex items-center gap-3">
-            <button
-              onClick={() => toggleTheme(!dark)}
-              className="h-9 w-9 flex items-center justify-center rounded-[8px] border text-[var(--mk-ink-70)] hover:text-[var(--mk-ink)]"
-              style={{ borderColor: "var(--mk-line)" }}
-              aria-label={dark ? "Helles Design aktivieren" : "Dunkles Design aktivieren"}
-            >
-              {dark ? <Sun size={16} /> : <Moon size={16} />}
-            </button>
             <Link
               href="/login"
-              className="btn-feedback whitespace-nowrap rounded-[10px] px-4 py-2 text-sm font-medium text-[var(--mk-ink-70)] hover:text-[var(--mk-ink)] border"
-              style={{ borderColor: "var(--mk-line)" }}
+              className="btn-feedback whitespace-nowrap rounded-full px-4 py-2 text-sm font-medium text-[var(--mk-ink-70)] hover:text-[var(--mk-ink)] border"
+              style={{ borderColor: "var(--mk-line)", background: "var(--uv-glass-bg)" }}
             >
               Anmelden
             </Link>
             <Link
               href="/login?mode=register"
               rel="nofollow"
-              className="btn-feedback whitespace-nowrap rounded-[10px] px-4 py-2 text-sm font-semibold text-white"
-              style={{ background: "var(--mk-blue-strong)" }}
+              className="uv-glass-tile btn-feedback whitespace-nowrap px-4 py-2 text-sm font-semibold text-white"
+              style={{ ["--tile-from" as string]: "#3AA0FF", ["--tile-to" as string]: "#0A5BFF", borderRadius: "10px" }}
             >
               Kostenlos testen
             </Link>
@@ -213,14 +268,13 @@ export function MarketingHome() {
 
           <button
             onClick={() => setMenuOpen((v) => !v)}
-            className="lg:hidden h-10 w-10 flex items-center justify-center rounded-[8px] border"
+            className="lg:hidden h-10 w-10 flex items-center justify-center rounded-[8px] border text-[var(--mk-ink)]"
             style={{ borderColor: "var(--mk-line)" }}
             aria-label={menuOpen ? "Menü schließen" : "Menü öffnen"}
           >
             {menuOpen ? <X size={18} /> : <Menu size={18} />}
           </button>
         </div>
-        <SignalRule />
       </header>
 
       {/* Immer im DOM (nicht bedingt gemountet) und rein über CSS-Transitions
@@ -231,15 +285,15 @@ export function MarketingHome() {
       <div
         onClick={() => setMenuOpen(false)}
         aria-hidden={!menuOpen}
-        className={`uv-mk lg:hidden fixed inset-0 z-40 bg-black/40 transition-opacity duration-300 ${
+        className={`uv-glass lg:hidden fixed inset-0 z-40 bg-black/60 transition-opacity duration-300 ${
           menuOpen ? "opacity-100" : "opacity-0 pointer-events-none"
         }`}
       />
       <div
-        className={`uv-mk lg:hidden fixed top-0 left-0 z-50 h-full w-[78%] max-w-xs shadow-2xl px-6 py-5 flex flex-col rounded-r-[18px] transition-transform duration-300 ease-out ${
+        className={`uv-glass lg:hidden fixed top-0 left-0 z-50 h-full w-[78%] max-w-xs shadow-2xl px-6 py-5 flex flex-col rounded-r-[18px] backdrop-blur-xl transition-transform duration-300 ease-out ${
           menuOpen ? "translate-x-0" : "-translate-x-full"
         }`}
-        style={{ background: "var(--mk-panel)" }}
+        style={{ background: "color-mix(in srgb, var(--mk-panel) 92%, transparent)", borderRight: "1px solid var(--mk-line)" }}
       >
         <div className="flex items-center justify-between mb-8">
           <a href="#top" className="flex items-center gap-2">
@@ -277,26 +331,19 @@ export function MarketingHome() {
           </a>
         </nav>
 
-        <div className="mt-auto flex items-center justify-between rounded-[10px] px-4 py-3 mb-3" style={{ background: "var(--mk-paper)" }}>
-          <span className="text-sm text-[var(--mk-ink-70)]">
-            {dark ? "🌙 Dunkles Design" : "☀️ Helles Design"}
-          </span>
-          <Switch checked={dark} onChange={toggleTheme} label="Dunkles Design umschalten" />
-        </div>
-
-        <div className="flex flex-col gap-2">
+        <div className="mt-auto flex flex-col gap-2">
           <Link
             href="/login"
             className="text-center rounded-[10px] px-4 py-2.5 text-sm font-medium border"
-            style={{ borderColor: "var(--mk-line)" }}
+            style={{ borderColor: "var(--mk-line)", background: "var(--uv-glass-bg)" }}
           >
             Anmelden
           </Link>
           <Link
             href="/login?mode=register"
             rel="nofollow"
-            className="text-center rounded-[10px] px-4 py-2.5 text-sm font-semibold text-white"
-            style={{ background: "var(--mk-blue-strong)" }}
+            className="uv-glass-tile text-center px-4 py-2.5 text-sm font-semibold text-white"
+            style={{ ["--tile-from" as string]: "#3AA0FF", ["--tile-to" as string]: "#0A5BFF", borderRadius: "10px" }}
           >
             Kostenlos testen
           </Link>
@@ -330,14 +377,29 @@ export function MarketingHome() {
                 className="mk-display font-bold tracking-[-0.03em] leading-[1.04] mt-7 mb-6"
                 style={{ fontSize: "clamp(2.25rem, 3.8vw, 3.25rem)" }}
               >
-                Die Unterweisungssoftware, die sich{" "}
-                <span style={{ color: "var(--mk-blue)" }}>von selbst erledigt.</span>
+                Die Unterweisungssoftware, die sich
+                <br />
+                <span
+                  style={{
+                    background: "linear-gradient(120deg, #5BD7FF, #0A6CFF)",
+                    WebkitBackgroundClip: "text",
+                    backgroundClip: "text",
+                    color: "transparent",
+                  }}
+                >
+                  von selbst erledigt.
+                </span>
               </h1>
-              <p className="text-lg text-[var(--mk-ink-65)] mb-9 max-w-md leading-relaxed">
+              <p className="text-lg text-[var(--mk-ink-65)] mb-7 max-w-md leading-relaxed">
                 Die Unterweisungssoftware für den Arbeitsschutz kümmert sich selbst um Fristen,
                 Erinnerungen und rechtssichere Unterschriften — mehrsprachig und erledigt den
                 Papierkram für dich.
               </p>
+              <div className="flex flex-wrap items-center gap-1.5 mb-8">
+                {["eIDAS-konform", "41 Sprachen", "Fristen-Erinnerungen"].map((t) => (
+                  <TrustPill key={t}>{t}</TrustPill>
+                ))}
+              </div>
               <div className="flex flex-wrap gap-3">
                 {/* Haupt-CTA mit umlaufendem Leuchtpunkt in Warngelb —
                     Text und App-Vorschau daneben bleiben unverändert. */}
@@ -349,10 +411,21 @@ export function MarketingHome() {
                   duration={3500}
                   containerClassName="btn-feedback h-12 w-auto"
                   borderClassName="bg-[radial-gradient(var(--mk-yellow)_40%,transparent_60%)]"
-                  className="px-6 text-sm font-semibold text-white border-transparent bg-[var(--mk-blue-strong)]"
+                  className="px-6 text-sm font-semibold text-white border-transparent bg-[linear-gradient(160deg,#3AA0FF,#0A5BFF)] shadow-[0_7px_13px_rgba(0,0,0,0.5),0_0_20px_rgba(10,108,255,0.38),inset_0_2px_3px_rgba(255,255,255,0.6),inset_0_-4px_7px_rgba(0,0,0,0.4)]"
                 >
                   7 Tage kostenlos testen
                 </MovingBorderButton>
+                <a
+                  href="#live-demo"
+                  className="btn-feedback h-12 inline-flex items-center rounded-[10px] px-6 text-sm font-semibold backdrop-blur-md"
+                  style={{
+                    background: "var(--uv-glass-bg)",
+                    border: "1px solid var(--uv-glass-border)",
+                    color: "var(--mk-ink)",
+                  }}
+                >
+                  Live-Demo ansehen
+                </a>
               </div>
               <p className="text-xs text-[var(--mk-ink-50)] mt-4">
                 Keine Kreditkarte nötig · jederzeit kündbar
@@ -364,6 +437,8 @@ export function MarketingHome() {
 
             {/* Echte, klickbare App-Vorschau statt eines Fake-Mockups */}
             <motion.div
+              id="live-demo"
+              className="scroll-mt-24"
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.15 }}
@@ -439,26 +514,18 @@ export function MarketingHome() {
             <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
               {FEATURES.map((f, i) => (
                 <Reveal key={f.title} delay={(i % 4) * 0.06}>
-                  <motion.div
-                    whileHover={{ y: -4 }}
-                    transition={{ duration: 0.2 }}
-                    className="h-full rounded-[14px] border p-6"
-                    style={{ borderColor: "var(--mk-line)", background: "var(--mk-panel)" }}
-                  >
-                    {"special" in f && f.special === "ampel" ? (
-                      <div className="mb-4">
-                        <AmpelDots size={20} />
-                      </div>
-                    ) : (
-                      <div
-                        className="h-11 w-11 rounded-[8px] flex items-center justify-center mb-4 border"
-                        style={{ borderColor: "var(--mk-line-strong)", color: "var(--mk-ink)" }}
-                      >
-                        {"icon" in f && <f.icon size={20} />}
-                      </div>
-                    )}
-                    <h3 className="font-semibold mb-1.5">{f.title}</h3>
-                    <p className="text-sm text-[var(--mk-ink-60)] leading-relaxed">{f.text}</p>
+                  <motion.div whileHover={{ y: -4 }} transition={{ duration: 0.2 }} className="h-full">
+                    <GlassCard glow={ACCENTS[f.accent].glow} className="h-full p-6">
+                      {"special" in f && f.special === "ampel" ? (
+                        <div className="mb-4">
+                          <AmpelDots size={20} />
+                        </div>
+                      ) : (
+                        "icon" in f && <AccentTile icon={f.icon} accent={f.accent} />
+                      )}
+                      <h3 className="font-semibold mt-4 mb-1.5" style={{ color: "var(--mk-ink)" }}>{f.title}</h3>
+                      <p className="text-sm text-[var(--mk-ink-60)] leading-relaxed">{f.text}</p>
+                    </GlassCard>
                   </motion.div>
                 </Reveal>
               ))}
@@ -480,20 +547,20 @@ export function MarketingHome() {
             <div className="grid md:grid-cols-3 gap-5">
               {PRODUCTS.map((p, i) => (
                 <Reveal key={p.title} delay={i * 0.08}>
-                  <motion.div
-                    whileHover={{ y: -4 }}
-                    transition={{ duration: 0.2 }}
-                    className="h-full rounded-[14px] p-7 text-white border-t-4"
-                    style={{
-                      background: "#14171a",
-                      borderTopColor: p.edge === "blue" ? "var(--mk-blue)" : "var(--mk-green)",
-                    }}
-                  >
-                    <span className="mk-mono inline-block text-[11px] uppercase tracking-wide text-white/50 mb-4">
-                      {p.tag}
-                    </span>
-                    <h3 className="mk-display text-xl font-bold mb-2">{p.title}</h3>
-                    <p className="text-sm text-white/70 leading-relaxed">{p.text}</p>
+                  <motion.div whileHover={{ y: -4 }} transition={{ duration: 0.2 }} className="h-full">
+                    <div
+                      className="uv-glass-panel h-full p-7"
+                      style={{
+                        ["--glow" as string]: ACCENTS[p.accent].glow,
+                        borderTop: `3px solid ${ACCENTS[p.accent].to}`,
+                      }}
+                    >
+                      <span className="mk-mono inline-block text-[11px] uppercase tracking-wide mb-4" style={{ color: "var(--mk-ink-50)" }}>
+                        {p.tag}
+                      </span>
+                      <h3 className="mk-display text-xl font-bold mb-2" style={{ color: "var(--mk-ink)" }}>{p.title}</h3>
+                      <p className="text-sm text-[var(--mk-ink-65)] leading-relaxed">{p.text}</p>
+                    </div>
                   </motion.div>
                 </Reveal>
               ))}
@@ -517,19 +584,14 @@ export function MarketingHome() {
               {BRANCHEN.map((b, i) => (
                 <Reveal key={b.href} delay={(i % 3) * 0.06}>
                   <Link href={b.href} className="block h-full">
-                    <motion.div
-                      whileHover={{ y: -4 }}
-                      transition={{ duration: 0.2 }}
-                      className="h-full rounded-[14px] border p-6 flex items-center gap-4"
-                      style={{ borderColor: "var(--mk-line)", background: "var(--mk-panel)" }}
-                    >
-                      <div
-                        className="h-11 w-11 shrink-0 rounded-[8px] flex items-center justify-center border"
-                        style={{ borderColor: "var(--mk-line-strong)", color: "var(--mk-ink)" }}
+                    <motion.div whileHover={{ y: -4 }} transition={{ duration: 0.2 }} className="h-full">
+                      <GlassCard
+                        glow={ACCENTS[(["blau", "cyan", "gruen", "amber"] as const)[i % 4]].glow}
+                        className="h-full p-6 flex items-center gap-4"
                       >
-                        <b.icon size={20} />
-                      </div>
-                      <span className="font-semibold">{b.title}</span>
+                        <AccentTile icon={b.icon} accent={(["blau", "cyan", "gruen", "amber"] as const)[i % 4]} />
+                        <span className="font-semibold" style={{ color: "var(--mk-ink)" }}>{b.title}</span>
+                      </GlassCard>
                     </motion.div>
                   </Link>
                 </Reveal>
@@ -549,10 +611,13 @@ export function MarketingHome() {
               </p>
             </Reveal>
             <Reveal className="mb-8">
-              <div className="inline-flex rounded-[10px] border p-1 text-sm" style={{ borderColor: "var(--mk-line)" }}>
+              <div
+                className="inline-flex rounded-full p-1 text-sm backdrop-blur-md"
+                style={{ background: "var(--uv-glass-bg)", border: "1px solid var(--uv-glass-border)" }}
+              >
                 <button
                   onClick={() => setBilling("monatlich")}
-                  className={`rounded-[8px] px-4 py-1.5 font-medium transition-colors ${
+                  className={`rounded-full px-4 py-1.5 font-medium transition-colors ${
                     billing === "monatlich" ? "text-white" : "text-[var(--mk-ink-60)]"
                   }`}
                   style={billing === "monatlich" ? { background: "var(--mk-blue-strong)" } : undefined}
@@ -561,7 +626,7 @@ export function MarketingHome() {
                 </button>
                 <button
                   onClick={() => setBilling("jaehrlich")}
-                  className={`rounded-[8px] px-4 py-1.5 font-medium transition-colors ${
+                  className={`rounded-full px-4 py-1.5 font-medium transition-colors ${
                     billing === "jaehrlich" ? "text-white" : "text-[var(--mk-ink-60)]"
                   }`}
                   style={billing === "jaehrlich" ? { background: "var(--mk-blue-strong)" } : undefined}
@@ -578,60 +643,61 @@ export function MarketingHome() {
                     <motion.div
                       whileHover={{ y: -4 }}
                       transition={{ duration: 0.2 }}
-                      className={`relative h-full rounded-[14px] p-7 border ${
-                        featured ? "border-transparent text-white shadow-xl md:-translate-y-2" : ""
-                      }`}
-                      style={featured ? { background: "var(--mk-blue-strong)" } : { borderColor: "var(--mk-line)", background: "var(--mk-panel)" }}
+                      className={`relative h-full ${featured ? "md:-translate-y-2" : ""}`}
                     >
-                      {featured && (
-                        <span
-                          className="mk-mono absolute -top-3 left-7 inline-block rounded-[4px] px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide"
-                          style={{ background: "var(--mk-yellow)", color: "#14171a" }}
-                        >
-                          Am beliebtesten
-                        </span>
-                      )}
-                      <h3 className="mk-display text-xl font-bold mb-1">{plan.name}</h3>
-                      <p className={`text-sm mb-5 ${featured ? "text-white/80" : "text-[var(--mk-ink-60)]"}`}>
-                        {plan.limit}
-                      </p>
-                      <p className="mb-6">
-                        {billing === "monatlich" ? (
-                          <>
-                            <span className="text-4xl font-bold">{plan.preis}€</span>
-                            <span className={`text-sm ${featured ? "text-white/70" : "text-[var(--mk-ink-55)]"}`}>
-                              {" "}
-                              /Monat
-                            </span>
-                          </>
-                        ) : (
-                          <>
-                            <span className="text-4xl font-bold">{plan.preisJaehrlich}€</span>
-                            <span className={`text-sm ${featured ? "text-white/70" : "text-[var(--mk-ink-55)]"}`}>
-                              {" "}
-                              /Jahr
-                            </span>
-                          </>
-                        )}
-                      </p>
-                      <ul className="space-y-2.5 mb-7">
-                        {plan.features.map((f) => (
-                          <li key={f} className="flex items-start gap-2 text-sm">
-                            <Check size={16} className="shrink-0 mt-0.5" style={{ color: featured ? "#ffffff" : "var(--mk-green)" }} />
-                            <span className={featured ? "text-white/90" : "text-[var(--mk-ink-70)]"}>{f}</span>
-                          </li>
-                        ))}
-                      </ul>
-                      <Link
-                        href="/login?mode=register"
-                        rel="nofollow"
-                        className={`btn-feedback block text-center rounded-[10px] px-5 py-2.5 text-sm font-semibold ${
-                          featured ? "bg-white" : "text-white"
-                        }`}
-                        style={featured ? { color: "var(--mk-blue-strong)" } : { background: "var(--mk-blue-strong)" }}
+                      <div
+                        className="uv-glass-panel h-full p-7"
+                        style={
+                          featured
+                            ? { ["--glow" as string]: "rgba(23,193,254,0.4)", border: "2px solid var(--accent-cyan)" }
+                            : { ["--glow" as string]: "var(--uv-glow-blue)" }
+                        }
                       >
-                        Jetzt starten
-                      </Link>
+                        {featured && (
+                          <span
+                            className="mk-mono absolute -top-3 left-7 inline-block rounded-full px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide"
+                            style={{ background: "var(--mk-yellow)", color: "#14171a" }}
+                          >
+                            Am beliebtesten
+                          </span>
+                        )}
+                        <h3 className="mk-display text-xl font-bold mb-1" style={{ color: "var(--mk-ink)" }}>{plan.name}</h3>
+                        <p className="text-sm mb-5 text-[var(--mk-ink-60)]">{plan.limit}</p>
+                        <p className="mb-6" style={{ color: "var(--mk-ink)" }}>
+                          {billing === "monatlich" ? (
+                            <>
+                              <span className="text-4xl font-bold">{plan.preis}€</span>
+                              <span className="text-sm text-[var(--mk-ink-55)]"> /Monat</span>
+                            </>
+                          ) : (
+                            <>
+                              <span className="text-4xl font-bold">{plan.preisJaehrlich}€</span>
+                              <span className="text-sm text-[var(--mk-ink-55)]"> /Jahr</span>
+                            </>
+                          )}
+                        </p>
+                        <ul className="space-y-2.5 mb-7">
+                          {plan.features.map((f) => (
+                            <li key={f} className="flex items-start gap-2 text-sm">
+                              <Check size={16} className="shrink-0 mt-0.5" style={{ color: "var(--mk-green)" }} />
+                              <span className="text-[var(--mk-ink-70)]">{f}</span>
+                            </li>
+                          ))}
+                        </ul>
+                        <Link
+                          href="/login?mode=register"
+                          rel="nofollow"
+                          className="uv-glass-tile btn-feedback block text-center px-5 py-2.5 text-sm font-semibold text-white"
+                          style={{
+                            ["--tile-from" as string]: "#3AA0FF",
+                            ["--tile-to" as string]: "#0A5BFF",
+                            ["--glow" as string]: "var(--uv-glow-blue)",
+                            borderRadius: "10px",
+                          }}
+                        >
+                          Jetzt starten
+                        </Link>
+                      </div>
                     </motion.div>
                   </Reveal>
                 );
@@ -667,13 +733,13 @@ export function MarketingHome() {
                 const open = openFaq === i;
                 return (
                   <Reveal key={item.q} delay={i * 0.04}>
-                    <div className="rounded-[12px] border overflow-hidden" style={{ borderColor: "var(--mk-line)" }}>
+                    <div className="uv-glass-panel overflow-hidden" style={{ ["--glow" as string]: "var(--uv-glow-blue)" }}>
                       <button
                         onClick={() => setOpenFaq(open ? null : i)}
                         className="w-full flex items-center justify-between gap-4 px-5 py-4 text-left"
                         aria-expanded={open}
                       >
-                        <span className="font-medium">{item.q}</span>
+                        <span className="font-medium" style={{ color: "var(--mk-ink)" }}>{item.q}</span>
                         <span className="text-[var(--mk-ink-50)] text-xl leading-none">{open ? "−" : "+"}</span>
                       </button>
                       <p
@@ -716,8 +782,8 @@ export function MarketingHome() {
             <Link
               href="/login?mode=register"
               rel="nofollow"
-              className="btn-feedback inline-block rounded-[10px] px-7 py-3.5 text-sm font-semibold text-white"
-              style={{ background: "var(--mk-blue-strong)" }}
+              className="uv-glass-tile btn-feedback inline-block px-7 py-3.5 text-sm font-semibold text-white"
+              style={{ ["--tile-from" as string]: "#3AA0FF", ["--tile-to" as string]: "#0A5BFF", borderRadius: "10px" }}
             >
               Firma kostenlos anlegen
             </Link>
