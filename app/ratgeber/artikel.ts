@@ -75,4 +75,10 @@ export const ARTIKEL = [
     text: "Die eine sagt dir, worüber du bei der anderen reden musst. Wer sie braucht (jeder), wie sie abläuft und was passiert, wenn sie fehlt.",
     dauer: "6 Min.",
   },
+  {
+    slug: "sifa-moeglichkeiten",
+    titel: "SiFa im Betrieb: Welche Möglichkeiten hast du?",
+    text: "Interne Fachkraft, externer Dienst oder Unternehmermodell: die drei Wege zur Fachkraft für Arbeitssicherheit im Vergleich – und wann welches Modell passt.",
+    dauer: "6 Min.",
+  },
 ] as const;
