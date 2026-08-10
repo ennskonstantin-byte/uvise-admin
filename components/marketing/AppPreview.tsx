@@ -102,10 +102,10 @@ export function AppPreview() {
       </div>
 
       <div
-        className="relative w-[330px] sm:w-[360px] rounded-[2.5rem] border-[10px] bg-neutral-900 shadow-2xl overflow-hidden"
+        className="relative w-[330px] sm:w-[360px] rounded-[2.5rem] border-[6px] bg-neutral-900 shadow-2xl overflow-hidden"
         style={{
           aspectRatio: "375 / 812",
-          borderColor: "#c9ccd2",
+          borderColor: "#888d96",
         }}
       >
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-28 h-5 bg-neutral-900 rounded-b-2xl z-10" />
@@ -120,7 +120,24 @@ export function AppPreview() {
             key={a.key}
             src={a.src}
             title={a.frameTitle}
-            onLoad={() => setLoaded((p) => ({ ...p, [a.key]: true }))}
+            onLoad={(e) => {
+              setLoaded((p) => ({ ...p, [a.key]: true }));
+              // Native Scrollbar der Demo-App würde im schmalen Handy-Rahmen
+              // hässlich als grauer Strich am Rand durchdrücken — same-origin,
+              // deshalb per Style-Injection ausgeblendet statt die App selbst
+              // anzufassen.
+              try {
+                const doc = e.currentTarget.contentDocument;
+                if (doc && !doc.getElementById("hide-scrollbar")) {
+                  const style = doc.createElement("style");
+                  style.id = "hide-scrollbar";
+                  style.textContent = "html,body,#root,#main{scrollbar-width:none} ::-webkit-scrollbar{display:none}";
+                  doc.head.appendChild(style);
+                }
+              } catch {
+                // cross-origin oder Dokument noch nicht bereit — Rahmen bleibt einfach sichtbar
+              }
+            }}
             className="w-full h-full border-none bg-background"
             style={{ display: active === a.key ? "block" : "none" }}
           />
