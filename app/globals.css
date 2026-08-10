@@ -325,7 +325,6 @@ h1, h2, h3, h4 {
   border: 1px solid var(--uv-glass-border);
   border-radius: 22px;
   backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
   box-shadow:
     0 24px 60px rgba(0, 0, 0, 0.65),
     0 0 46px var(--glow, var(--uv-glow-blue)),
