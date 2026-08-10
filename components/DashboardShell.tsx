@@ -20,18 +20,18 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
   }, [pathname]);
 
   return (
-    <div className="flex min-h-screen bg-page-bg">
-      {/* Breite Bildschirme: feste Seitenleiste */}
-      <div className="hidden lg:block">
+    <div className="uv-glass flex min-h-screen bg-page-bg">
+      {/* Breite Bildschirme: feste, dauerhaft sichtbare Seitenleiste (STYLE.md) */}
+      <div className="hidden lg:block pl-3">
         <Sidebar />
       </div>
 
       {/* Schmale Bildschirme (Handy/Tablet hochkant): Kopfzeile mit ☰ */}
       <header
-        className="lg:hidden fixed inset-x-0 top-0 z-40 flex items-center gap-3 px-4 h-14 text-white backdrop-blur-md"
+        className="lg:hidden fixed inset-x-0 top-0 z-40 flex items-center gap-3 px-4 h-14 text-white backdrop-blur border-b"
         style={{
-          background:
-            "linear-gradient(90deg, color-mix(in srgb, var(--sidebar-from) 88%, transparent), color-mix(in srgb, var(--sidebar-to) 88%, transparent))",
+          background: "color-mix(in srgb, var(--mk-paper) 78%, transparent)",
+          borderColor: "var(--mk-line)",
         }}
       >
         <button
@@ -48,13 +48,13 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
       </header>
 
       {menuOffen && (
-        <div role="dialog" aria-modal="true" aria-label="Navigationsmenü" className="lg:hidden fixed inset-0 z-50 flex">
-          <div className="relative h-full overflow-y-auto">
+        <div role="dialog" aria-modal="true" aria-label="Navigationsmenü" className="uv-glass lg:hidden fixed inset-0 z-50 flex">
+          <div className="relative h-full overflow-y-auto pl-3">
             <Sidebar />
             <button
               onClick={() => setMenuOffen(false)}
               aria-label="Menü schließen"
-              className="absolute top-4 right-3 p-1.5 rounded-lg text-white/80 hover:bg-white/10"
+              className="absolute top-4 right-0 p-1.5 rounded-lg text-white/80 hover:bg-white/10"
             >
               <X size={20} />
             </button>
@@ -63,7 +63,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
           <button
             aria-label="Menü schließen"
             onClick={() => setMenuOffen(false)}
-            className="flex-1 bg-black/50"
+            className="flex-1 bg-black/60"
           />
         </div>
       )}

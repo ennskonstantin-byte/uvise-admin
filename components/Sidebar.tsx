@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -19,7 +19,6 @@ import {
 } from "lucide-react";
 import { useAppData } from "@/lib/store";
 import { LogoMark } from "@/components/Logo";
-import { Switch } from "@/components/Switch";
 import { isOwnerEmail } from "@/lib/owner";
 import { countRecentlySigned } from "@/lib/recentlySigned";
 
@@ -46,32 +45,19 @@ export function Sidebar() {
   // der Server prüft die Berechtigung zusätzlich selbst.
   const istBetreiber = isOwnerEmail(session?.user?.email);
 
-  const [dark, setDark] = useState(false);
+  // Die Chef-Oberfläche trägt jetzt durchgehend das dunkle Glas-3D-Design
+  // (STYLE.md) — kein Hell/Dunkel-Umschalter mehr, genau wie in der App.
   useEffect(() => {
-    const el = document.documentElement;
-    const systemPrefersDark = window.matchMedia(
-      "(prefers-color-scheme: dark)"
-    ).matches;
-    setDark(
-      el.classList.contains("dark") ||
-        (!el.classList.contains("light") && systemPrefersDark)
-    );
+    document.documentElement.classList.remove("light");
+    document.documentElement.classList.add("dark");
   }, []);
-
-  function toggleTheme(nextDark: boolean) {
-    setDark(nextDark);
-    const mode = nextDark ? "dark" : "light";
-    document.documentElement.classList.remove("light", "dark");
-    document.documentElement.classList.add(mode);
-    localStorage.setItem("uvise-theme", mode);
-  }
 
   return (
     <aside
-      className="w-64 shrink-0 flex flex-col text-white rounded-r-3xl overflow-hidden sticky top-0 h-screen"
+      className="uv-glass-panel w-64 shrink-0 flex flex-col text-white overflow-hidden sticky top-0 h-[calc(100vh-1.5rem)] my-3"
       style={{
-        background:
-          "linear-gradient(180deg, var(--sidebar-from), var(--sidebar-to))",
+        ["--glow" as string]: "var(--uv-glow-navy, rgba(18,48,126,0.55))",
+        borderRadius: "24px",
       }}
     >
       <Link href="/dashboard" className="px-6 py-6 flex items-center gap-3">
@@ -119,11 +105,16 @@ export function Sidebar() {
             <Link
               key={label}
               href={href}
-              className={`btn-feedback w-full flex items-center gap-3 rounded-full px-4 py-2.5 text-sm transition-colors ${
+              className={`btn-feedback w-full flex items-center gap-3 rounded-2xl px-4 py-2.5 text-sm transition-colors ${
                 active
-                  ? "bg-white/10 font-medium text-white"
+                  ? "uv-glass-tile font-medium text-white"
                   : "text-white/70 hover:bg-white/5 hover:text-white"
               }`}
+              style={
+                active
+                  ? { ["--tile-from" as string]: "#3AA0FF", ["--tile-to" as string]: "#0A5BFF", borderRadius: "9999px" }
+                  : undefined
+              }
             >
               <Icon size={18} />
               <span className="flex-1 text-left">{label}</span>
@@ -136,13 +127,6 @@ export function Sidebar() {
           );
         })}
       </nav>
-
-      <div className="flex items-center justify-between mx-3 mb-2 px-4 py-2.5 text-sm text-white/70">
-        <span className="flex items-center gap-2">
-          {dark ? "🌙 Dunkles Design" : "☀️ Helles Design"}
-        </span>
-        <Switch checked={dark} onChange={toggleTheme} label="Dunkles Design umschalten" inactiveColor="rgba(255,255,255,0.25)" />
-      </div>
 
       <button
         onClick={async () => {

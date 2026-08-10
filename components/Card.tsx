@@ -9,8 +9,8 @@ export function Card({
 }) {
   return (
     <div
-      className={`rounded-[2rem] bg-background border border-border/60 shadow-sm p-6 sm:p-8 ${className}`}
-      style={style}
+      className={`uv-glass-panel p-6 sm:p-8 ${className}`}
+      style={{ ["--glow" as string]: "var(--uv-glow-blue, rgba(10,108,255,0.38))", ...style }}
     >
       {children}
     </div>
