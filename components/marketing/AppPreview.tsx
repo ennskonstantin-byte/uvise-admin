@@ -106,7 +106,6 @@ export function AppPreview() {
         style={{
           aspectRatio: "375 / 812",
           borderColor: "#c9ccd2",
-          borderImage: "linear-gradient(155deg, #e8eaee 0%, #b7bac1 45%, #dcdee2 55%, #9a9ea6 100%) 1",
         }}
       >
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-28 h-5 bg-neutral-900 rounded-b-2xl z-10" />
