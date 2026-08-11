@@ -281,7 +281,7 @@ export function UnterweisungGastronomie({ faq }: { faq: FaqItem[] }) {
                 </MovingBorderButton>
               </div>
               <p className="text-xs text-[var(--mk-ink-50)] mt-4">
-                Keine Kreditkarte nötig · jederzeit kündbar
+                Keine Kreditkarte nötig · 12 Monate Laufzeit
               </p>
               <div className="mt-8 max-w-xs">
                 <SignalRule animate={!reduceMotion} />

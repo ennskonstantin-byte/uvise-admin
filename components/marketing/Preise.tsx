@@ -25,7 +25,6 @@ type FaqItem = { q: string; a: string };
 export function Preise({ faq, startpreis }: { faq: FaqItem[]; startpreis: number }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [openFaq, setOpenFaq] = useState<number | null>(0);
-  const [billing, setBilling] = useState<"monatlich" | "jaehrlich">("monatlich");
 
   const [dark, setDark] = useState(false);
   useEffect(() => {
@@ -202,7 +201,7 @@ export function Preise({ faq, startpreis }: { faq: FaqItem[]; startpreis: number
               </h1>
               <p className="text-lg text-[var(--mk-ink-65)] mb-9 max-w-xl mx-auto leading-relaxed">
                 Ein Preis pro Team-Größe, keine versteckten Kosten: 7 Tage kostenlos testen, keine
-                Kreditkarte nötig, danach monatlich kündbar.
+                Kreditkarte nötig, danach 12 Monate Laufzeit bei monatlicher Zahlung.
               </p>
               <div className="flex flex-wrap justify-center gap-3">
                 <MovingBorderButton
@@ -219,7 +218,7 @@ export function Preise({ faq, startpreis }: { faq: FaqItem[]; startpreis: number
                 </MovingBorderButton>
               </div>
               <p className="text-xs text-[var(--mk-ink-50)] mt-4">
-                Keine Kreditkarte nötig · monatlich kündbar · keine Einrichtungsgebühr
+                Keine Kreditkarte nötig · 12 Monate Laufzeit · keine Einrichtungsgebühr
               </p>
               <div className="mt-8 max-w-xs mx-auto">
                 <SignalRule animate={!reduceMotion} />
@@ -235,30 +234,9 @@ export function Preise({ faq, startpreis }: { faq: FaqItem[]; startpreis: number
             <Reveal className="max-w-xl mb-8">
               <h2 className="mk-display text-3xl font-bold mb-3">Ein Preis pro Team-Größe</h2>
               <p className="text-[var(--mk-ink-65)]">
-                7 Tage kostenlos testen, danach monatlich kündbar. Keine Einrichtungsgebühr.
+                7 Tage kostenlos testen, danach 12 Monate Laufzeit bei monatlicher Zahlung. Keine
+                Einrichtungsgebühr.
               </p>
-            </Reveal>
-            <Reveal className="mb-8">
-              <div className="inline-flex rounded-[10px] border p-1 text-sm" style={{ borderColor: "var(--mk-line)" }}>
-                <button
-                  onClick={() => setBilling("monatlich")}
-                  className={`rounded-[8px] px-4 py-1.5 font-medium transition-colors ${
-                    billing === "monatlich" ? "text-white" : "text-[var(--mk-ink-60)]"
-                  }`}
-                  style={billing === "monatlich" ? { background: "var(--mk-blue-strong)" } : undefined}
-                >
-                  Monatlich
-                </button>
-                <button
-                  onClick={() => setBilling("jaehrlich")}
-                  className={`rounded-[8px] px-4 py-1.5 font-medium transition-colors ${
-                    billing === "jaehrlich" ? "text-white" : "text-[var(--mk-ink-60)]"
-                  }`}
-                  style={billing === "jaehrlich" ? { background: "var(--mk-blue-strong)" } : undefined}
-                >
-                  Jährlich <span className="opacity-80">· 20% sparen</span>
-                </button>
-              </div>
             </Reveal>
             <div className="grid md:grid-cols-3 gap-5">
               {PLANS.map((plan, i) => {
@@ -286,23 +264,11 @@ export function Preise({ faq, startpreis }: { faq: FaqItem[]; startpreis: number
                         {plan.limit}
                       </p>
                       <p className="mb-6">
-                        {billing === "monatlich" ? (
-                          <>
-                            <span className="text-4xl font-bold">{plan.preis}€</span>
-                            <span className={`text-sm ${featured ? "text-white/70" : "text-[var(--mk-ink-55)]"}`}>
-                              {" "}
-                              /Monat
-                            </span>
-                          </>
-                        ) : (
-                          <>
-                            <span className="text-4xl font-bold">{plan.preisJaehrlich}€</span>
-                            <span className={`text-sm ${featured ? "text-white/70" : "text-[var(--mk-ink-55)]"}`}>
-                              {" "}
-                              /Jahr
-                            </span>
-                          </>
-                        )}
+                        <span className="text-4xl font-bold">{plan.preis}€</span>
+                        <span className={`text-sm ${featured ? "text-white/70" : "text-[var(--mk-ink-55)]"}`}>
+                          {" "}
+                          /Monat
+                        </span>
                       </p>
                       <ul className="space-y-2.5 mb-7">
                         {plan.features.map((f) => (

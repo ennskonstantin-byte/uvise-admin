@@ -14,7 +14,6 @@ export function PlanModal({ onClose }: { onClose: () => void }) {
   useEscapeClose(onClose);
   const { showToast, ToastView } = useToast();
   const [selectedPlan, setSelectedPlan] = useState("Team");
-  const [billing, setBilling] = useState<"monatlich" | "jaehrlich">("monatlich");
   const [starting, setStarting] = useState(false);
 
   async function startCheckout() {
@@ -29,7 +28,7 @@ export function PlanModal({ onClose }: { onClose: () => void }) {
       const res = await fetch("/api/create-checkout-session", {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${accessToken}` },
-        body: JSON.stringify({ planName: selectedPlan, billing }),
+        body: JSON.stringify({ planName: selectedPlan }),
       });
       const json = await res.json();
       if (!res.ok || !json.url) {
@@ -52,30 +51,9 @@ export function PlanModal({ onClose }: { onClose: () => void }) {
           </button>
         </div>
         <p className="text-sm text-foreground/60 mb-6 max-w-xl">
-          7 Tage kostenlos testen. Danach automatische Umstellung auf das gewählte Paket.
+          7 Tage kostenlos testen, danach 12 Monate Laufzeit bei monatlicher Zahlung.
           Bezahlung per Apple Pay, Google Pay, Visa, Lastschrift, PayPal oder Klarna.
         </p>
-
-        <div className="inline-flex rounded-full border border-border p-1 text-sm mb-6">
-          <button
-            onClick={() => setBilling("monatlich")}
-            className={`rounded-full px-4 py-1.5 font-medium transition-colors ${
-              billing === "monatlich" ? "text-white" : "text-foreground/60"
-            }`}
-            style={billing === "monatlich" ? { background: "var(--accent-gradient)" } : undefined}
-          >
-            Monatlich
-          </button>
-          <button
-            onClick={() => setBilling("jaehrlich")}
-            className={`rounded-full px-4 py-1.5 font-medium transition-colors ${
-              billing === "jaehrlich" ? "text-white" : "text-foreground/60"
-            }`}
-            style={billing === "jaehrlich" ? { background: "var(--accent-gradient)" } : undefined}
-          >
-            Jährlich <span className="opacity-80">· 20% sparen</span>
-          </button>
-        </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
           {PLANS.map((plan) => {
@@ -88,15 +66,7 @@ export function PlanModal({ onClose }: { onClose: () => void }) {
               >
                 <p className="font-medium mb-1">{plan.name}</p>
                 <p className="text-2xl font-semibold">
-                  {billing === "monatlich" ? (
-                    <>
-                      {plan.preis}€<span className="text-sm font-normal text-foreground/65">/Monat</span>
-                    </>
-                  ) : (
-                    <>
-                      {plan.preisJaehrlich}€<span className="text-sm font-normal text-foreground/65">/Jahr</span>
-                    </>
-                  )}
+                  {plan.preis}€<span className="text-sm font-normal text-foreground/65">/Monat</span>
                 </p>
                 <p className="text-sm text-foreground/65 mb-4">
                   {plan.limit}

@@ -19,7 +19,6 @@ import { PLANS, CHEF_GRATIS_HINWEIS, ENTERPRISE_KONTAKT } from "@/lib/types";
 const PREISE_TEXT = PLANS.map(
   (p) => `- **${p.name}**: ${p.preis} €/Monat, ${p.limit} – ${p.features.join(", ")}.`
 ).join("\n");
-const PREISE_JAEHRLICH_TEXT = PLANS.map((p) => `${p.name} ${p.preisJaehrlich} €`).join(", ");
 
 const SYSTEM_PROMPT = `Du bist der freundliche Chat-Assistent auf der Website von uVise (uvise.de).
 Du kennst das Produkt in- und auswendig und beantwortest Fragen von Website-Besuchern.
@@ -52,9 +51,9 @@ man sich in der falschen App/Ansicht an, erscheint ein freundlicher Hinweis.
 - **Archiv & Export**: Nachweise und Qualifikationen als CSV/Excel oder PDF exportieren – z.B. für Prüfungen durch die Berufsgenossenschaft.
 - **Mitarbeiter einladen**: per Einladungscode; Mitarbeiter ohne Smartphone können auch nur mit Telefonnummer geführt werden.
 
-# Preise (7 Tage kostenlos testen, monatlich kündbar, keine Mindestlaufzeit)
+# Preise (7 Tage kostenlos testen, danach 12 Monate Laufzeit bei monatlicher Zahlung, verlängert sich ohne Kündigung automatisch um weitere 12 Monate)
 ${PREISE_TEXT}
-- Bei jährlicher Zahlung 20 % günstiger (${PREISE_JAEHRLICH_TEXT} pro Jahr).
+- Kündigung mit 3 Monaten Vorlauf zum Laufzeitende möglich.
 - ${CHEF_GRATIS_HINWEIS}
 - ${ENTERPRISE_KONTAKT.text} ${ENTERPRISE_KONTAKT.linkText} (${ENTERPRISE_KONTAKT.href}).
 - Bezahlung sicher über Stripe (Karte, Apple Pay, Google Pay, Lastschrift, PayPal, Klarna) – Kartendaten werden nie bei uVise gespeichert.

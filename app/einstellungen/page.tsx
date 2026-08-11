@@ -13,6 +13,7 @@ import { fehlerText } from "@/lib/fehler";
 import { exportNachweiseCsv, exportQualifikationenCsv } from "@/lib/exportCsv";
 import { exportGesamtBackupZip } from "@/lib/exportZip";
 import { PLANS, CHEF_GRATIS_HINWEIS, ENTERPRISE_KONTAKT } from "@/lib/types";
+import { earliestCancellationDate } from "@/lib/contractTerm";
 import { supabase } from "@/lib/supabase";
 
 const ABO_STATUS_LABELS: Record<string, string> = {
@@ -36,14 +37,16 @@ export default function EinstellungenPage() {
     trainings,
     qualifications,
     employeeTrainings,
+    reload,
   } = useAppData();
   const { showToast, ToastView } = useToast();
   const [firmenname, setFirmenname] = useState("");
   const [editingName, setEditingName] = useState(false);
   const [adresse, setAdresse] = useState("");
   const [adminName, setAdminName] = useState("");
-  const [billing, setBilling] = useState<"monatlich" | "jaehrlich">("monatlich");
   const [saving, setSaving] = useState(false);
+  const [cancelling, setCancelling] = useState(false);
+  const [showCancelModal, setShowCancelModal] = useState(false);
   const [uploadingLogo, setUploadingLogo] = useState(false);
   const [sendingTestMail, setSendingTestMail] = useState(false);
   const [zippingBackup, setZippingBackup] = useState(false);
@@ -91,7 +94,7 @@ export default function EinstellungenPage() {
       const res = await fetch("/api/create-checkout-session", {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${session.access_token}` },
-        body: JSON.stringify({ planName, billing }),
+        body: JSON.stringify({ planName }),
       });
       const json = await res.json();
       if (!res.ok || !json.url) {
@@ -101,6 +104,55 @@ export default function EinstellungenPage() {
       window.location.href = json.url;
     } finally {
       setStartingCheckout(null);
+    }
+  }
+
+  // [E1] Ordentliche Kündigung -- wirksam erst zum von der Route berechneten,
+  // nächstmöglichen Laufzeitende (12-Monats-Mindestlaufzeit).
+  async function cancelSubscription() {
+    if (!session?.access_token) return;
+    setShowCancelModal(false);
+    setCancelling(true);
+    try {
+      const res = await fetch("/api/cancel-subscription", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${session.access_token}` },
+        body: JSON.stringify({ aktion: "kuendigen" }),
+      });
+      const json = await res.json();
+      if (!res.ok) {
+        showToast(`Kündigung fehlgeschlagen: ${json.error ?? "Unbekannter Fehler"}`);
+        return;
+      }
+      showToast(`Gekündigt zum ${new Date(json.cancelAt).toLocaleDateString("de-DE")}.`);
+      await reload();
+    } catch {
+      showToast("Kündigung fehlgeschlagen. Bitte später erneut versuchen.");
+    } finally {
+      setCancelling(false);
+    }
+  }
+
+  async function widerrufeKuendigung() {
+    if (!session?.access_token) return;
+    setCancelling(true);
+    try {
+      const res = await fetch("/api/cancel-subscription", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${session.access_token}` },
+        body: JSON.stringify({ aktion: "widerrufen" }),
+      });
+      const json = await res.json();
+      if (!res.ok) {
+        showToast(`Widerruf fehlgeschlagen: ${json.error ?? "Unbekannter Fehler"}`);
+        return;
+      }
+      showToast("Kündigung zurückgezogen.");
+      await reload();
+    } catch {
+      showToast("Widerruf fehlgeschlagen. Bitte später erneut versuchen.");
+    } finally {
+      setCancelling(false);
     }
   }
 
@@ -445,42 +497,37 @@ export default function EinstellungenPage() {
         <section>
           <h2 className="font-medium">Preise & Abo</h2>
           <p className="text-foreground/60 text-sm mb-4 max-w-xl">
-            7 Tage kostenlos testen. Danach automatische Umstellung auf das gewählte Paket.
+            7 Tage kostenlos testen, keine Kreditkarte nötig. Jeder Vertrag läuft danach 12 Monate
+            (monatliche Zahlung) und verlängert sich ohne Kündigung automatisch um weitere 12 Monate.
             Bezahlung per Apple Pay, Google Pay, Visa, Lastschrift, PayPal oder Klarna.
           </p>
 
           {company?.subscriptionStatus === "active" && company.plan && (
-            <p className="text-sm mb-4 rounded-2xl bg-green-500/10 text-green-700 dark:text-green-400 px-4 py-2.5 max-w-xl">
-              ✅ Aktives Abo: <strong>{company.plan}</strong>
-              {company.billing === "jaehrlich" ? " (jährlich)" : " (monatlich)"}
-            </p>
+            <div className="text-sm mb-4 rounded-2xl bg-green-500/10 text-green-700 dark:text-green-400 px-4 py-2.5 max-w-xl">
+              <p>
+                ✅ Aktives Abo: <strong>{company.plan}</strong> (monatlich)
+              </p>
+              {company.cancelAt ? (
+                <p className="mt-1.5">
+                  Gekündigt zum {new Date(company.cancelAt).toLocaleDateString("de-DE")}.{" "}
+                  <button onClick={widerrufeKuendigung} disabled={cancelling} className="underline disabled:opacity-50">
+                    {cancelling ? "…" : "Kündigung zurückziehen"}
+                  </button>
+                </p>
+              ) : (
+                <p className="mt-1.5">
+                  <button onClick={() => setShowCancelModal(true)} disabled={cancelling} className="underline disabled:opacity-50">
+                    Abo kündigen
+                  </button>
+                </p>
+              )}
+            </div>
           )}
           {company?.subscriptionStatus && company.subscriptionStatus !== "active" && (
             <p className="text-sm mb-4 rounded-2xl bg-amber-500/10 text-amber-700 dark:text-amber-400 px-4 py-2.5 max-w-xl">
               ⚠️ Abo-Status: {ABO_STATUS_LABELS[company.subscriptionStatus] ?? company.subscriptionStatus}
             </p>
           )}
-
-          <div className="inline-flex rounded-full border border-border p-1 text-sm mb-6">
-            <button
-              onClick={() => setBilling("monatlich")}
-              className={`rounded-full px-4 py-1.5 font-medium transition-colors ${
-                billing === "monatlich" ? "text-white" : "text-foreground/60"
-              }`}
-              style={billing === "monatlich" ? { background: "var(--accent-gradient)" } : undefined}
-            >
-              Monatlich
-            </button>
-            <button
-              onClick={() => setBilling("jaehrlich")}
-              className={`rounded-full px-4 py-1.5 font-medium transition-colors ${
-                billing === "jaehrlich" ? "text-white" : "text-foreground/60"
-              }`}
-              style={billing === "jaehrlich" ? { background: "var(--accent-gradient)" } : undefined}
-            >
-              Jährlich <span className="opacity-80">· 20% sparen</span>
-            </button>
-          </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
             {PLANS.map((plan) => {
@@ -493,15 +540,7 @@ export default function EinstellungenPage() {
                 >
                   <p className="font-medium mb-1">{plan.name}</p>
                   <p className="text-2xl font-semibold">
-                    {billing === "monatlich" ? (
-                      <>
-                        {plan.preis}€<span className="text-sm font-normal text-foreground/65">/Monat</span>
-                      </>
-                    ) : (
-                      <>
-                        {plan.preisJaehrlich}€<span className="text-sm font-normal text-foreground/65">/Jahr</span>
-                      </>
-                    )}
+                    {plan.preis}€<span className="text-sm font-normal text-foreground/65">/Monat</span>
                   </p>
                   <p className="text-sm text-foreground/65 mb-4">
                     {plan.limit}
@@ -579,6 +618,22 @@ export default function EinstellungenPage() {
           danger
           onConfirm={() => handleFristSave(fristConfirmValue)}
           onClose={() => setFristConfirmValue(null)}
+        />
+      )}
+      {showCancelModal && (
+        <ConfirmModal
+          title="Abo kündigen?"
+          message={
+            company?.contractStartedAt
+              ? `Dein Vertrag läuft 12 Monate und verlängert sich sonst automatisch. Bei einer Kündigung jetzt wird sie zum ${earliestCancellationDate(
+                  new Date(company.contractStartedAt)
+                ).toLocaleDateString("de-DE")} wirksam — bis dahin läuft das Abo normal weiter und wird weiter monatlich abgebucht.`
+              : "Dein Vertrag läuft 12 Monate und verlängert sich sonst automatisch."
+          }
+          confirmLabel="Kündigen"
+          danger
+          onConfirm={cancelSubscription}
+          onClose={() => setShowCancelModal(false)}
         />
       )}
       {showDeleteCompanyModal && (

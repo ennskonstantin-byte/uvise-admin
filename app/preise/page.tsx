@@ -7,7 +7,7 @@ import { PLANS, ENTERPRISE_KONTAKT } from "@/lib/types";
 const STARTPREIS = Math.min(...PLANS.map((p) => Number(p.preis)));
 
 const TITEL = `uVise Preise: Unterweisungssoftware ab ${STARTPREIS} €/Monat`;
-const BESCHREIBUNG = `Unterweisungssoftware für kleine Betriebe: Team ab ${PLANS[0]?.preis}€, Betrieb ${PLANS[1]?.preis}€, Unternehmen ${PLANS[2]?.preis}€/Monat. 7 Tage kostenlos testen, keine Kreditkarte, monatlich kündbar.`;
+const BESCHREIBUNG = `Unterweisungssoftware für kleine Betriebe: Team ab ${PLANS[0]?.preis}€, Betrieb ${PLANS[1]?.preis}€, Unternehmen ${PLANS[2]?.preis}€/Monat. 7 Tage kostenlos testen, keine Kreditkarte, danach 12 Monate Laufzeit.`;
 
 // Eigene, indexierbare Preis-Seite (Ziel-Keywords „uVise Preise",
 // „Unterweisungssoftware Preis", „Unterweisungssoftware Kosten") — gleiches
@@ -63,7 +63,7 @@ const FAQ = [
   },
   {
     q: "Kann ich jederzeit kündigen?",
-    a: "Ja, alle Pakete sind monatlich kündbar, es gibt keine Mindestlaufzeit und keine Einrichtungsgebühr. Beim Jahresabo (20% Rabatt) läuft die gewählte Laufzeit einmal durch, danach ebenfalls monatlich kündbar.",
+    a: "Jeder Vertrag läuft 12 Monate bei monatlicher Zahlung und verlängert sich ohne Kündigung automatisch um weitere 12 Monate. Eine Kündigung mit 3 Monaten Vorlauf zum Laufzeitende wird zum jeweils nächstmöglichen Termin wirksam. Es gibt keine Einrichtungsgebühr.",
   },
   {
     q: "Zählt der Chef-Zugang mit?",

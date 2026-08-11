@@ -22,8 +22,8 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Nicht angemeldet." }, { status: 401 });
   }
 
-  const { planName, billing } = await request.json();
-  if (!planName || !STRIPE_PRICE_IDS[planName] || (billing !== "monatlich" && billing !== "jaehrlich")) {
+  const { planName } = await request.json();
+  if (!planName || !STRIPE_PRICE_IDS[planName]) {
     return NextResponse.json({ error: "Ungültiges Paket." }, { status: 400 });
   }
 
@@ -55,7 +55,7 @@ export async function POST(request: Request) {
   }
 
   const stripe = new Stripe(stripeSecretKey);
-  const priceId = STRIPE_PRICE_IDS[planName][billing as "monatlich" | "jaehrlich"];
+  const priceId = STRIPE_PRICE_IDS[planName];
   const origin = request.headers.get("origin") ?? "https://www.uvise.de";
 
   const session = await stripe.checkout.sessions.create({
@@ -63,7 +63,7 @@ export async function POST(request: Request) {
     line_items: [{ price: priceId, quantity: 1 }],
     customer_email: user.email,
     client_reference_id: company.id,
-    metadata: { company_id: company.id, company_name: company.name, plan: planName, billing },
+    metadata: { company_id: company.id, company_name: company.name, plan: planName, billing: "monatlich" },
     success_url: `${origin}/einstellungen?abo=erfolgreich`,
     cancel_url: `${origin}/einstellungen?abo=abgebrochen`,
   });

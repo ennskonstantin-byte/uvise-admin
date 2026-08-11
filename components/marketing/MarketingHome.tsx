@@ -205,7 +205,6 @@ export function MarketingHome() {
   const { session, loading } = useAppData();
   const router = useRouter();
   const [menuOpen, setMenuOpen] = useState(false);
-  const [billing, setBilling] = useState<"monatlich" | "jaehrlich">("monatlich");
   const [openFaq, setOpenFaq] = useState<number | null>(0);
 
   // Die Website trägt jetzt durchgehend das dunkle Glas-3D-Design der App
@@ -430,7 +429,7 @@ export function MarketingHome() {
                 </a>
               </div>
               <p className="text-xs text-[var(--mk-ink-50)] mt-4">
-                Keine Kreditkarte nötig · jederzeit kündbar
+                Keine Kreditkarte nötig · 12 Monate Laufzeit
               </p>
               <div className="mt-8 max-w-xs">
                 <SignalRule animate={!reduceMotion} />
@@ -609,33 +608,9 @@ export function MarketingHome() {
             <Reveal className="max-w-xl mb-8">
               <h2 className="mk-display text-3xl font-bold mb-3">Ein Preis pro Team-Größe</h2>
               <p className="text-[var(--mk-ink-65)]">
-                7 Tage kostenlos testen, danach monatlich kündbar. Keine Einrichtungsgebühr.
+                7 Tage kostenlos testen, danach 12 Monate Laufzeit bei monatlicher Zahlung. Keine
+                Einrichtungsgebühr.
               </p>
-            </Reveal>
-            <Reveal className="mb-8">
-              <div
-                className="inline-flex rounded-full p-1 text-sm backdrop-blur-md"
-                style={{ background: "var(--uv-glass-bg)", border: "1px solid var(--uv-glass-border)" }}
-              >
-                <button
-                  onClick={() => setBilling("monatlich")}
-                  className={`rounded-full px-4 py-1.5 font-medium transition-colors ${
-                    billing === "monatlich" ? "text-white" : "text-[var(--mk-ink-60)]"
-                  }`}
-                  style={billing === "monatlich" ? { background: "var(--mk-blue-strong)" } : undefined}
-                >
-                  Monatlich
-                </button>
-                <button
-                  onClick={() => setBilling("jaehrlich")}
-                  className={`rounded-full px-4 py-1.5 font-medium transition-colors ${
-                    billing === "jaehrlich" ? "text-white" : "text-[var(--mk-ink-60)]"
-                  }`}
-                  style={billing === "jaehrlich" ? { background: "var(--mk-blue-strong)" } : undefined}
-                >
-                  Jährlich <span className="opacity-80">· 20% sparen</span>
-                </button>
-              </div>
             </Reveal>
             <div className="grid md:grid-cols-3 gap-5">
               {PLANS.map((plan, i) => {
@@ -666,17 +641,8 @@ export function MarketingHome() {
                         <h3 className="mk-display text-xl font-bold mb-1" style={{ color: "var(--mk-ink)" }}>{plan.name}</h3>
                         <p className="text-sm mb-5 text-[var(--mk-ink-60)]">{plan.limit}</p>
                         <p className="mb-6" style={{ color: "var(--mk-ink)" }}>
-                          {billing === "monatlich" ? (
-                            <>
-                              <span className="text-4xl font-bold">{plan.preis}€</span>
-                              <span className="text-sm text-[var(--mk-ink-55)]"> /Monat</span>
-                            </>
-                          ) : (
-                            <>
-                              <span className="text-4xl font-bold">{plan.preisJaehrlich}€</span>
-                              <span className="text-sm text-[var(--mk-ink-55)]"> /Jahr</span>
-                            </>
-                          )}
+                          <span className="text-4xl font-bold">{plan.preis}€</span>
+                          <span className="text-sm text-[var(--mk-ink-55)]"> /Monat</span>
                         </p>
                         <ul className="space-y-2.5 mb-7">
                           {plan.features.map((f) => (

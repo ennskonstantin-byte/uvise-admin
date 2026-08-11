@@ -100,6 +100,16 @@ export async function POST(request: Request) {
             typeof session.subscription === "string" ? session.subscription : session.subscription.id;
           const subscription = await stripe.subscriptions.retrieve(subscriptionId);
           await upsertFromSubscription(subscription, companyId);
+          // [E1/E2] Vertragsbeginn nur beim ALLERERSTEN Checkout setzen -- ist
+          // schon einer da (Re-Abo nach Kündigung o.ä.), bleibt die 12-Monats-
+          // Rechnung an den ursprünglichen Vertragsstart gekoppelt und wird
+          // NICHT durch einen erneuten Checkout zurückgesetzt.
+          const { error: contractError } = await db
+            .from("companies")
+            .update({ contract_started_at: new Date().toISOString(), cancel_at: null })
+            .eq("id", companyId)
+            .is("contract_started_at", null);
+          if (contractError) throw contractError;
         }
         break;
       }

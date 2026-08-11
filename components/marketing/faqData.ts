@@ -16,11 +16,11 @@ export const FAQ = [
   },
   {
     q: "Kann ich uVise jederzeit kündigen?",
-    a: "Ja, im Monatsabo ist uVise jederzeit zum Ende des laufenden Monats kündbar, ohne Mindestlaufzeit. Alternativ gibt es ein Jahresabo mit 20% Rabatt.",
+    a: "Jeder Vertrag läuft 12 Monate bei monatlicher Zahlung und verlängert sich ohne Kündigung automatisch um weitere 12 Monate. Eine Kündigung mit 3 Monaten Vorlauf zum Laufzeitende wird zum jeweils nächstmöglichen Termin wirksam.",
   },
   {
     q: "Was passiert nach der 7-tägigen Testphase?",
-    a: "Du testest 7 Tage kostenlos und ohne Kreditkarte. Erst danach entscheidest du dich für ein kostenpflichtiges Paket — ohne automatische Kündigungsfalle im Hintergrund.",
+    a: "Du testest 7 Tage kostenlos und ohne Kreditkarte. Erst danach entscheidest du dich für ein kostenpflichtiges Paket mit 12 Monaten Laufzeit.",
   },
   {
     q: "Ersetzt uVise die gesetzliche Pflicht zur Unterweisung?",

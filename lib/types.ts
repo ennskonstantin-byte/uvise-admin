@@ -251,14 +251,14 @@ export function qualIcon(name: string): string {
   return QUALIFICATION_PRESETS.find((q) => q.name === name)?.icon ?? "📋";
 }
 
-// Jahrespreis = 12 Monate mit 20% Rabatt, auf volle Euro gerundet.
+// [E1/E2, Vertragsmodell-Umstellung] Kein Jahres-Vorkasse-Preis mehr -- jeder
+// Vertrag läuft 12 Monate mit monatlicher Zahlung (siehe lib/contractTerm.ts).
 // Chef-/Admin-Zugang ist in jedem Paket gratis und zählt nicht ins
 // Mitarbeiter-Limit (siehe chefGratisHinweis).
 export const PLANS = [
   {
     name: "Team",
     preis: "49",
-    preisJaehrlich: 470,
     limit: "bis 10 Mitarbeiter",
     // Numerischer Wert derselben Grenze — einzige Quelle der Wahrheit für
     // stripe-webhook/route.ts (schreibt companies.employee_limit) und den
@@ -269,7 +269,6 @@ export const PLANS = [
   {
     name: "Betrieb",
     preis: "99",
-    preisJaehrlich: 950,
     limit: "bis 25 Mitarbeiter",
     mitarbeiterLimit: 25,
     features: ["Alles aus Team", "Bundle-Vorlagen"],
@@ -277,7 +276,6 @@ export const PLANS = [
   {
     name: "Unternehmen",
     preis: "149",
-    preisJaehrlich: 1430,
     limit: "bis 50 Mitarbeiter",
     mitarbeiterLimit: 50,
     features: ["Alles aus Betrieb", "Priorisierter Support", "Erweitertes Archiv"],

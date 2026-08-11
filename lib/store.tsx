@@ -97,6 +97,9 @@ type Company = {
   billing: string | null;
   subscriptionStatus: string | null;
   createdAt: string;
+  // [E1/E2] Grundlage für die 12-Monats-Laufzeitberechnung (lib/contractTerm.ts).
+  contractStartedAt: string | null;
+  cancelAt: string | null;
   // [M-17] Von der Firma selbst festgelegte Aufbewahrungsfrist für signierte
   // Unterweisungsnachweise, in Monaten. null = nie automatisch anonymisieren
   // (sicherer Standard -- es gibt keine branchenübergreifend richtige Zahl).
@@ -464,6 +467,8 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
         billing: companies[0].billing,
         subscriptionStatus: companies[0].subscription_status,
         createdAt: companies[0].created_at,
+        contractStartedAt: companies[0].contract_started_at,
+        cancelAt: companies[0].cancel_at,
         aufbewahrungsfristMonate: companies[0].aufbewahrungsfrist_monate,
       });
     }
