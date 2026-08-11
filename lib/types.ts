@@ -260,6 +260,10 @@ export const PLANS = [
     preis: "49",
     preisJaehrlich: 470,
     limit: "bis 10 Mitarbeiter",
+    // Numerischer Wert derselben Grenze — einzige Quelle der Wahrheit für
+    // stripe-webhook/route.ts (schreibt companies.employee_limit) und den
+    // DB-Trigger employees_enforce_limit() (Migration 0073 im sicherakte-Repo).
+    mitarbeiterLimit: 10,
     features: ["Unterweisungen & Fristen", "Ampelsystem & Badges", "E-Mail- & App-Push-Erinnerungen"],
   },
   {
@@ -267,6 +271,7 @@ export const PLANS = [
     preis: "99",
     preisJaehrlich: 950,
     limit: "bis 25 Mitarbeiter",
+    mitarbeiterLimit: 25,
     features: ["Alles aus Team", "Bundle-Vorlagen"],
   },
   {
@@ -274,6 +279,7 @@ export const PLANS = [
     preis: "149",
     preisJaehrlich: 1430,
     limit: "bis 50 Mitarbeiter",
+    mitarbeiterLimit: 50,
     features: ["Alles aus Betrieb", "Priorisierter Support", "Erweitertes Archiv"],
   },
 ];

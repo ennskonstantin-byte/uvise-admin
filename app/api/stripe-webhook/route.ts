@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import Stripe from "stripe";
+import { PLANS } from "@/lib/types";
 
 // Nimmt Stripe-Ereignisse entgegen (erfolgreiches Abo, Verlängerung,
 // Kündigung) und schreibt den aktuellen Stand in companies. Läuft mit dem
@@ -29,6 +30,23 @@ export async function POST(request: Request) {
 
   const db = createClient(supabaseUrl, serviceKey);
 
+  // [F2] Idempotenz: Event-ID zuerst als "in Bearbeitung" beanspruchen (Primary
+  // Key = event.id). Schlägt der Insert wegen Unique-Verletzung fehl, kam
+  // dasselbe Event schon einmal an (Stripe garantiert weder Einmal- noch
+  // Reihenfolge-Zustellung) -- dann sofort 200 zurückgeben, ohne nochmal zu
+  // verarbeiten. Bei einem Verarbeitungsfehler wird die Beanspruchung wieder
+  // gelöscht, damit Stripes automatischer Retry das Event erneut versuchen kann.
+  const { error: claimError } = await db
+    .from("stripe_webhook_events")
+    .insert({ event_id: event.id, event_type: event.type });
+  if (claimError) {
+    if (claimError.code === "23505") {
+      return NextResponse.json({ received: true, duplicate: true });
+    }
+    console.error("stripe-webhook: Event-Dedupe fehlgeschlagen", claimError);
+    return NextResponse.json({ error: "dedupe_failed" }, { status: 500 });
+  }
+
   async function upsertFromSubscription(subscription: Stripe.Subscription, companyId?: string) {
     const item = subscription.items.data[0];
     const priceId = item?.price.id;
@@ -43,7 +61,12 @@ export async function POST(request: Request) {
       plan = product.name.replace("uVise ", "");
     }
 
-    const updateData = {
+    // [F1] Mitarbeiter-Limit aus derselben PLANS-Quelle wie die Preise-Seite
+    // ableiten -- unbekannter/nicht zuordenbarer Produktname lässt das Limit
+    // bewusst unangetastet (behält den zuletzt bekannten Wert), statt es auf
+    // ein geratenes Limit zu setzen.
+    const matchedPlan = PLANS.find((p) => p.name === plan);
+    const updateData: Record<string, unknown> = {
       stripe_customer_id: typeof subscription.customer === "string" ? subscription.customer : subscription.customer.id,
       stripe_subscription_id: subscription.id,
       plan,
@@ -51,6 +74,9 @@ export async function POST(request: Request) {
       subscription_status: subscription.status,
       current_period_end: new Date(item.current_period_end * 1000).toISOString(),
     };
+    if (matchedPlan) {
+      updateData.employee_limit = matchedPlan.mitarbeiterLimit;
+    }
 
     // [Audit-Fund SUPABASE & DATEN, 27.07.2026] error wurde bisher nicht
     // geprüft -- ein fehlgeschlagenes Update blieb unbemerkt, Stripe bekam
@@ -93,6 +119,9 @@ export async function POST(request: Request) {
     }
   } catch (err) {
     console.error("stripe-webhook: DB-Update fehlgeschlagen", err);
+    // Beanspruchung zurücknehmen, sonst hält unser eigenes Dedupe Stripes
+    // Retry für genau dieses Event für immer für "schon erledigt".
+    await db.from("stripe_webhook_events").delete().eq("event_id", event.id);
     return NextResponse.json({ error: "db_update_failed" }, { status: 500 });
   }
 
