@@ -42,10 +42,15 @@ export default function EinstellungenPage() {
   const { showToast, ToastView } = useToast();
   const [firmenname, setFirmenname] = useState("");
   const [editingName, setEditingName] = useState(false);
-  const [adresse, setAdresse] = useState("");
+  // [C1] Straße/PLZ/Stadt statt einem Freitextfeld.
+  const [strasse, setStrasse] = useState("");
+  const [plz, setPlz] = useState("");
+  const [ort, setOrt] = useState("");
+  const [adressFehler, setAdressFehler] = useState<string | null>(null);
   const [adminName, setAdminName] = useState("");
   const [saving, setSaving] = useState(false);
   const [cancelling, setCancelling] = useState(false);
+  const [openingPortal, setOpeningPortal] = useState(false);
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [uploadingLogo, setUploadingLogo] = useState(false);
   const [sendingTestMail, setSendingTestMail] = useState(false);
@@ -156,6 +161,30 @@ export default function EinstellungenPage() {
     }
   }
 
+  // [E3] Stripe generiert Rechnungen pro Abrechnungszyklus automatisch --
+  // das gehostete Billing Portal zeigt sie mit PDF-Download, statt sie
+  // selbst zu speichern/zu verlinken.
+  async function openBillingPortal() {
+    if (!session?.access_token) return;
+    setOpeningPortal(true);
+    try {
+      const res = await fetch("/api/billing-portal", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${session.access_token}` },
+      });
+      const json = await res.json();
+      if (!res.ok || !json.url) {
+        showToast(`Fehlgeschlagen: ${json.error ?? "Unbekannter Fehler"}`);
+        return;
+      }
+      window.location.href = json.url;
+    } catch {
+      showToast("Rechnungsübersicht konnte nicht geöffnet werden.");
+    } finally {
+      setOpeningPortal(false);
+    }
+  }
+
   async function sendTestMail() {
     if (!session?.user.email) return;
     setSendingTestMail(true);
@@ -223,16 +252,21 @@ export default function EinstellungenPage() {
   useEffect(() => {
     if (company) {
       setFirmenname(company.name);
-      setAdresse(company.address ?? "");
+      setStrasse(company.strasse ?? "");
+      setPlz(company.plz ?? "");
+      setOrt(company.ort ?? "");
       setAdminName(company.chefName ?? "");
     }
   }, [company]);
 
   async function handleSave() {
     setSaving(true);
+    setAdressFehler(null);
     try {
-      await updateCompany({ name: firmenname, address: adresse, chefName: adminName });
+      await updateCompany({ name: firmenname, strasse, plz, ort, chefName: adminName });
       showToast("Firmenprofil gespeichert.");
+    } catch (e) {
+      setAdressFehler(e instanceof Error ? e.message : "Speichern fehlgeschlagen.");
     } finally {
       setSaving(false);
     }
@@ -334,17 +368,36 @@ export default function EinstellungenPage() {
                 </span>
               </label>
               <label className="block">
-                <span className="text-xs text-foreground/65 mb-1 block">Firmenadresse</span>
+                <span className="text-xs text-foreground/65 mb-1 block">Straße und Hausnummer</span>
                 <input
-                  value={adresse}
-                  onChange={(e) => setAdresse(e.target.value)}
+                  value={strasse}
+                  onChange={(e) => setStrasse(e.target.value)}
+                  maxLength={200}
                   className="w-full rounded-full border border-border bg-surface px-4 py-2.5 text-sm outline-none"
                 />
-                <span className="text-xs text-foreground/65 mt-1 block">
-                  Adresse eintippen — Vorschläge erscheinen automatisch. Erscheint z.B. auf
-                  exportierten Archiv-PDFs.
-                </span>
               </label>
+              <div className="flex gap-3">
+                <label className="block w-32 shrink-0">
+                  <span className="text-xs text-foreground/65 mb-1 block">PLZ</span>
+                  <input
+                    value={plz}
+                    onChange={(e) => setPlz(e.target.value)}
+                    inputMode="numeric"
+                    maxLength={5}
+                    className="w-full rounded-full border border-border bg-surface px-4 py-2.5 text-sm outline-none"
+                  />
+                </label>
+                <label className="block flex-1">
+                  <span className="text-xs text-foreground/65 mb-1 block">Stadt</span>
+                  <input
+                    value={ort}
+                    onChange={(e) => setOrt(e.target.value)}
+                    maxLength={150}
+                    className="w-full rounded-full border border-border bg-surface px-4 py-2.5 text-sm outline-none"
+                  />
+                </label>
+              </div>
+              {adressFehler && <p className="text-xs text-red-600">{adressFehler}</p>}
             </div>
 
             <button
@@ -505,7 +558,10 @@ export default function EinstellungenPage() {
           {company?.subscriptionStatus === "active" && company.plan && (
             <div className="text-sm mb-4 rounded-2xl bg-green-500/10 text-green-700 dark:text-green-400 px-4 py-2.5 max-w-xl">
               <p>
-                ✅ Aktives Abo: <strong>{company.plan}</strong> (monatlich)
+                ✅ Aktives Abo: <strong>{company.plan}</strong> (monatlich) ·{" "}
+                <button onClick={openBillingPortal} disabled={openingPortal} className="underline disabled:opacity-50">
+                  {openingPortal ? "…" : "Rechnungen ansehen"}
+                </button>
               </p>
               {company.cancelAt ? (
                 <p className="mt-1.5">

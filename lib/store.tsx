@@ -91,6 +91,11 @@ type Company = {
   id: string;
   name: string;
   address: string | null;
+  // [C1] Getrennte Felder statt Freitext-Adresse (Migration 0076). `address`
+  // bleibt als zusammengesetzter Anzeige-/Kompatibilitätswert bestehen.
+  strasse: string | null;
+  plz: string | null;
+  ort: string | null;
   chefName: string | null;
   logoUrl: string | null;
   plan: string | null;
@@ -185,7 +190,7 @@ type AppDataContextValue = {
   deleteTraining: (id: string) => Promise<void>;
   deleteBundle: (id: string) => Promise<void>;
   deleteCategory: (id: string) => Promise<void>;
-  updateCompany: (input: { name: string; address: string; chefName: string }) => Promise<void>;
+  updateCompany: (input: { name: string; strasse: string; plz: string; ort: string; chefName: string }) => Promise<void>;
   updateAufbewahrungsfrist: (monate: number | null) => Promise<void>;
   uploadCompanyLogo: (file: File) => Promise<void>;
   answerQuestion: (id: string, antwort: string) => Promise<void>;
@@ -461,6 +466,9 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
         id: companies[0].id,
         name: companies[0].name,
         address: companies[0].address,
+        strasse: companies[0].strasse,
+        plz: companies[0].plz,
+        ort: companies[0].ort,
         chefName: companies[0].chef_name,
         logoUrl: resolvePhoto(companies[0].logo_url),
         plan: companies[0].plan,
@@ -1211,14 +1219,25 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
     await loadData();
   }
 
-  async function updateCompany(input: { name: string; address: string; chefName: string }) {
+  // [C1] Straße/PLZ/Stadt statt einem Freitextfeld. `address` bleibt als
+  // zusammengesetzter Anzeige-/Kompatibilitätswert bestehen (Migration 0076
+  // im sicherakte-Repo), falls irgendwo noch direkt darauf zugegriffen wird.
+  async function updateCompany(input: { name: string; strasse: string; plz: string; ort: string; chefName: string }) {
     if (!company) return;
     assertMaxLen(input.name, 200, "Firmenname");
-    assertMaxLen(input.address, 300, "Adresse");
+    assertMaxLen(input.strasse, 200, "Straße");
+    assertMaxLen(input.ort, 150, "Stadt");
     assertMaxLen(input.chefName, 120, "Name des Chefs");
+    if (input.plz.trim() !== "" && !/^\d{5}$/.test(input.plz.trim())) {
+      throw new Error("PLZ muss aus genau 5 Ziffern bestehen.");
+    }
+    const strasse = input.strasse.trim();
+    const plz = input.plz.trim();
+    const ort = input.ort.trim();
+    const address = [strasse, [plz, ort].filter(Boolean).join(" ")].filter(Boolean).join(", ");
     const { error } = await supabase
       .from("companies")
-      .update({ name: input.name.trim(), address: input.address.trim(), chef_name: input.chefName.trim() })
+      .update({ name: input.name.trim(), strasse, plz, ort, address, chef_name: input.chefName.trim() })
       .eq("id", company.id);
     throwIfError(error);
     await loadData();

@@ -14,6 +14,9 @@ type Ansicht = {
   klicks: number;
   geworbeneFirmen: number;
   link: string;
+  provisionsProzent: number;
+  connectOnboardingComplete: boolean;
+  provisionEuro: number;
 };
 
 function PartnerInhalt() {
@@ -22,6 +25,7 @@ function PartnerInhalt() {
   const [daten, setDaten] = useState<Ansicht | null>(null);
   const [fehler, setFehler] = useState<string | null>(null);
   const [kopiert, setKopiert] = useState(false);
+  const [startingOnboarding, setStartingOnboarding] = useState(false);
 
   useEffect(() => {
     if (!schluessel) {
@@ -36,6 +40,28 @@ function PartnerInhalt() {
       })
       .catch(() => setFehler("Laden fehlgeschlagen."));
   }, [schluessel]);
+
+  // [F3] Startet/setzt das Stripe-Connect-Onboarding fort (Auszahlungen).
+  async function startOnboarding() {
+    setStartingOnboarding(true);
+    try {
+      const res = await fetch("/api/partner-connect-onboarding", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ schluessel }),
+      });
+      const json = await res.json();
+      if (!res.ok || !json.url) {
+        setFehler(json.error ?? "Onboarding konnte nicht gestartet werden.");
+        return;
+      }
+      window.location.href = json.url;
+    } catch {
+      setFehler("Onboarding konnte nicht gestartet werden.");
+    } finally {
+      setStartingOnboarding(false);
+    }
+  }
 
   return (
     <div className="rounded-3xl bg-background border border-border p-6 sm:p-10">
@@ -86,6 +112,36 @@ function PartnerInhalt() {
               Jede Firma, die über diesen Link auf uvise.de kommt und sich registriert, wird dir zugerechnet.
               Partner seit {new Date(daten.seit).toLocaleDateString("de-DE")}.
             </p>
+          </div>
+
+          {/* [F3] Provision: {daten.provisionsProzent}% jeder monatlichen Rechnung
+              einer geworbenen Firma, solange sie zahlt. */}
+          <div className="rounded-2xl border border-border p-4 mt-4">
+            <p className="text-xs text-foreground/50 mb-1">
+              Provision ({daten.provisionsProzent}% jeder monatlichen Zahlung deiner geworbenen Firmen)
+            </p>
+            {daten.connectOnboardingComplete ? (
+              <p className="text-2xl font-semibold tabular-nums">
+                {daten.provisionEuro.toLocaleString("de-DE", { style: "currency", currency: "EUR" })}
+                <span className="text-xs font-normal text-foreground/50 ml-2">bisher ausgezahlt</span>
+              </p>
+            ) : (
+              <>
+                <p className="text-sm text-foreground/60 mb-3">
+                  Auszahlungen sind noch nicht eingerichtet — hinterlege einmalig deine Bankverbindung bei
+                  unserem Zahlungsdienstleister Stripe, danach wird deine Provision automatisch monatlich
+                  ausgezahlt.
+                </p>
+                <button
+                  onClick={startOnboarding}
+                  disabled={startingOnboarding}
+                  className="rounded-full px-5 py-2.5 text-sm font-medium text-white disabled:opacity-50"
+                  style={{ background: "var(--accent-gradient)" }}
+                >
+                  {startingOnboarding ? "Leitet weiter…" : "Auszahlungen einrichten"}
+                </button>
+              </>
+            )}
           </div>
         </>
       )}

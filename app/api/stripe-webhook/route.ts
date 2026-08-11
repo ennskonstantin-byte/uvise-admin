@@ -126,6 +126,137 @@ export async function POST(request: Request) {
         if (error) throw error;
         break;
       }
+      // [F3] Provision: 20% jeder bezahlten Rechnung einer geworbenen Firma
+      // per Stripe Connect Transfer an den zuständigen Partner. Läuft über
+      // JEDE Rechnung (nicht nur die erste) -- wiederkehrend, solange die
+      // Firma zahlt, wie mit KE abgestimmt.
+      case "invoice.paid": {
+        const invoice = event.data.object as Stripe.Invoice;
+        const customerId = typeof invoice.customer === "string" ? invoice.customer : invoice.customer?.id;
+        if (!customerId || !invoice.amount_paid) break;
+
+        const { data: company } = await db
+          .from("companies")
+          .select("id, ref_code")
+          .eq("stripe_customer_id", customerId)
+          .single();
+        if (!company?.ref_code) break;
+
+        const { data: partner } = await db
+          .from("affiliate_partners")
+          .select("id, aktiv, stripe_connect_account_id, connect_onboarding_complete, provisions_prozent")
+          .eq("code", company.ref_code)
+          .single();
+        if (!partner?.aktiv || !partner.stripe_connect_account_id || !partner.connect_onboarding_complete) break;
+
+        const amountCents = Math.round((invoice.amount_paid * Number(partner.provisions_prozent)) / 100);
+        if (amountCents <= 0) break;
+
+        // Aktuelle Stripe-API-Version verknüpft Invoice/Charge nicht mehr
+        // direkt (kein invoice.charge mehr) -- die PaymentIntent-ID über das
+        // payments-Array auflösen, damit ein späterer Refund (charge.refunded
+        // liefert charge.payment_intent) diese Provision wiederfindet.
+        let paymentIntentId: string | null = null;
+        try {
+          const full = await stripe.invoices.retrieve(invoice.id, {
+            expand: ["payments.data.payment.payment_intent"],
+          });
+          const payment = full.payments?.data[0]?.payment;
+          if (payment?.type === "payment_intent") {
+            paymentIntentId =
+              typeof payment.payment_intent === "string" ? payment.payment_intent : payment.payment_intent?.id ?? null;
+          }
+        } catch (err) {
+          console.error("stripe-webhook: PaymentIntent-Auflösung fehlgeschlagen", err);
+        }
+
+        // Zeile zuerst anlegen (unique stripe_invoice_id beansprucht die
+        // Rechnung) -- schlägt das wegen Unique-Verletzung fehl, wurde diese
+        // Rechnung schon einmal verarbeitet (Retry), keine Doppel-Provision.
+        const { data: commission, error: commissionError } = await db
+          .from("affiliate_commissions")
+          .insert({
+            partner_id: partner.id,
+            company_id: company.id,
+            stripe_invoice_id: invoice.id,
+            stripe_payment_intent_id: paymentIntentId,
+            amount_cents: amountCents,
+          })
+          .select()
+          .single();
+        if (commissionError) {
+          if (commissionError.code === "23505") break; // bereits verarbeitet
+          throw commissionError;
+        }
+
+        try {
+          const transfer = await stripe.transfers.create({
+            amount: amountCents,
+            currency: invoice.currency,
+            destination: partner.stripe_connect_account_id,
+            transfer_group: invoice.id,
+          });
+          const { error } = await db
+            .from("affiliate_commissions")
+            .update({ stripe_transfer_id: transfer.id, status: "transferred" })
+            .eq("id", commission.id);
+          if (error) throw error;
+        } catch (transferErr) {
+          console.error("stripe-webhook: Provisions-Transfer fehlgeschlagen", transferErr);
+          await db.from("affiliate_commissions").update({ status: "failed" }).eq("id", commission.id);
+          // Kein throw: die Rechnung selbst ist bezahlt und korrekt verbucht,
+          // nur die Provision ist fehlgeschlagen -- ein Retry des gesamten
+          // Webhook-Events würde wegen der oben schon angelegten Zeile ohnehin
+          // nichts mehr verarbeiten. Manuell im Dashboard nachverfolgen.
+        }
+        break;
+      }
+      // [F3] Rückrechnung bei Erstattung: anteilig zum erstatteten Betrag.
+      case "charge.refunded": {
+        const charge = event.data.object as Stripe.Charge;
+        const paymentIntentId =
+          typeof charge.payment_intent === "string" ? charge.payment_intent : charge.payment_intent?.id;
+        if (!paymentIntentId) break;
+
+        const { data: commission } = await db
+          .from("affiliate_commissions")
+          .select("id, amount_cents, reversed_cents, stripe_transfer_id, status")
+          .eq("stripe_payment_intent_id", paymentIntentId)
+          .single();
+        if (!commission || commission.status !== "transferred" || !commission.stripe_transfer_id) break;
+
+        const refundFraction = charge.amount_refunded / charge.amount;
+        const reverseCents = Math.min(
+          commission.amount_cents - commission.reversed_cents,
+          Math.round(commission.amount_cents * refundFraction)
+        );
+        if (reverseCents <= 0) break;
+
+        await stripe.transfers.createReversal(commission.stripe_transfer_id, { amount: reverseCents });
+        const newReversed = commission.reversed_cents + reverseCents;
+        const { error } = await db
+          .from("affiliate_commissions")
+          .update({
+            reversed_cents: newReversed,
+            status: newReversed >= commission.amount_cents ? "reversed" : "transferred",
+          })
+          .eq("id", commission.id);
+        if (error) throw error;
+        break;
+      }
+      // [F3] Markiert einen Partner als auszahlungsbereit, sobald Stripe das
+      // Connect-Onboarding (Identität + Bankverbindung) als vollständig meldet.
+      case "account.updated": {
+        const account = event.data.object as Stripe.Account;
+        if (account.charges_enabled && account.payouts_enabled) {
+          const { error } = await db
+            .from("affiliate_partners")
+            .update({ connect_onboarding_complete: true })
+            .eq("stripe_connect_account_id", account.id);
+          if (error) throw error;
+        }
+        break;
+      }
     }
   } catch (err) {
     console.error("stripe-webhook: DB-Update fehlgeschlagen", err);
