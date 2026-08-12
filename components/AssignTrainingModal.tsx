@@ -99,6 +99,19 @@ export function AssignTrainingModal({
           />
         </div>
         <div className="space-y-2 max-h-80 overflow-y-auto mb-6">
+          {activeEmployees.some((e) => !already.has(e.id)) && (
+            <label className="flex items-center gap-3 rounded-2xl border border-dashed border-border px-4 py-2.5 cursor-pointer hover:border-foreground/30">
+              <input
+                type="checkbox"
+                checked={activeEmployees.filter((e) => !already.has(e.id)).every((e) => selected.includes(e.id))}
+                onChange={(ev) => {
+                  const auswaehlbare = activeEmployees.filter((e) => !already.has(e.id)).map((e) => e.id);
+                  setSelected(ev.target.checked ? auswaehlbare : []);
+                }}
+              />
+              <span className="text-sm font-medium">Alle auswählen</span>
+            </label>
+          )}
           {activeEmployees.map((e) => {
             const has = already.has(e.id);
             const checked = selected.includes(e.id) || has;

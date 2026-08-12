@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { AlertTriangle, Bell, Pencil, Printer, Send, Trash2, Undo2 } from "lucide-react";
+import { AlertTriangle, Bell, MoreVertical, Pencil, Printer, Send, Trash2, Undo2 } from "lucide-react";
 import { DashboardShell } from "@/components/DashboardShell";
 import { PageHeader } from "@/components/PageHeader";
 import { Card } from "@/components/Card";
@@ -31,6 +31,10 @@ export default function UnterweisungenPage() {
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [erinnernId, setErinnernId] = useState<string | null>(null);
   const [erinnernHinweis, setErinnernHinweis] = useState<{ id: string; text: string } | null>(null);
+  // ⋮-Menü für die selteneren Zeilenaktionen (Drucken/Erinnern/Zurückziehen)
+  // -- App-Parität: nur Verteilen/Bearbeiten/Löschen bleiben laut STYLE.md
+  // als Desktop-Ausnahme direkt inline sichtbar.
+  const [openMenuId, setOpenMenuId] = useState<string | null>(null);
   const expiringSoon = trainings.filter(
     (t) => t.status === "laeuft_ab" || t.status === "abgelaufen"
   );
@@ -222,14 +226,6 @@ export default function UnterweisungenPage() {
                     </span>
                   )}
                   <button
-                    onClick={() => printTraining(t)}
-                    className="h-8 w-8 rounded-full border border-border flex items-center justify-center text-blue-500 hover:border-foreground/30"
-                    aria-label={`${t.name} — Vorlage drucken oder teilen`}
-                    title={`${t.name} — Vorlage drucken oder teilen (gilt für alle Mitarbeiter, kein einzelner Nachweis)`}
-                  >
-                    <Printer size={14} />
-                  </button>
-                  <button
                     onClick={() => setAssigningTraining(t)}
                     className="h-8 w-8 rounded-full border border-border flex items-center justify-center hover:border-foreground/30"
                     aria-label={`${t.name} — an Mitarbeiter verteilen`}
@@ -237,28 +233,6 @@ export default function UnterweisungenPage() {
                   >
                     <Send size={14} />
                   </button>
-                  {offeneZuweisungen(t.id) > 0 && (
-                    <button
-                      onClick={() => handleErneutErinnern(t.id, t.name)}
-                      disabled={erinnernId === t.id}
-                      className="h-8 w-8 rounded-full border border-border flex items-center justify-center text-blue-500 hover:border-foreground/30 disabled:opacity-40"
-                      aria-label={`${t.name} — erneut erinnern`}
-                      title={`${t.name} — ${offeneZuweisungen(t.id)} Mitarbeiter erneut per Mail/Push erinnern`}
-                    >
-                      <Bell size={14} />
-                    </button>
-                  )}
-                  {offeneZuweisungen(t.id) > 0 && (
-                    <button
-                      onClick={() => handleWithdrawTraining(t.id, t.name)}
-                      disabled={deletingId === t.id}
-                      className="h-8 w-8 rounded-full border border-border flex items-center justify-center text-amber-600 hover:border-amber-300 disabled:opacity-40"
-                      aria-label={`${t.name} — Verteilung zurückziehen`}
-                      title={`${t.name} — Verteilung zurückziehen (${offeneZuweisungen(t.id)} offene Zuweisung(en) löschen, signierte Nachweise bleiben)`}
-                    >
-                      <Undo2 size={14} />
-                    </button>
-                  )}
                   <button
                     onClick={() => setEditingTraining(t)}
                     className="h-8 w-8 rounded-full border border-border flex items-center justify-center hover:border-foreground/30"
@@ -276,6 +250,63 @@ export default function UnterweisungenPage() {
                   >
                     <Trash2 size={14} />
                   </button>
+                  <div className="relative shrink-0">
+                    <button
+                      onClick={() => setOpenMenuId(openMenuId === t.id ? null : t.id)}
+                      className="h-8 w-8 rounded-full border border-border flex items-center justify-center hover:border-foreground/30"
+                      aria-label={`${t.name} — weitere Aktionen`}
+                      aria-expanded={openMenuId === t.id}
+                    >
+                      <MoreVertical size={14} />
+                    </button>
+                    {openMenuId === t.id && (
+                      <>
+                        <button
+                          aria-label="Menü schließen"
+                          onClick={() => setOpenMenuId(null)}
+                          className="fixed inset-0 z-40 cursor-default"
+                        />
+                        <div className="absolute right-0 top-full mt-1 z-50 w-56 rounded-2xl border border-border bg-background shadow-lg py-1.5">
+                          <button
+                            onClick={() => {
+                              printTraining(t);
+                              setOpenMenuId(null);
+                            }}
+                            className="w-full flex items-center gap-2.5 px-4 py-2 text-sm text-left hover:bg-surface"
+                          >
+                            <Printer size={14} className="text-blue-500" />
+                            Drucken / teilen
+                          </button>
+                          {offeneZuweisungen(t.id) > 0 && (
+                            <button
+                              onClick={() => {
+                                handleErneutErinnern(t.id, t.name);
+                                setOpenMenuId(null);
+                              }}
+                              disabled={erinnernId === t.id}
+                              className="w-full flex items-center gap-2.5 px-4 py-2 text-sm text-left hover:bg-surface disabled:opacity-40"
+                            >
+                              <Bell size={14} className="text-blue-500" />
+                              Erneut erinnern ({offeneZuweisungen(t.id)})
+                            </button>
+                          )}
+                          {offeneZuweisungen(t.id) > 0 && (
+                            <button
+                              onClick={() => {
+                                handleWithdrawTraining(t.id, t.name);
+                                setOpenMenuId(null);
+                              }}
+                              disabled={deletingId === t.id}
+                              className="w-full flex items-center gap-2.5 px-4 py-2 text-sm text-left text-amber-600 hover:bg-surface disabled:opacity-40"
+                            >
+                              <Undo2 size={14} />
+                              Verteilung zurückziehen
+                            </button>
+                          )}
+                        </div>
+                      </>
+                    )}
+                  </div>
                 </div>
               ))}
             </div>
