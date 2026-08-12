@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import { CATEGORY_ICON_OPTIONS, istMinderjaehrig as isMinderjaehrig, type Employee } from "@/lib/types";
+import { IconImg } from "@/components/Icon3D";
+import { categoryIconSrc } from "@/lib/icons";
 import { useAppData, istEmailKonflikt, istEmailFormatFehler } from "@/lib/store";
 import { Switch } from "@/components/Switch";
 import { DateSelect } from "@/components/DateSelect";
@@ -186,7 +188,10 @@ export function EditEmployeeModal({
                   }`}
                   style={kategorie === c.name ? { background: "var(--accent-gradient)" } : undefined}
                 >
-                  {c.icon} {c.name}
+                  <span className="inline-flex items-center gap-1.5">
+                    {categoryIconSrc(c.icon) ? <IconImg src={categoryIconSrc(c.icon)!} size="xs" /> : c.icon}
+                    {c.name}
+                  </span>
                 </button>
               ))}
               <button
@@ -221,7 +226,7 @@ export function EditEmployeeModal({
                           : "border-border"
                       }`}
                     >
-                      {opt.icon}
+                      {categoryIconSrc(opt.icon) ? <IconImg src={categoryIconSrc(opt.icon)!} size="xs" /> : opt.icon}
                     </button>
                   ))}
                 </div>

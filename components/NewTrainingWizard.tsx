@@ -8,6 +8,8 @@ import { useEscapeClose } from "@/lib/useEscapeClose";
 import { EmployeeAvatar } from "@/components/EmployeeAvatar";
 import { TRAINING_ICON_OPTIONS, BUNDLE_ICONS, type Training } from "@/lib/types";
 import { fehlerText } from "@/lib/fehler";
+import { IconImg } from "@/components/Icon3D";
+import { trainingIconSrc } from "@/lib/icons";
 
 function DistributionDialog({
   training,
@@ -331,7 +333,7 @@ export function NewTrainingWizard({ onClose }: { onClose: () => void }) {
                     icon === opt.icon ? "border-foreground/50 bg-surface" : "border-border"
                   }`}
                 >
-                  {opt.icon}
+                  {trainingIconSrc(opt.icon) ? <IconImg src={trainingIconSrc(opt.icon)!} size="xs" /> : opt.icon}
                 </button>
               ))}
             </div>

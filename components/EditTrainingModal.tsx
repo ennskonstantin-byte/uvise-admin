@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { TRAINING_ICON_OPTIONS, type Training } from "@/lib/types";
 import { useAppData } from "@/lib/store";
+import { IconImg } from "@/components/Icon3D";
+import { trainingIconSrc } from "@/lib/icons";
 import { DateSelect } from "@/components/DateSelect";
 import { useEscapeClose } from "@/lib/useEscapeClose";
 import { fehlerText } from "@/lib/fehler";
@@ -80,7 +82,7 @@ export function EditTrainingModal({
                     icon === opt.icon ? "border-foreground/50 bg-surface" : "border-border"
                   }`}
                 >
-                  {opt.icon}
+                  {trainingIconSrc(opt.icon) ? <IconImg src={trainingIconSrc(opt.icon)!} size="xs" /> : opt.icon}
                 </button>
               ))}
             </div>

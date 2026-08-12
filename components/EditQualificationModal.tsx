@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { useAppData } from "@/lib/store";
 import { QUALIFICATION_PRESETS, qualIcon, type Qualification } from "@/lib/types";
+import { IconImg } from "@/components/Icon3D";
+import { qualificationIconSrc } from "@/lib/icons";
 import { DateSelect } from "@/components/DateSelect";
 import { useEscapeClose } from "@/lib/useEscapeClose";
 import { fehlerText } from "@/lib/fehler";
@@ -134,7 +136,11 @@ export function EditQualificationModal({
                     name === preset.name ? "font-semibold text-blue-600" : ""
                   }`}
                 >
-                  <span className="text-xl">{preset.icon}</span>
+                  {qualificationIconSrc(preset.icon) ? (
+                    <IconImg src={qualificationIconSrc(preset.icon)!} size="sm" />
+                  ) : (
+                    <span className="text-xl">{preset.icon}</span>
+                  )}
                   <span className="flex-1">{preset.name}</span>
                   {name === preset.name && <span>✓</span>}
                 </button>

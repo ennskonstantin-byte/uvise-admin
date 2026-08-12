@@ -5,6 +5,8 @@ import { BUNDLE_ICONS as ICONS, type Bundle } from "@/lib/types";
 import { useAppData } from "@/lib/store";
 import { useEscapeClose } from "@/lib/useEscapeClose";
 import { fehlerText } from "@/lib/fehler";
+import { IconImg } from "@/components/Icon3D";
+import { categoryIconSrc } from "@/lib/icons";
 
 export function EditBundleModal({
   bundle,
@@ -61,7 +63,7 @@ export function EditBundleModal({
                     icon === i ? "border-foreground/50 bg-surface" : "border-border"
                   }`}
                 >
-                  {i}
+                  {categoryIconSrc(i) ? <IconImg src={categoryIconSrc(i)!} size="sm" /> : i}
                 </button>
               ))}
             </div>

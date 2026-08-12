@@ -4,32 +4,27 @@ import { useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
-  LayoutDashboard,
-  Users,
-  FileText,
-  Clock,
-  MessageCircleQuestion,
-  Archive,
-  Settings,
-  LogOut,
   BarChart3,
   Megaphone,
   Handshake,
   Gauge,
+  LogOut,
 } from "lucide-react";
 import { useAppData } from "@/lib/store";
 import { LogoMark } from "@/components/Logo";
 import { isOwnerEmail } from "@/lib/owner";
 import { countRecentlySigned } from "@/lib/recentlySigned";
+import { Icon3D } from "@/components/Icon3D";
+import type { IconKey } from "@/lib/icons";
 
-const NAV_ITEMS = [
-  { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-  { label: "Mitarbeiter", href: "/mitarbeiter", icon: Users },
-  { label: "Unterweisungen", href: "/unterweisungen", icon: FileText },
-  { label: "Qualifikationen", href: "/qualifikationen", icon: Clock },
-  { label: "Rückfragen", href: "/rueckfragen", icon: MessageCircleQuestion },
-  { label: "Archiv", href: "/archiv", icon: Archive },
-  { label: "Einstellungen", href: "/einstellungen", icon: Settings },
+const NAV_ITEMS: { label: string; href: string; icon: IconKey }[] = [
+  { label: "Dashboard", href: "/dashboard", icon: "dashboard" },
+  { label: "Mitarbeiter", href: "/mitarbeiter", icon: "mitarbeiter" },
+  { label: "Unterweisungen", href: "/unterweisungen", icon: "unterweisungen" },
+  { label: "Qualifikationen", href: "/qualifikationen", icon: "qualifikation" },
+  { label: "Rückfragen", href: "/rueckfragen", icon: "rueckfragen" },
+  { label: "Archiv", href: "/archiv", icon: "archiv" },
+  { label: "Einstellungen", href: "/einstellungen", icon: "einstellungen" },
 ];
 
 export function Sidebar() {
@@ -84,16 +79,16 @@ export function Sidebar() {
 
       <nav className="flex-1 px-3 space-y-1">
         {[
-          ...NAV_ITEMS,
+          ...NAV_ITEMS.map((it) => ({ ...it, kind: "i3d" as const })),
           ...(istBetreiber
             ? [
-                { label: "Überwachung", href: "/ueberwachung", icon: Gauge },
-                { label: "Statistik", href: "/statistik", icon: BarChart3 },
-                { label: "Marketing", href: "/marketing", icon: Megaphone },
-                { label: "Partner", href: "/partner-verwaltung", icon: Handshake },
+                { label: "Überwachung", href: "/ueberwachung", icon: Gauge, kind: "lucide" as const },
+                { label: "Statistik", href: "/statistik", icon: BarChart3, kind: "lucide" as const },
+                { label: "Marketing", href: "/marketing", icon: Megaphone, kind: "lucide" as const },
+                { label: "Partner", href: "/partner-verwaltung", icon: Handshake, kind: "lucide" as const },
               ]
             : []),
-        ].map(({ label, href, icon: Icon }) => {
+        ].map(({ label, href, icon, kind }) => {
           const active = href === "/dashboard" ? pathname === "/dashboard" : pathname.startsWith(href);
           const badge =
             label === "Rückfragen"
@@ -101,6 +96,7 @@ export function Sidebar() {
               : label === "Archiv"
                 ? recentlySignedCount
                 : undefined;
+          const LucideIcon = kind === "lucide" ? icon : null;
           return (
             <Link
               key={label}
@@ -116,7 +112,7 @@ export function Sidebar() {
                   : undefined
               }
             >
-              <Icon size={18} />
+              {kind === "i3d" ? <Icon3D name={icon} size="sm" /> : LucideIcon && <LucideIcon size={18} />}
               <span className="flex-1 text-left">{label}</span>
               {!!badge && (
                 <span className="rounded-full bg-red-600 text-white px-2 py-0.5 text-xs font-bold min-w-[20px] text-center">

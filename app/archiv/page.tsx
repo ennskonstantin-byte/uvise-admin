@@ -10,6 +10,8 @@ import { trainingName, type EmployeeTraining } from "@/lib/types";
 import { EmployeeAvatar } from "@/components/EmployeeAvatar";
 import { useAppData } from "@/lib/store";
 import { RECENT_SIGNED_DAYS, isRecentlySigned } from "@/lib/recentlySigned";
+import { IconImg } from "@/components/Icon3D";
+import { trainingIconSrc, categoryIconSrc } from "@/lib/icons";
 
 const YEARS = ["2026", "2025", "2024"];
 
@@ -171,8 +173,11 @@ export default function ArchivPage() {
 
         <Card>
           <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
-            <h1 className="text-2xl font-semibold">
-              {selectedTraining?.icon} {selectedTraining?.name} · {year}
+            <h1 className="text-2xl font-semibold flex items-center gap-2">
+              {selectedTraining?.icon && trainingIconSrc(selectedTraining.icon) && (
+                <IconImg src={trainingIconSrc(selectedTraining.icon)!} size="sm" />
+              )}
+              {selectedTraining?.name} · {year}
             </h1>
             <button
               onClick={() => window.print()}
@@ -240,8 +245,11 @@ export default function ArchivPage() {
         </button>
 
         <Card>
-          <h1 className="text-2xl font-semibold mb-6">
-            {selectedTraining?.icon} {selectedTraining?.name}
+          <h1 className="text-2xl font-semibold mb-6 flex items-center gap-2">
+            {selectedTraining?.icon && trainingIconSrc(selectedTraining.icon) && (
+              <IconImg src={trainingIconSrc(selectedTraining.icon)!} size="sm" />
+            )}
+            {selectedTraining?.name}
           </h1>
 
           <p className="text-sm text-foreground/60 mb-3">Jahr wählen</p>
@@ -267,7 +275,13 @@ export default function ArchivPage() {
                 onClick={() => setTrainingId(t.id)}
                 className="uv-glass-panel text-left p-5 hover:-translate-y-0.5 transition-transform" style={{ ["--glow" as string]: "var(--uv-glow-blue)" }}
               >
-                <p className="text-2xl mb-3">{t.icon}</p>
+                <div className="mb-3">
+                  {trainingIconSrc(t.icon) ? (
+                    <IconImg src={trainingIconSrc(t.icon)!} size="md" />
+                  ) : (
+                    <p className="text-2xl">{t.icon}</p>
+                  )}
+                </div>
                 <p className="font-medium">{t.name}</p>
               </button>
             ))}
@@ -427,7 +441,14 @@ export default function ArchivPage() {
                 }`}
                 style={category === c.name ? { background: "var(--accent-gradient)" } : undefined}
               >
-                {c.icon} {c.name}
+                <span className="inline-flex items-center gap-1.5">
+                  {categoryIconSrc(c.icon) ? (
+                    <IconImg src={categoryIconSrc(c.icon)!} size="xs" />
+                  ) : (
+                    c.icon
+                  )}
+                  {c.name}
+                </span>
               </button>
             ))}
           </div>

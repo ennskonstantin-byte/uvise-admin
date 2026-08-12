@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import { CATEGORY_ICON_OPTIONS, QUALIFICATION_PRESETS, istMinderjaehrig as isMinderjaehrig } from "@/lib/types";
+import { IconImg } from "@/components/Icon3D";
+import { categoryIconSrc, qualificationIconSrc } from "@/lib/icons";
 import { useAppData, istEmailKonflikt, istEmailFormatFehler } from "@/lib/store";
 import { useEscapeClose } from "@/lib/useEscapeClose";
 import { DateSelect } from "@/components/DateSelect";
@@ -274,7 +276,10 @@ export function NewEmployeeWizard({ onClose }: { onClose: () => void }) {
                   }`}
                   style={kategorie === c.name ? { background: "var(--accent-gradient)" } : undefined}
                 >
-                  {c.icon} {c.name}
+                  <span className="inline-flex items-center gap-1.5">
+                    {categoryIconSrc(c.icon) ? <IconImg src={categoryIconSrc(c.icon)!} size="xs" /> : c.icon}
+                    {c.name}
+                  </span>
                 </button>
               ))}
               <button
@@ -309,7 +314,11 @@ export function NewEmployeeWizard({ onClose }: { onClose: () => void }) {
                           : "border-border"
                       }`}
                     >
-                      <span className="text-lg">{opt.icon}</span>
+                      {categoryIconSrc(opt.icon) ? (
+                        <IconImg src={categoryIconSrc(opt.icon)!} size="xs" />
+                      ) : (
+                        <span className="text-lg">{opt.icon}</span>
+                      )}
                       <span className="text-[10px] leading-tight text-foreground/60">
                         {opt.name}
                       </span>
@@ -448,7 +457,14 @@ export function NewEmployeeWizard({ onClose }: { onClose: () => void }) {
                       : undefined
                   }
                 >
-                  <span className="text-sm">{preset.icon}</span> {preset.name}
+                  <span className="text-sm inline-flex items-center gap-1">
+                    {qualificationIconSrc(preset.icon) ? (
+                      <IconImg src={qualificationIconSrc(preset.icon)!} size="xs" />
+                    ) : (
+                      preset.icon
+                    )}
+                    {preset.name}
+                  </span>
                 </button>
               ))}
             </div>
@@ -460,7 +476,11 @@ export function NewEmployeeWizard({ onClose }: { onClose: () => void }) {
                   return (
                     <div key={q} className="flex items-center gap-3">
                       <span className="text-sm flex-1 flex items-center gap-2">
-                        <span className="text-base">{preset?.icon ?? "📋"}</span>
+                        {preset?.icon && qualificationIconSrc(preset.icon) ? (
+                          <IconImg src={qualificationIconSrc(preset.icon)!} size="xs" />
+                        ) : (
+                          <span className="text-base">{preset?.icon ?? "📋"}</span>
+                        )}
                         {q}
                       </span>
                       <button

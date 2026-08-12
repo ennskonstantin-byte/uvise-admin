@@ -11,6 +11,8 @@ import { useToast } from "@/components/Toast";
 import { employeeName, istErinnerungFaellig, type Qualification } from "@/lib/types";
 import { EmployeeAvatar } from "@/components/EmployeeAvatar";
 import { useAppData } from "@/lib/store";
+import { IconImg } from "@/components/Icon3D";
+import { qualificationIconSrc } from "@/lib/icons";
 
 const STATUS_META: Record<string, { label: string; color: string }> = {
   gueltig: { label: "Gültig", color: "var(--ampel-green)" },
@@ -102,8 +104,8 @@ export default function QualifikationenPage() {
                       fotoUrl={emp?.fotoUrl}
                       size={44}
                     />
-                    <span className="absolute -bottom-1 -right-1 h-5 w-5 rounded-full bg-background border border-border flex items-center justify-center text-[11px]">
-                      {q.icon}
+                    <span className="absolute -bottom-1 -right-1 h-5 w-5 rounded-full bg-background border border-border flex items-center justify-center text-[11px] overflow-hidden">
+                      {qualificationIconSrc(q.icon) ? <IconImg src={qualificationIconSrc(q.icon)!} size="xs" /> : q.icon}
                     </span>
                   </div>
                   <div className="flex-1 min-w-0">

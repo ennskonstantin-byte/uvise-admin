@@ -15,6 +15,8 @@ import { useToast } from "@/components/Toast";
 import { EmployeeAvatar } from "@/components/EmployeeAvatar";
 import { trainingName } from "@/lib/types";
 import { useAppData } from "@/lib/store";
+import { IconImg } from "@/components/Icon3D";
+import { qualificationIconSrc } from "@/lib/icons";
 
 const REMINDER_HINT =
   "Erinnerung vorgemerkt. Der automatische E-Mail-Versand wird aktiv, sobald Resend eingerichtet ist.";
@@ -247,7 +249,11 @@ export default function EmployeeDetailPage() {
               className="flex w-full items-center gap-4 px-5 py-3 text-left hover:bg-surface"
               aria-label={`Qualifikation ${q.name} bearbeiten`}
             >
-              <span className="text-3xl">{q.icon}</span>
+              {qualificationIconSrc(q.icon) ? (
+                <IconImg src={qualificationIconSrc(q.icon)!} size="lg" />
+              ) : (
+                <span className="text-3xl">{q.icon}</span>
+              )}
               <div className="flex-1 min-w-0">
                 <p className="font-medium truncate">{q.name}</p>
                 <p className="text-xs text-foreground/65">Läuft ab: {q.ablaufdatum}</p>

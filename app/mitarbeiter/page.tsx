@@ -14,6 +14,8 @@ import { QualiIcons } from "@/components/QualiIcons";
 import { EmployeeAvatar } from "@/components/EmployeeAvatar";
 import { type Category, type Employee } from "@/lib/types";
 import { useAppData } from "@/lib/store";
+import { IconImg } from "@/components/Icon3D";
+import { categoryIconSrc } from "@/lib/icons";
 
 export default function MitarbeiterPage() {
   const router = useRouter();
@@ -157,7 +159,11 @@ export default function MitarbeiterPage() {
           <div className="rounded-3xl border border-border divide-y divide-border overflow-hidden">
             {categories.map((c) => (
               <div key={c.id} className="flex items-center gap-4 px-5 py-3">
-                <span className="text-lg">{c.icon}</span>
+                {categoryIconSrc(c.icon) ? (
+                  <IconImg src={categoryIconSrc(c.icon)!} size="xs" />
+                ) : (
+                  <span className="text-lg">{c.icon}</span>
+                )}
                 <p className="flex-1 min-w-0 font-medium truncate">{c.name}</p>
                 <button
                   onClick={() => setEditingCategory(c)}
@@ -252,7 +258,10 @@ export default function MitarbeiterPage() {
                   categoryFilter === c.name ? { background: "var(--accent-gradient)" } : undefined
                 }
               >
-                {c.icon} {c.name} ({c.count})
+                <span className="inline-flex items-center gap-1.5">
+                  {categoryIconSrc(c.icon) ? <IconImg src={categoryIconSrc(c.icon)!} size="xs" /> : c.icon}
+                  {c.name} ({c.count})
+                </span>
               </button>
             ))}
           </div>
@@ -348,7 +357,7 @@ export default function MitarbeiterPage() {
                     <div className="flex items-center gap-2 flex-wrap mt-0.5">
                       {e.kategorie && (
                         <span className="inline-flex items-center gap-1 rounded-full bg-surface px-2 py-0.5 text-[11px] font-semibold text-foreground/65">
-                          {catIcon && <span>{catIcon}</span>}
+                          {catIcon && (categoryIconSrc(catIcon) ? <IconImg src={categoryIconSrc(catIcon)!} size="xs" /> : <span>{catIcon}</span>)}
                           {e.kategorie}
                         </span>
                       )}
