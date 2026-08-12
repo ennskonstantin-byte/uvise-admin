@@ -185,6 +185,12 @@ function GlassCard({
 // `img` (i3d-hq-Symbol, wie im eingeloggten Bereich) hat Vorrang vor `icon`
 // (Lucide) -- Branchen-Kacheln haben kein passendes i3d-Symbol und nutzen
 // weiterhin `icon`.
+//
+// i3d-Symbole bekommen bewusst KEINE umschließende Farbkachel: sie sind
+// selbst schon als beleuchtetes 3D-Glas-Objekt gerendert (Podest, Glanzlicht)
+// -- eine zusätzliche Verlaufskachel drumherum erzeugt einen doppelten
+// Rahmen-Effekt (Glas-in-Glas). Sie stehen frei auf der Karte, exakt wie im
+// Dashboard (components/Kachel.tsx) und in der App.
 function AccentTile({
   icon: Icon,
   img,
@@ -196,13 +202,14 @@ function AccentTile({
   accent: keyof typeof ACCENTS;
   size?: number;
 }) {
+  if (img) return <Icon3D name={img} size="lg" />;
   const a = ACCENTS[accent];
   return (
     <div
       className="uv-glass-tile h-11 w-11 shrink-0 flex items-center justify-center text-white"
       style={{ ["--tile-from" as string]: a.from, ["--tile-to" as string]: a.to, ["--glow" as string]: a.glow }}
     >
-      {img ? <Icon3D name={img} size="md" /> : Icon ? <Icon size={size} /> : null}
+      {Icon && <Icon size={size} />}
     </div>
   );
 }
