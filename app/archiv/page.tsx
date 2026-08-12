@@ -24,11 +24,23 @@ const YEAR_FOLDER_ACCENTS = [
   { tab: "#7C8CFF", glow: "rgba(90,100,255,0.28)" },
 ];
 
-function YearFolderGrid({ years, onSelect }: { years: string[]; onSelect: (y: string) => void }) {
+// entries optional: wenn übergeben, zeigt jede Jahres-Kachel "n Nachweise"
+// + einen roten Neu-Punkt (App-Parität) statt nur "Jahr öffnen".
+function YearFolderGrid({
+  years,
+  onSelect,
+  entries,
+}: {
+  years: string[];
+  onSelect: (y: string) => void;
+  entries?: EmployeeTraining[];
+}) {
   return (
     <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
       {years.map((y, i) => {
         const accent = YEAR_FOLDER_ACCENTS[i % YEAR_FOLDER_ACCENTS.length];
+        const yearEntries = entries?.filter((et) => (et.signiertAm ?? "").endsWith(y)) ?? [];
+        const neu = yearEntries.filter(isRecentlySigned).length;
         return (
           <button
             key={y}
@@ -41,11 +53,16 @@ function YearFolderGrid({ years, onSelect }: { years: string[]; onSelect: (y: st
               style={{ background: accent.tab }}
               aria-hidden="true"
             />
+            {neu > 0 && (
+              <span className="absolute top-3 right-3 h-5 min-w-5 px-1 rounded-full bg-red-600 text-white text-[10px] font-bold flex items-center justify-center">
+                {neu}
+              </span>
+            )}
             <p className="mk-display text-3xl font-bold" style={{ color: "var(--mk-ink)" }}>
               {y}
             </p>
             <p className="text-xs mt-1" style={{ color: "var(--mk-ink-60)" }}>
-              Jahr öffnen
+              {entries ? `${yearEntries.length} Nachweise` : "Jahr öffnen"}
             </p>
           </button>
         );
@@ -130,12 +147,14 @@ export default function ArchivPage() {
     setDocQuery("");
   }
 
+  // Segmented-Control statt zwei getrennter Chips (STYLE.md: "wie Ansicht
+  // 15 — nicht zwei separate Chips") -- eine zusammenhängende Kapsel.
   const modeToggle = (
-    <div className="flex gap-2 mb-6">
+    <div className="inline-flex gap-1 p-1 mb-6 rounded-full border border-border bg-surface">
       <button
         onClick={() => switchMode("mitarbeiter")}
-        className={`rounded-full px-4 py-2 text-sm ${
-          mode === "mitarbeiter" ? "text-white" : "border border-border text-foreground/70"
+        className={`rounded-full px-4 py-2 text-sm font-medium ${
+          mode === "mitarbeiter" ? "text-white" : "text-foreground/70"
         }`}
         style={mode === "mitarbeiter" ? { background: "var(--accent-gradient)" } : undefined}
       >
@@ -143,8 +162,8 @@ export default function ArchivPage() {
       </button>
       <button
         onClick={() => switchMode("unterweisung")}
-        className={`rounded-full px-4 py-2 text-sm ${
-          mode === "unterweisung" ? "text-white" : "border border-border text-foreground/70"
+        className={`rounded-full px-4 py-2 text-sm font-medium ${
+          mode === "unterweisung" ? "text-white" : "text-foreground/70"
         }`}
         style={mode === "unterweisung" ? { background: "var(--accent-gradient)" } : undefined}
       >
@@ -253,7 +272,7 @@ export default function ArchivPage() {
           </h1>
 
           <p className="text-sm text-foreground/60 mb-3">Jahr wählen</p>
-          <YearFolderGrid years={YEARS} onSelect={setYear} />
+          <YearFolderGrid years={YEARS} onSelect={setYear} entries={trainingArchive ?? undefined} />
         </Card>
       </DashboardShell>
     );
@@ -406,7 +425,7 @@ export default function ArchivPage() {
           </h1>
 
           <p className="text-sm text-foreground/60 mb-3">Jahr wählen</p>
-          <YearFolderGrid years={YEARS} onSelect={setYear} />
+          <YearFolderGrid years={YEARS} onSelect={setYear} entries={employeeArchive ?? undefined} />
         </Card>
       </DashboardShell>
     );
