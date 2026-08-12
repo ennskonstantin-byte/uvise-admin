@@ -5,12 +5,14 @@ import { CATEGORY_ICON_OPTIONS, istMinderjaehrig as isMinderjaehrig, type Employ
 import { IconImg } from "@/components/Icon3D";
 import { categoryIconSrc } from "@/lib/icons";
 import { useAppData, istEmailKonflikt, istEmailFormatFehler } from "@/lib/store";
-import { Switch } from "@/components/Switch";
 import { DateSelect } from "@/components/DateSelect";
 import { EmployeeAvatar } from "@/components/EmployeeAvatar";
 import { useEscapeClose } from "@/lib/useEscapeClose";
-import { ConfirmModal } from "@/components/ConfirmModal";
 import { fehlerText } from "@/lib/fehler";
+import type { Qualification } from "@/lib/types";
+import { qualificationIconSrc } from "@/lib/icons";
+import { NewQualificationModal } from "@/components/NewQualificationModal";
+import { EditQualificationModal } from "@/components/EditQualificationModal";
 
 export function EditEmployeeModal({
   employee,
@@ -20,10 +22,11 @@ export function EditEmployeeModal({
   onClose: () => void;
 }) {
   useEscapeClose(onClose);
-  const { categories, employees, updateEmployee, uploadEmployeePhoto, addCategory } = useAppData();
+  const { categories, employees, qualifications, updateEmployee, uploadEmployeePhoto, addCategory } = useAppData();
   // Immer den LIVE-Stand aus dem Store lesen (sonst zeigt das Fenster nach
   // dem Foto-Upload wieder den alten Stand ohne Foto).
   const live = employees.find((e) => e.id === employee.id) ?? employee;
+  const empQualifications = qualifications.filter((q) => q.employeeId === employee.id);
   const [uploading, setUploading] = useState(false);
   const [vorname, setVorname] = useState(employee.vorname);
   const [nachname, setNachname] = useState(employee.nachname);
@@ -32,7 +35,6 @@ export function EditEmployeeModal({
   const [telefon, setTelefon] = useState(employee.telefon ?? "");
   const [geburtsdatum, setGeburtsdatum] = useState(employee.geburtsdatum ?? "");
   const [kategorie, setKategorie] = useState(employee.kategorie);
-  const [istBeauftragter, setIstBeauftragter] = useState(employee.istBeauftragter);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   // Inline neue Kategorie anlegen (wie im Neu-Assistenten)
@@ -40,7 +42,8 @@ export function EditEmployeeModal({
   const [newCategoryName, setNewCategoryName] = useState("");
   const [newCategoryIcon, setNewCategoryIcon] = useState<string | null>(null);
   const [creatingCategory, setCreatingCategory] = useState(false);
-  const [showBeauftragterConfirm, setShowBeauftragterConfirm] = useState(false);
+  const [addingQualification, setAddingQualification] = useState(false);
+  const [editingQualification, setEditingQualification] = useState<Qualification | null>(null);
 
   async function handleCreateCategory() {
     if (!newCategoryIcon || newCategoryName.trim() === "") return;
@@ -71,7 +74,10 @@ export function EditEmployeeModal({
         telefon: telefon.trim() || null,
         geburtsdatum: geburtsdatum || null,
         kategorie,
-        istBeauftragter,
+        // Beauftragte/r wird bewusst NICHT mehr über dieses Formular
+        // geändert (App-Design-Entscheidung: zentral bestimmt, nicht per
+        // Häkchen in jedem MA-Formular) -- unverändert mitschicken.
+        istBeauftragter: employee.istBeauftragter,
       });
       onClose();
     } catch (err) {
@@ -249,43 +255,40 @@ export function EditEmployeeModal({
             )}
           </div>
 
-          <div
-            className={`flex items-center justify-between gap-3 mt-2 rounded-2xl border p-4 ${
-              istBeauftragter ? "border-green-400 bg-green-500/10" : "border-border"
-            }`}
-          >
-            <div>
-              <p className="text-sm font-medium">Beauftragte/r</p>
-              <p className="text-xs text-foreground/65 mt-0.5">
-                Darf alle Mitarbeiter der Firma einsehen und verwalten (Chef-Zugriff)
-              </p>
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-xs text-foreground/65">Qualifikationen</p>
+              <button
+                type="button"
+                onClick={() => setAddingQualification(true)}
+                className="text-xs rounded-full px-3 py-1 border border-border hover:border-foreground/30"
+              >
+                + Hinzufügen
+              </button>
             </div>
-            <Switch
-              checked={istBeauftragter}
-              activeColor="#22c55e"
-              label="Beauftragte/r — Chef-Zugriff"
-              onChange={(next) => {
-                if (next) {
-                  setShowBeauftragterConfirm(true);
-                  return;
-                }
-                setIstBeauftragter(next);
-              }}
-            />
+            <div className="rounded-2xl border border-border divide-y divide-border overflow-hidden">
+              {empQualifications.map((q) => (
+                <button
+                  key={q.id}
+                  type="button"
+                  onClick={() => setEditingQualification(q)}
+                  className="flex w-full items-center gap-3 px-3 py-2.5 text-left hover:bg-surface"
+                >
+                  {qualificationIconSrc(q.icon) ? (
+                    <IconImg src={qualificationIconSrc(q.icon)!} size="xs" />
+                  ) : (
+                    <span className="text-base">{q.icon}</span>
+                  )}
+                  <span className="flex-1 min-w-0 text-sm truncate">{q.name}</span>
+                  <span className="text-xs text-foreground/50 shrink-0">Läuft ab: {q.ablaufdatum}</span>
+                </button>
+              ))}
+              {empQualifications.length === 0 && (
+                <p className="px-3 py-3 text-xs text-foreground/65">Keine Qualifikationen erfasst.</p>
+              )}
+            </div>
           </div>
         </div>
-        {showBeauftragterConfirm && (
-          <ConfirmModal
-            title="Beauftragte/r markieren"
-            message={`${vorname} ${nachname} als Beauftragte/n markieren? Diese Person kann dann ALLE Mitarbeiter der Firma einsehen und verwalten — auch Gehaltssensibles wie Qualifikationen und Kontaktdaten.`}
-            confirmLabel="Markieren"
-            onConfirm={() => {
-              setIstBeauftragter(true);
-              setShowBeauftragterConfirm(false);
-            }}
-            onClose={() => setShowBeauftragterConfirm(false)}
-          />
-        )}
 
         <button
           onClick={handleSave}
@@ -296,6 +299,12 @@ export function EditEmployeeModal({
           {saving ? "Speichert…" : "Speichern"}
         </button>
       </div>
+      {addingQualification && (
+        <NewQualificationModal defaultEmployeeId={employee.id} onClose={() => setAddingQualification(false)} />
+      )}
+      {editingQualification && (
+        <EditQualificationModal qualification={editingQualification} onClose={() => setEditingQualification(null)} />
+      )}
     </div>
   );
 }

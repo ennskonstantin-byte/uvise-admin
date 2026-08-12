@@ -1,13 +1,15 @@
 "use client";
 
 // Qualifikationen (SiFa) -- Web-Port von Phase 5/App, identischer
-// Kern-Inhalt zu app/qualifikationen/page.tsx.
+// Kern-Inhalt zu app/qualifikationen/page.tsx (Status-Tönung statt Zebra,
+// Löschen in der Liste, Bestätigung vor Termin/Erinnern -- App-Parität).
 import { useState } from "react";
-import { Bell } from "lucide-react";
+import { Bell, Trash2 } from "lucide-react";
 import { PageHeader } from "@/components/PageHeader";
 import { Card } from "@/components/Card";
 import { NewQualificationModal } from "@/components/NewQualificationModal";
 import { EditQualificationModal } from "@/components/EditQualificationModal";
+import { ConfirmModal } from "@/components/ConfirmModal";
 import { useToast } from "@/components/Toast";
 import { employeeName, istErinnerungFaellig, type Qualification } from "@/lib/types";
 import { EmployeeAvatar } from "@/components/EmployeeAvatar";
@@ -22,13 +24,21 @@ const STATUS_META: Record<string, { label: string; color: string }> = {
 };
 
 export default function SifaQualifikationenPage() {
-  const { qualifications: allQualifications, employees, qualifikationTerminVereinbart, qualifikationNochmalErinnern } =
-    useAppData();
+  const {
+    qualifications: allQualifications,
+    employees,
+    qualifikationTerminVereinbart,
+    qualifikationNochmalErinnern,
+    deleteQualification,
+  } = useAppData();
   const { showToast, ToastView } = useToast();
   const [showWizard, setShowWizard] = useState(false);
   const [editingQualification, setEditingQualification] = useState<Qualification | null>(null);
   const [erinnernOpenId, setErinnernOpenId] = useState<string | null>(null);
   const [erinnernBusyId, setErinnernBusyId] = useState<string | null>(null);
+  const [confirmAction, setConfirmAction] = useState<{ id: string; kind: "termin" | "erinnern" } | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
   async function handleTerminVereinbart(id: string) {
     if (erinnernBusyId) return;
@@ -53,6 +63,18 @@ export default function SifaQualifikationenPage() {
       showToast(e instanceof Error ? e.message : "Konnte nicht gespeichert werden.");
     } finally {
       setErinnernBusyId(null);
+    }
+  }
+
+  async function handleDelete(id: string) {
+    setConfirmDeleteId(null);
+    setDeletingId(id);
+    try {
+      await deleteQualification(id);
+    } catch (e) {
+      showToast(e instanceof Error ? e.message : "Löschen fehlgeschlagen.");
+    } finally {
+      setDeletingId(null);
     }
   }
 
@@ -84,13 +106,17 @@ export default function SifaQualifikationenPage() {
       />
 
       <Card>
-        <div className="uv-list-zebra rounded-3xl border border-border overflow-hidden">
+        <div className="rounded-3xl border border-border overflow-hidden divide-y divide-border">
           {qualifications.map((q) => {
             const meta = STATUS_META[q.status];
             const emp = employees.find((e) => e.id === q.employeeId);
             const faellig = istErinnerungFaellig(q);
             return (
-              <div key={q.id} className="px-5 py-4">
+              <div
+                key={q.id}
+                className="px-5 py-4"
+                style={{ background: `color-mix(in srgb, ${meta.color} 10%, transparent)` }}
+              >
                 <div className="flex items-center gap-4">
                   <div className="relative shrink-0">
                     <EmployeeAvatar vorname={emp?.vorname ?? "?"} nachname={emp?.nachname ?? ""} fotoUrl={emp?.fotoUrl} size={44} />
@@ -123,11 +149,19 @@ export default function SifaQualifikationenPage() {
                   >
                     Bearbeiten
                   </button>
+                  <button
+                    onClick={() => setConfirmDeleteId(q.id)}
+                    disabled={deletingId === q.id}
+                    className="h-8 w-8 rounded-full border border-border flex items-center justify-center text-red-500 hover:border-red-300 disabled:opacity-40"
+                    aria-label={`Qualifikation ${q.name} löschen`}
+                  >
+                    <Trash2 size={14} />
+                  </button>
                 </div>
                 {faellig && erinnernOpenId === q.id && (
                   <div className="flex flex-wrap gap-2 mt-3 ml-[60px]">
                     <button
-                      onClick={() => handleTerminVereinbart(q.id)}
+                      onClick={() => setConfirmAction({ id: q.id, kind: "termin" })}
                       disabled={erinnernBusyId === q.id}
                       className="text-xs font-semibold rounded-full px-3 py-2 text-white disabled:opacity-50"
                       style={{ background: "var(--accent-gradient)" }}
@@ -135,7 +169,7 @@ export default function SifaQualifikationenPage() {
                       {erinnernBusyId === q.id ? "…" : "Termin bereits vereinbart"}
                     </button>
                     <button
-                      onClick={() => handleNochmalErinnern(q.id)}
+                      onClick={() => setConfirmAction({ id: q.id, kind: "erinnern" })}
                       disabled={erinnernBusyId === q.id}
                       className="text-xs font-semibold rounded-full px-3 py-2 border border-border hover:border-foreground/30 disabled:opacity-50"
                     >
@@ -155,6 +189,33 @@ export default function SifaQualifikationenPage() {
       {showWizard && <NewQualificationModal onClose={() => setShowWizard(false)} />}
       {editingQualification && (
         <EditQualificationModal qualification={editingQualification} onClose={() => setEditingQualification(null)} />
+      )}
+      {confirmAction && (
+        <ConfirmModal
+          title={confirmAction.kind === "termin" ? "Termin bereits vereinbart?" : "In 1 Woche nochmal erinnern?"}
+          message={
+            confirmAction.kind === "termin"
+              ? "Die Erinnerung ruht dann bis zum Ablaufdatum — nur bestätigen, wenn der Termin wirklich vereinbart ist."
+              : "Die Erinnerung meldet sich in 7 Tagen erneut."
+          }
+          confirmLabel="Bestätigen"
+          onConfirm={() => {
+            if (confirmAction.kind === "termin") handleTerminVereinbart(confirmAction.id);
+            else handleNochmalErinnern(confirmAction.id);
+            setConfirmAction(null);
+          }}
+          onClose={() => setConfirmAction(null)}
+        />
+      )}
+      {confirmDeleteId && (
+        <ConfirmModal
+          title="Qualifikation löschen"
+          message="Diese Qualifikation wirklich löschen? Das lässt sich nicht rückgängig machen."
+          confirmLabel="Löschen"
+          danger
+          onConfirm={() => handleDelete(confirmDeleteId)}
+          onClose={() => setConfirmDeleteId(null)}
+        />
       )}
       <ToastView />
     </>
