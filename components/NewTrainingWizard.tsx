@@ -9,7 +9,7 @@ import { EmployeeAvatar } from "@/components/EmployeeAvatar";
 import { TRAINING_ICON_OPTIONS, BUNDLE_ICONS, type Training } from "@/lib/types";
 import { fehlerText } from "@/lib/fehler";
 import { IconImg } from "@/components/Icon3D";
-import { trainingIconSrc } from "@/lib/icons";
+import { trainingIconSrc, categoryIconSrc } from "@/lib/icons";
 
 function DistributionDialog({
   training,
@@ -191,7 +191,10 @@ function DistributionDialog({
                     checked={selectedCategories.includes(c.name)}
                     onChange={() => toggleCategory(c.name)}
                   />
-                  {c.icon} {c.name}
+                  <span className="inline-flex items-center gap-1.5">
+                    {categoryIconSrc(c.icon) ? <IconImg src={categoryIconSrc(c.icon)!} size="xs" /> : c.icon}
+                    {c.name}
+                  </span>
                 </label>
               ))}
         </div>
@@ -441,7 +444,10 @@ export function NewTrainingWizard({ onClose }: { onClose: () => void }) {
                   }`}
                   style={bundleId === b.id ? { background: "var(--accent-gradient)" } : undefined}
                 >
-                  {b.icon} {b.name}
+                  <span className="inline-flex items-center gap-1.5">
+                    {categoryIconSrc(b.icon) ? <IconImg src={categoryIconSrc(b.icon)!} size="xs" /> : b.icon}
+                    {b.name}
+                  </span>
                 </button>
               ))}
               <button
