@@ -60,11 +60,11 @@ export function AssignTrainingToEmployeeModal({
   return (
     <div role="dialog" aria-modal="true" aria-label="Unterweisung zuweisen" className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
       <div className="w-full max-w-md rounded-3xl bg-background border border-border p-6 sm:p-8">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-semibold">
+        <div className="flex items-center justify-between gap-3 mb-6">
+          <h2 className="text-xl font-semibold line-clamp-2">
             Unterweisung für {employee.vorname} zuweisen
           </h2>
-          <button onClick={onClose} className="text-foreground/65 hover:text-foreground text-sm">
+          <button onClick={onClose} className="shrink-0 text-foreground/65 hover:text-foreground text-sm">
             Abbrechen
           </button>
         </div>
@@ -91,9 +91,7 @@ export function AssignTrainingToEmployeeModal({
             </label>
           ))}
           {available.length === 0 && (
-            <p className="text-sm text-foreground/65">
-              Alle vorhandenen Unterweisungen sind bereits zugewiesen.
-            </p>
+            <p className="text-sm text-foreground/65">Bereits alle Unterweisungen zugewiesen.</p>
           )}
         </div>
 

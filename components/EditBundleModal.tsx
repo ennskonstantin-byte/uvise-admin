@@ -6,7 +6,7 @@ import { useAppData } from "@/lib/store";
 import { useEscapeClose } from "@/lib/useEscapeClose";
 import { fehlerText } from "@/lib/fehler";
 import { IconImg } from "@/components/Icon3D";
-import { categoryIconSrc } from "@/lib/icons";
+import { categoryIconSrc, trainingIconSrc } from "@/lib/icons";
 
 export function EditBundleModal({
   bundle,
@@ -69,16 +69,29 @@ export function EditBundleModal({
             </div>
           </div>
 
-          <input
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder="Name des Bundles"
-            className="w-full rounded-full border border-border bg-surface px-4 py-2.5 text-sm outline-none"
-          />
+          <div>
+            <p className="text-xs text-foreground/65 mb-1">Abteilung / Name</p>
+            <input
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="z.B. Produktion"
+              className="w-full rounded-full border border-border bg-surface px-4 py-2.5 text-sm outline-none"
+            />
+          </div>
 
           <div>
-            <p className="text-xs text-foreground/65 mb-2">Unterweisungen</p>
+            <p className="text-xs text-foreground/65 mb-2">Unterweisungen im Bundle</p>
             <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
+              {trainings.length > 0 && (
+                <label className="flex items-center gap-2 text-sm text-foreground/70">
+                  <input
+                    type="checkbox"
+                    checked={trainings.every((t) => selected.includes(t.id))}
+                    onChange={(e) => setSelected(e.target.checked ? trainings.map((t) => t.id) : [])}
+                  />
+                  Alle Unterweisungen
+                </label>
+              )}
               {trainings.map((t) => (
                 <label key={t.id} className="flex items-center gap-2 text-sm">
                   <input
@@ -90,9 +103,15 @@ export function EditBundleModal({
                       )
                     }
                   />
-                  {t.name}
+                  <span className="inline-flex items-center gap-1.5">
+                    {trainingIconSrc(t.icon) ? <IconImg src={trainingIconSrc(t.icon)!} size="xs" /> : t.icon}
+                    {t.name}
+                  </span>
                 </label>
               ))}
+              {trainings.length === 0 && (
+                <p className="text-sm text-foreground/65">Noch keine Unterweisungen vorhanden.</p>
+              )}
             </div>
           </div>
         </div>

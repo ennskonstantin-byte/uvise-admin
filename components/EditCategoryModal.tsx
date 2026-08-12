@@ -93,6 +93,33 @@ export function EditCategoryModal({
               />
             </div>
             <div className="max-h-40 overflow-y-auto rounded-2xl border border-border divide-y divide-border">
+              {(() => {
+                const gefiltert = employees.filter((e) =>
+                  `${e.vorname} ${e.nachname}`.toLowerCase().includes(memberQuery.toLowerCase())
+                );
+                const alleDrin = gefiltert.length > 0 && gefiltert.every((e) => e.kategorie === category.name);
+                return gefiltert.length > 0 ? (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      Promise.all(
+                        gefiltert.map((e) => setEmployeeCategory(e.id, alleDrin ? "" : category.name))
+                      );
+                    }}
+                    className="w-full flex items-center gap-3 px-3 py-2 text-sm text-left hover:bg-surface text-foreground/70"
+                  >
+                    <span
+                      className={`h-5 w-5 rounded border flex items-center justify-center text-xs ${
+                        alleDrin ? "text-white border-transparent" : "border-border"
+                      }`}
+                      style={alleDrin ? { background: "var(--accent-gradient)" } : undefined}
+                    >
+                      {alleDrin ? "✓" : ""}
+                    </span>
+                    Alle auswählen
+                  </button>
+                ) : null;
+              })()}
               {employees
                 .filter((e) =>
                   `${e.vorname} ${e.nachname}`.toLowerCase().includes(memberQuery.toLowerCase())
