@@ -1,13 +1,19 @@
 "use client";
 
+// Dashboard -- Web-Port der App-Struktur (STYLE.md, chef/components/
+// DashboardScreen.tsx): Ring-Hero (F2: Prozent im Ring, Logo darunter) +
+// Rückfragen-/Erinnerungen-Minikacheln + HEUTE-Alert + Übersicht-Kacheln
+// (F3: Mitarbeiter/signiert/offen/Rückfragen). Ersetzt die frühere
+// Mitarbeiter-Such-/Filterliste -- die lebt unverändert auf der eigenen
+// Mitarbeiter-Seite weiter, hier steht nur noch der Kennzahlen-Überblick.
 import { useMemo, useState } from "react";
-import { Search, UserPlus, FilePlus2 } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { ChevronRight } from "lucide-react";
 import { DashboardShell } from "@/components/DashboardShell";
-import { PageHeader } from "@/components/PageHeader";
 import { Card } from "@/components/Card";
-import { EmployeeCard } from "@/components/EmployeeCard";
-import { NewEmployeeWizard } from "@/components/NewEmployeeWizard";
-import { NewTrainingWizard } from "@/components/NewTrainingWizard";
+import { RingHero } from "@/components/RingHero";
+import { Kachel } from "@/components/Kachel";
+import { Icon3D } from "@/components/Icon3D";
 import { PlanModal } from "@/components/PlanModal";
 import { Button as MovingBorderButton } from "@/components/ui/moving-border";
 import { FeedbackCard } from "@/components/FeedbackCard";
@@ -16,12 +22,29 @@ import { ReviewBanner } from "@/components/ReviewBanner";
 import { useAppData } from "@/lib/store";
 
 export default function DashboardPage() {
-  const { employees, categories, company, qualifications, trainings } = useAppData();
+  const router = useRouter();
+  const { company, employees: allEmployees, employeeTrainings, questions, qualifications, trainings } = useAppData();
+  const [showPlanModal, setShowPlanModal] = useState(false);
+  const [remindersOpen, setRemindersOpen] = useState(false);
+
+  // Archivierte (gekündigte) Mitarbeiter zählen im Dashboard nicht mit.
+  const employees = useMemo(() => allEmployees.filter((e) => !e.archiviert), [allEmployees]);
+
+  const zuweisungen = useMemo(() => {
+    const activeIds = new Set(employees.map((e) => e.id));
+    return employeeTrainings.filter((et) => activeIds.has(et.employeeId) && et.status !== "anonymisiert");
+  }, [employees, employeeTrainings]);
+  const offeneGesamt = zuweisungen.filter((et) => et.status === "offen").length;
+  const zuweisungenGesamt = zuweisungen.length;
+  const signiertGesamt = zuweisungen.filter((et) => et.status === "signiert").length;
+  const ruecklaufquote = zuweisungenGesamt > 0 ? Math.round((signiertGesamt / zuweisungenGesamt) * 100) : 0;
+  const offeneFragen = questions.filter((q) => q.status === "offen").length;
+
   const empName = (id: string) => {
     const e = employees.find((x) => x.id === id);
     return e ? `${e.vorname} ${e.nachname}` : "";
   };
-  const isArchivedEmployee = (id: string) => employees.find((e) => e.id === id)?.archiviert ?? false;
+  const isArchivedEmployee = (id: string) => allEmployees.find((e) => e.id === id)?.archiviert ?? false;
   const reminders = [
     ...qualifications
       .filter((q) => !isArchivedEmployee(q.employeeId))
@@ -37,14 +60,11 @@ export default function DashboardPage() {
       .map((t) => ({
         key: "t" + t.id,
         text: `${t.name} (Unterweisung)`,
-        sub:
-          t.status === "abgelaufen"
-            ? "Jährliche Kontrolle überfällig — bitte prüfen"
-            : "Jährliche Kontrolle: noch aktuell? / läuft ab",
+        sub: t.status === "abgelaufen" ? "Jährliche Kontrolle überfällig — bitte prüfen" : "Jährliche Kontrolle: noch aktuell? / läuft ab",
         overdue: t.status === "abgelaufen",
       })),
     ...employees
-      .filter((e) => !e.archiviert && e.minderjaehrig)
+      .filter((e) => e.minderjaehrig)
       .map((e) => ({
         key: "m" + e.id,
         text: `${e.vorname} ${e.nachname} — minderjährig`,
@@ -52,43 +72,18 @@ export default function DashboardPage() {
         overdue: false,
       })),
   ];
-  const TABS = ["Alle", ...categories.map((c) => c.name)];
-  const [category, setCategory] = useState("Alle");
-  const [query, setQuery] = useState("");
-  const [showEmployeeWizard, setShowEmployeeWizard] = useState(false);
-  const [showTrainingWizard, setShowTrainingWizard] = useState(false);
-  const [showPlanModal, setShowPlanModal] = useState(false);
-  const [remindersOpen, setRemindersOpen] = useState(false);
 
-  // Echte Resttage der Testphase (7 Tage ab Firmen-Anlage) statt eines
-  // festen Textes — sonst zeigt der Banner auch nach Ablauf oder bei
-  // gekündigtem Abo weiter "noch X Tage kostenlos" an.
+  const aktive = employees.filter((e) => e.registriert).length;
+  const eingeladene = employees.length - aktive;
+  const vorname = (company?.chefName ?? "").trim().split(/\s+/)[0] || "Chef";
+
   const trialDaysLeft = useMemo(() => {
     if (!company?.createdAt) return null;
-    const msLeft =
-      new Date(company.createdAt).getTime() + 7 * 24 * 60 * 60 * 1000 - Date.now();
+    const msLeft = new Date(company.createdAt).getTime() + 7 * 24 * 60 * 60 * 1000 - Date.now();
     return Math.ceil(msLeft / (24 * 60 * 60 * 1000));
   }, [company?.createdAt]);
   const isActivePlan = company?.subscriptionStatus === "active";
-  const isCanceledPlan =
-    !!company?.subscriptionStatus && company.subscriptionStatus !== "active";
-
-  const filtered = useMemo(() => {
-    return employees
-      .filter((e) => {
-        if (e.archiviert) return false;
-        const matchesCategory = category === "Alle" || e.kategorie === category;
-        const matchesQuery = `${e.vorname} ${e.nachname}`
-          .toLowerCase()
-          .includes(query.toLowerCase());
-        return matchesCategory && matchesQuery;
-      })
-      // Ampel-Sortierung: Rot (offene Punkte) zuerst, damit das Wichtige
-      // oben steht — bei gleicher Farbe die meisten offenen Punkte zuerst.
-      .sort((a, b) =>
-        a.ampel === b.ampel ? b.offenePunkte - a.offenePunkte : a.ampel === "rot" ? -1 : 1
-      );
-  }, [employees, category, query]);
+  const isCanceledPlan = !!company?.subscriptionStatus && company.subscriptionStatus !== "active";
 
   return (
     <DashboardShell>
@@ -119,128 +114,175 @@ export default function DashboardPage() {
 
       {showPlanModal && <PlanModal onClose={() => setShowPlanModal(false)} />}
 
-      {reminders.length > 0 && (
-        <div className="mb-6 rounded-2xl border border-amber-300/60 bg-amber-50 px-5 py-4">
+      <h1 className="mk-display text-2xl font-bold mb-1" style={{ color: "var(--mk-ink)" }}>
+        Guten Tag, {vorname}!
+      </h1>
+      <p className="text-sm mb-6" style={{ color: "var(--mk-ink-60)" }}>
+        Hier ist dein aktueller Status.
+      </p>
+
+      {/* Statistik-Karte: Ring (F2) + Balken + Rückfragen-/Erinnerungen-Minikacheln */}
+      <Card className="mb-6">
+        <div className="flex items-center gap-5">
+          <RingHero percent={ruecklaufquote} logoUrl={company?.logoUrl ?? null} />
+          <div className="flex-1 min-w-0">
+            <p className="text-[11px] font-semibold tracking-wide" style={{ color: "var(--mk-ink-50)" }}>
+              UNTERWEISUNGEN
+            </p>
+            <p className="text-lg font-semibold" style={{ color: "var(--mk-ink)" }}>
+              {signiertGesamt} von {zuweisungenGesamt} signiert
+            </p>
+            <div className="h-2 rounded-full bg-white/10 mt-2 overflow-hidden">
+              <div
+                className="h-full rounded-full"
+                style={{ width: `${Math.max(2, ruecklaufquote)}%`, background: "linear-gradient(90deg,#3f92ff,#7cc6ff)" }}
+              />
+            </div>
+            <p className="text-xs mt-2" style={{ color: "var(--mk-ink-60)" }}>
+              <span className="font-semibold" style={{ color: "var(--mk-ink)" }}>{offeneGesamt}</span> offen ·{" "}
+              <span className="font-semibold text-green-500">{signiertGesamt}</span> abgeschlossen
+            </p>
+          </div>
+          <button
+            onClick={() => router.push("/unterweisungen")}
+            aria-label="Zu den Unterweisungen"
+            className="shrink-0 h-8 w-8 rounded-full border border-border flex items-center justify-center hover:border-foreground/30"
+          >
+            <ChevronRight size={16} />
+          </button>
+        </div>
+
+        <div className="grid grid-cols-2 gap-3 mt-6">
+          <button
+            onClick={() => router.push("/rueckfragen")}
+            className="btn-feedback flex items-center gap-3 rounded-2xl border border-border px-4 py-3.5 text-left hover:bg-surface"
+          >
+            <Icon3D name="rueckfragen" size="md" />
+            <div className="min-w-0">
+              <p className="text-lg font-bold leading-tight" style={{ color: "var(--mk-ink)" }}>{offeneFragen}</p>
+              <p className="text-xs" style={{ color: "var(--mk-ink-60)" }}>offene Rückfragen</p>
+              <p className={`text-xs font-medium ${offeneFragen === 0 ? "text-green-500" : "text-amber-500"}`}>
+                {offeneFragen === 0 ? "Alles ist geklärt!" : "wartet auf Antwort"}
+              </p>
+            </div>
+          </button>
           <button
             onClick={() => setRemindersOpen((v) => !v)}
-            className="min-h-11 w-full flex items-center justify-between text-left"
             aria-expanded={remindersOpen}
+            className="btn-feedback flex items-center gap-3 rounded-2xl border border-border px-4 py-3.5 text-left hover:bg-surface"
           >
-            <p className="text-sm font-semibold text-amber-900">
-              🔔 {reminders.length} Erinnerung(en) — läuft bald ab
-            </p>
-            <span className="text-amber-900/60 text-sm shrink-0 ml-3">
-              {remindersOpen ? "Einklappen ▲" : "Anzeigen ▼"}
-            </span>
-          </button>
-          {remindersOpen && (
-            <>
-              <ul className="space-y-1 mt-3">
-                {reminders.map((r) => (
-                  // Feste dunkle Amber-Töne statt text-foreground: das Band
-                  // bleibt auch im dunklen Design hellgelb — mit der globalen
-                  // (dann fast weißen) Schriftfarbe war die Liste unlesbar.
-                  <li key={r.key} className="flex items-center gap-2 text-sm text-amber-950">
-                    <span className={`h-2 w-2 rounded-full ${r.overdue ? "bg-red-500" : "bg-amber-500"}`} />
-                    <span className="font-medium">{r.text}</span>
-                    <span className="text-amber-900/70">· {r.sub}</span>
-                  </li>
-                ))}
-              </ul>
-              <p className="text-xs text-amber-800/80 mt-2 italic">
-                Automatische E-Mail an Chef & Mitarbeiter (1 Monat vorher) wird aktiv, sobald Resend eingerichtet ist.
+            <Icon3D name="erinnerung" size="md" />
+            <div className="min-w-0 flex-1">
+              <p className="text-lg font-bold leading-tight" style={{ color: "var(--mk-ink)" }}>{reminders.length}</p>
+              <p className="text-xs" style={{ color: "var(--mk-ink-60)" }}>
+                {reminders.length === 1 ? "Erinnerung" : "Erinnerungen"}
               </p>
-            </>
-          )}
+              <p className={`text-xs font-medium ${reminders.length === 0 ? "text-green-500" : "text-amber-500"}`}>
+                {reminders.length === 0 ? "Nichts fällig" : "Unterweisung fällig"}
+              </p>
+            </div>
+            <ChevronRight size={14} className="shrink-0" style={{ color: "var(--mk-ink-50)" }} />
+          </button>
         </div>
-      )}
-
-      <ReviewBanner bereit={employees.length > 0 && trainings.length > 0} />
-
-      <PageHeader
-        title="Dashboard"
-        subtitle={`2026 · ${company?.name ?? ""}`}
-        action={
-          <div className="flex flex-wrap gap-3">
-            <button
-              onClick={() => setShowEmployeeWizard(true)}
-              className="flex items-center gap-2 rounded-full px-5 py-2.5 text-sm font-medium text-white"
-              style={{ background: "var(--accent-gradient)" }}
-            >
-              <UserPlus size={16} />
-              Mitarbeiter einladen
-            </button>
-            <button
-              onClick={() => setShowTrainingWizard(true)}
-              className="flex items-center gap-2 rounded-full px-5 py-2.5 text-sm font-medium border border-border bg-background"
-            >
-              <FilePlus2 size={16} />
-              Unterweisung erstellen
-            </button>
-          </div>
-        }
-      />
-
-      <Card>
-        <div className="flex flex-wrap items-center gap-4 mb-6">
-          <div className="flex flex-wrap gap-2">
-            {TABS.map((c) => (
-              <button
-                key={c}
-                onClick={() => setCategory(c)}
-                className={`min-h-11 rounded-full px-4 py-2 text-sm transition-colors ${
-                  category === c
-                    ? "text-white"
-                    : "border border-border text-foreground/70 hover:border-foreground/30"
-                }`}
-                style={
-                  category === c ? { background: "var(--accent-gradient)" } : undefined
-                }
-              >
-                {c}
-              </button>
-            ))}
-          </div>
-
-          <div className="relative ml-auto w-64">
-            <Search
-              size={16}
-              className="absolute left-3.5 top-1/2 -translate-y-1/2 text-foreground/65"
-            />
-            <input
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="Name oder MA-Nummer"
-              className="w-full rounded-full border border-border bg-surface pl-9 pr-4 py-2 text-sm outline-none focus:border-foreground/30"
-            />
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filtered.map((employee) => (
-            <EmployeeCard key={employee.id} employee={employee} />
-          ))}
-        </div>
-
-        {filtered.length === 0 && (
-          <p className="text-foreground/65 text-sm mt-10 text-center">
-            Keine Mitarbeiter gefunden.
-          </p>
-        )}
       </Card>
 
+      {/* HEUTE-Alert -- bewusst amber (einzige Ausnahme im Design) */}
+      {reminders.length > 0 && (
+        <>
+          <p className="text-xs font-semibold tracking-widest mb-2" style={{ color: "var(--mk-ink-50)" }}>
+            HEUTE
+          </p>
+          <div className="flex items-center gap-3 rounded-2xl border border-amber-300/50 bg-amber-500/10 px-5 py-4 mb-6">
+            <Icon3D name="erinnerung" size="lg" />
+            <div className="flex-1 min-w-0">
+              <p className="font-semibold text-sm" style={{ color: "var(--mk-ink)" }}>
+                {reminders.length} {reminders.length === 1 ? "Erinnerung" : "Erinnerungen"}
+              </p>
+              <p className="text-xs" style={{ color: "var(--mk-ink-60)" }}>
+                {reminders.length === 1
+                  ? "Etwas ist fällig und wartet auf deine Aufmerksamkeit."
+                  : "Mehrere Punkte sind fällig und warten auf dich."}
+              </p>
+            </div>
+            <button
+              onClick={() => setRemindersOpen((v) => !v)}
+              className="shrink-0 flex items-center gap-1.5 text-xs font-semibold text-amber-600 hover:text-amber-700"
+            >
+              {remindersOpen ? "Einklappen" : "Jetzt öffnen"}
+              <ChevronRight size={12} />
+            </button>
+          </div>
+        </>
+      )}
+
+      {remindersOpen && reminders.length > 0 && (
+        <Card className="mb-6">
+          <div className="space-y-3">
+            {reminders.map((r) => (
+              <div key={r.key} className="flex items-start gap-3">
+                <span className={`h-2 w-2 rounded-full mt-1.5 shrink-0 ${r.overdue ? "bg-red-500" : "bg-amber-500"}`} />
+                <div>
+                  <p className="text-sm font-medium" style={{ color: "var(--mk-ink)" }}>{r.text}</p>
+                  <p className="text-xs" style={{ color: "var(--mk-ink-60)" }}>{r.sub}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+          <p className="text-xs mt-4 italic" style={{ color: "var(--mk-ink-50)" }}>
+            Automatische E-Mail an Chef & Mitarbeiter (1 Monat vorher) wird aktiv, sobald Resend eingerichtet ist.
+          </p>
+        </Card>
+      )}
+
+      {/* Übersicht 2×2 (F3: Mitarbeiter / signiert / offen / Rückfragen) */}
+      <p className="text-xs font-semibold tracking-widest mb-2" style={{ color: "var(--mk-ink-50)" }}>
+        ÜBERSICHT
+      </p>
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <Kachel
+          icon="mitarbeiter"
+          n={employees.length}
+          label="Mitarbeiter"
+          sub={
+            <>
+              <span className="text-green-500">{aktive} aktiv</span> · {eingeladene} eingeladen
+            </>
+          }
+          tint="gruen"
+          onClick={() => router.push("/mitarbeiter")}
+        />
+        <Kachel
+          icon="signiert"
+          n={signiertGesamt}
+          label="signiert"
+          sub={`${ruecklaufquote}% aller Unterweisungen`}
+          tint="blau"
+          onClick={() => router.push("/archiv")}
+        />
+        <Kachel
+          icon="unterweisungen"
+          n={offeneGesamt}
+          label="offen"
+          sub={`von ${zuweisungenGesamt} Unterweisungen`}
+          tint="blau"
+          onClick={() => router.push("/unterweisungen")}
+        />
+        <Kachel
+          icon="rueckfragen"
+          n={offeneFragen}
+          label="Rückfragen"
+          sub={offeneFragen === 0 ? <span className="text-green-500">✓ Alles ist geklärt!</span> : "wartet auf Antwort"}
+          tint="violett"
+          onClick={() => router.push("/rueckfragen")}
+        />
+      </div>
+
       {/* Nur für den Betreiber sichtbar (rendern sich selbst weg, wenn kein Betreiber) */}
-      <div className="mt-6 flex flex-col gap-6">
+      <div className="flex flex-col gap-6">
+        <ReviewBanner bereit={employees.length > 0 && trainings.length > 0} />
         <SocialOverviewCard />
         <FeedbackCard />
       </div>
-
-      {showEmployeeWizard && (
-        <NewEmployeeWizard onClose={() => setShowEmployeeWizard(false)} />
-      )}
-      {showTrainingWizard && (
-        <NewTrainingWizard onClose={() => setShowTrainingWizard(false)} />
-      )}
     </DashboardShell>
   );
 }
