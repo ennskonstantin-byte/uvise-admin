@@ -321,7 +321,13 @@ h1, h2, h3, h4 {
     radial-gradient(50vmax 50vmax at 100% 15%, var(--uv-glow-cyan), transparent 55%),
     radial-gradient(70vmax 70vmax at 50% 120%, var(--uv-glow-navy), transparent 60%);
 }
-.uv-glass > * {
+/* :not(.fixed) -- sonst überschreibt diese Regel `position: fixed` auf
+   direkten .uv-glass-Kindern (z.B. der schwebende Chat-Button, die mobile
+   Kopfzeile) mit `relative`, gleiche Spezifität wie Tailwinds `.fixed`,
+   und diese Regel gewinnt zufällig durch spätere Cascade-Reihenfolge --
+   das Element rutscht dann in den normalen Dokumentfluss und wird durch
+   `align-items: stretch` im Flex-Elternelement auf volle Höhe gestreckt. */
+.uv-glass > *:not(.fixed) {
   position: relative;
   z-index: 1;
 }

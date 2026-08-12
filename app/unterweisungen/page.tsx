@@ -195,7 +195,7 @@ export default function UnterweisungenPage() {
               {trainings.map((t) => (
                 <div key={t.id} className="flex items-center gap-4 px-5 py-4">
                   {trainingIconSrc(t.icon) ? (
-                    <IconImg src={trainingIconSrc(t.icon)!} size="sm" />
+                    <IconImg src={trainingIconSrc(t.icon)!} size="md" />
                   ) : (
                     <span className="text-lg">{t.icon}</span>
                   )}

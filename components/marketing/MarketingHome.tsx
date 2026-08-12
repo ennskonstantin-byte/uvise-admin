@@ -5,11 +5,6 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { motion, useReducedMotion } from "framer-motion";
 import {
-  ShieldCheck,
-  BellRing,
-  Smartphone,
-  MessageCircleQuestion,
-  FileDown,
   Languages,
   Check,
   Menu,
@@ -38,6 +33,8 @@ import { AffiliateRef } from "@/components/AffiliateRef";
 import { ChatWidget } from "@/components/marketing/ChatWidget";
 import { FAQ } from "@/components/marketing/faqData";
 import { DriftBackground } from "@/components/marketing/DriftBackground";
+import { Icon3D } from "@/components/Icon3D";
+import type { IconKey } from "@/lib/icons";
 
 // Akzent je Bereich (STYLE.md: Unterweisungen=Blau, Rückfragen=Cyan,
 // Mitarbeiter=Grün, Erinnerungen=Amber) — als 3D-Glas-Kachel-Verlauf +
@@ -49,21 +46,25 @@ const ACCENTS = {
   amber: { from: "#FFD05A", to: "#F0A000", glow: "rgba(245,179,1,0.32)" },
 } as const;
 
+// Diese Karten nutzen jetzt unser eigenes i3d-hq-Symbol-Set (statt
+// generischer Lucide-Icons) -- gleiche Symbole wie im eingeloggten
+// Chef-/SiFa-Bereich, siehe lib/icons.ts. Branchen-Kacheln weiter unten
+// behalten Lucide, dafür gibt es kein passendes i3d-Symbol.
 const FEATURES = [
   {
-    icon: ShieldCheck,
+    img: "signieren" as IconKey,
     accent: "blau" as const,
     title: "Rechtssichere Signatur",
     text: "Unterweisungen werden nach eIDAS-Grundsätzen digital unterschrieben — Zeitstempel, Gerät und Unterschrift unveränderlich gespeichert.",
   },
   {
-    icon: BellRing,
+    img: "erinnerung" as IconKey,
     accent: "amber" as const,
     title: "Automatische Erinnerungen",
     text: "Läuft eine Qualifikation oder Unterweisung bald ab, bekommen Chef und Mitarbeiter rechtzeitig eine E-Mail.",
   },
   {
-    icon: MessageCircleQuestion,
+    img: "rueckfragen" as IconKey,
     accent: "cyan" as const,
     title: "Rückfragen in Echtzeit",
     text: "Unklarheiten direkt aus der Unterweisung heraus klären — die Antwort kommt sofort auf dem Handy an.",
@@ -78,19 +79,19 @@ const FEATURES = [
     text: "Auf einen Blick sehen, wer offene Punkte hat — sortiert nach Kategorie, Abteilung oder Standort.",
   },
   {
-    icon: FileDown,
+    img: "export" as IconKey,
     accent: "gruen" as const,
     title: "Export für Prüfungen",
     text: "Nachweise und Qualifikationen als CSV oder gebündeltes ZIP-Backup — startklar für die Berufsgenossenschaft.",
   },
   {
-    icon: Smartphone,
+    img: "mitarbeiter" as IconKey,
     accent: "blau" as const,
     title: "Eigene Mitarbeiter-App",
     text: "Kein Firmen-Laptop nötig — dein Team erledigt Unterweisungen bequem auf dem eigenen Handy.",
   },
   {
-    icon: Languages,
+    img: "vorlesen" as IconKey,
     accent: "cyan" as const,
     title: "Vorlesen & 41 Sprachen",
     text: "Jede Unterweisung wird laut vorgelesen und verstanden — auch von fremdsprachigen Mitarbeitern.",
@@ -181,12 +182,17 @@ function GlassCard({
 }
 
 // Erhabene 3D-Icon-Kachel (Feature-Karten, Branchen, Produkt-Akzent).
+// `img` (i3d-hq-Symbol, wie im eingeloggten Bereich) hat Vorrang vor `icon`
+// (Lucide) -- Branchen-Kacheln haben kein passendes i3d-Symbol und nutzen
+// weiterhin `icon`.
 function AccentTile({
   icon: Icon,
+  img,
   accent,
   size = 20,
 }: {
-  icon: React.ComponentType<{ size?: number }>;
+  icon?: React.ComponentType<{ size?: number }>;
+  img?: IconKey;
   accent: keyof typeof ACCENTS;
   size?: number;
 }) {
@@ -196,7 +202,7 @@ function AccentTile({
       className="uv-glass-tile h-11 w-11 shrink-0 flex items-center justify-center text-white"
       style={{ ["--tile-from" as string]: a.from, ["--tile-to" as string]: a.to, ["--glow" as string]: a.glow }}
     >
-      <Icon size={size} />
+      {img ? <Icon3D name={img} size="md" /> : Icon ? <Icon size={size} /> : null}
     </div>
   );
 }
@@ -522,7 +528,7 @@ export function MarketingHome() {
                           <AmpelDots size={20} />
                         </div>
                       ) : (
-                        "icon" in f && <AccentTile icon={f.icon} accent={f.accent} />
+                        "img" in f && <AccentTile img={f.img} accent={f.accent} />
                       )}
                       <h3 className="font-semibold mt-4 mb-1.5" style={{ color: "var(--mk-ink)" }}>{f.title}</h3>
                       <p className="text-sm text-[var(--mk-ink-60)] leading-relaxed">{f.text}</p>
