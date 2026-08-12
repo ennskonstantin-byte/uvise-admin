@@ -182,7 +182,13 @@ export type AppDataContextValue = {
   ) => Promise<void>;
   updateTraining: (
     id: string,
-    input: { name: string; icon: string; inhalt: string | null; ablaufdatum: string | null }
+    input: {
+      name: string;
+      icon: string;
+      inhalt: string | null;
+      ablaufdatum: string | null;
+      pdfFile?: File | null;
+    }
   ) => Promise<void>;
   deleteEmployee: (id: string) => Promise<void>;
   setEmployeeArchived: (id: string, archiviert: boolean) => Promise<void>;
@@ -926,14 +932,32 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
 
   async function updateTraining(
     id: string,
-    input: { name: string; icon: string; inhalt: string | null; ablaufdatum: string | null }
+    input: {
+      name: string;
+      icon: string;
+      inhalt: string | null;
+      ablaufdatum: string | null;
+      pdfFile?: File | null;
+    }
   ) {
+    if (!company) throw new Error("Keine Firma geladen");
     // [Audit-Fund OFFLINE & SYNC, 28.07.2026] Ohne .select().single() meldet
     // ein durch RLS blockiertes/0-Zeilen-UPDATE fälschlich Erfolg (error: null)
     // -- gleiches Muster wie der bereits gefixte H-03-Fall bei updateEmployee.
     // Zusätzlich .eq("version", ...) als optimistic locking gegen
     // gleichzeitige Bearbeitung derselben Vorlage durch zwei Chefs.
     const current = trainings.find((t) => t.id === id);
+    // Wie in addTraining: eine neu hochgeladene PDF ersetzt die alte unter
+    // demselben Pfad (upsert), damit App-Unterweisungen weiterhin dieselbe
+    // Datei-Referenz behalten und kein verwaister Storage-Eintrag entsteht.
+    let pdfPath: string | undefined;
+    if (input.pdfFile) {
+      pdfPath = `${company.id}/training-${id}.pdf`;
+      const { error: uploadErr } = await supabase.storage
+        .from("training-documents")
+        .upload(pdfPath, input.pdfFile, { upsert: true, contentType: "application/pdf" });
+      if (uploadErr) throw uploadErr;
+    }
     let query = supabase
       .from("trainings")
       .update({
@@ -941,6 +965,7 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
         icon: input.icon,
         inhalt: input.inhalt,
         ablaufdatum: input.ablaufdatum,
+        ...(pdfPath ? { pdf_path: pdfPath, typ: "hochgeladen" } : {}),
       })
       .eq("id", id);
     if (current?.version != null) query = query.eq("version", current.version);
@@ -951,6 +976,28 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
       );
     }
     throwIfError(error);
+    // Bei neu hochgeladener PDF den vorgelesenen Text neu extrahieren --
+    // sonst würde die App weiterhin den Text der alten Datei vorlesen.
+    // Bewusst außerhalb der Fehlerbehandlung oben, s. Begründung in addTraining.
+    if (pdfPath) {
+      try {
+        const {
+          data: { session },
+        } = await supabase.auth.getSession();
+        if (session?.access_token) {
+          await fetch("/api/pdf-text", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${session.access_token}`,
+            },
+            body: JSON.stringify({ trainingId: id }),
+          });
+        }
+      } catch (err) {
+        console.error("[pdf-text] Aufruf der Textextraktion fehlgeschlagen", err);
+      }
+    }
     await loadData();
   }
 

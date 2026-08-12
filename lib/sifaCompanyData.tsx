@@ -709,9 +709,24 @@ export function SifaCompanyDataProvider({
 
   async function updateTraining(
     id: string,
-    input: { name: string; icon: string; inhalt: string | null; ablaufdatum: string | null }
+    input: {
+      name: string;
+      icon: string;
+      inhalt: string | null;
+      ablaufdatum: string | null;
+      pdfFile?: File | null;
+    }
   ) {
     const current = trainings.find((t) => t.id === id);
+    // Wie in lib/store.tsx: neue PDF ersetzt die alte unter demselben Pfad.
+    let pdfPath: string | undefined;
+    if (input.pdfFile) {
+      pdfPath = `${companyId}/training-${id}.pdf`;
+      const { error: uploadErr } = await supabase.storage
+        .from("training-documents")
+        .upload(pdfPath, input.pdfFile, { upsert: true, contentType: "application/pdf" });
+      if (uploadErr) throw uploadErr;
+    }
     let query = supabase
       .from("trainings")
       .update({
@@ -719,6 +734,7 @@ export function SifaCompanyDataProvider({
         icon: input.icon,
         inhalt: input.inhalt,
         ablaufdatum: input.ablaufdatum,
+        ...(pdfPath ? { pdf_path: pdfPath, typ: "hochgeladen" } : {}),
       })
       .eq("id", id);
     if (current?.version != null) query = query.eq("version", current.version);
@@ -729,6 +745,25 @@ export function SifaCompanyDataProvider({
       );
     }
     throwIfError(error);
+    if (pdfPath) {
+      try {
+        const {
+          data: { session },
+        } = await supabase.auth.getSession();
+        if (session?.access_token) {
+          await fetch("/api/pdf-text", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${session.access_token}`,
+            },
+            body: JSON.stringify({ trainingId: id }),
+          });
+        }
+      } catch (err) {
+        console.error("[pdf-text] Aufruf der Textextraktion fehlgeschlagen", err);
+      }
+    }
     await loadData();
   }
 
