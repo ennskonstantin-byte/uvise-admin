@@ -16,6 +16,7 @@ import { PLANS, CHEF_GRATIS_HINWEIS, ENTERPRISE_KONTAKT } from "@/lib/types";
 import { earliestCancellationDate } from "@/lib/contractTerm";
 import { supabase } from "@/lib/supabase";
 import { SifaZugangSection } from "@/components/SifaZugangSection";
+import pkg from "@/package.json";
 
 const ABO_STATUS_LABELS: Record<string, string> = {
   canceled: "gekündigt",
@@ -39,6 +40,7 @@ export default function EinstellungenPage() {
     qualifications,
     employeeTrainings,
     reload,
+    signOut,
   } = useAppData();
   const { showToast, ToastView } = useToast();
   const [firmenname, setFirmenname] = useState("");
@@ -677,6 +679,39 @@ export default function EinstellungenPage() {
             </button>
           </Card>
         </section>
+
+        <section>
+          <h2 className="font-medium">Rechtliches</h2>
+          <Card className="max-w-lg divide-y divide-border">
+            <a href="/agb" target="_blank" rel="noopener noreferrer" className="flex items-center justify-between py-3 first:pt-0 last:pb-0 text-sm hover:text-foreground/80">
+              AGB
+              <span className="text-foreground/50">↗</span>
+            </a>
+            <a href="/datenschutz" target="_blank" rel="noopener noreferrer" className="flex items-center justify-between py-3 text-sm hover:text-foreground/80">
+              Datenschutzerklärung
+              <span className="text-foreground/50">↗</span>
+            </a>
+            <a href="/impressum" target="_blank" rel="noopener noreferrer" className="flex items-center justify-between py-3 text-sm hover:text-foreground/80">
+              Impressum
+              <span className="text-foreground/50">↗</span>
+            </a>
+            <div className="flex items-center justify-between py-3 text-sm">
+              <span className="text-foreground/70">App-Info</span>
+              <span className="text-foreground/50">Version {pkg.version}</span>
+            </div>
+          </Card>
+        </section>
+
+        <button
+          onClick={async () => {
+            if (!confirm("Möchtest du dich wirklich abmelden?")) return;
+            await signOut();
+            window.location.assign("/");
+          }}
+          className="w-full max-w-lg rounded-full border border-red-500/40 py-2.5 text-sm font-semibold text-red-500 hover:bg-red-500/10"
+        >
+          Abmelden
+        </button>
       </div>
       <ToastView />
       {fristConfirmValue !== null && (
