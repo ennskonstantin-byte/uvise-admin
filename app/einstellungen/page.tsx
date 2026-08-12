@@ -15,6 +15,7 @@ import { exportGesamtBackupZip } from "@/lib/exportZip";
 import { PLANS, CHEF_GRATIS_HINWEIS, ENTERPRISE_KONTAKT } from "@/lib/types";
 import { earliestCancellationDate } from "@/lib/contractTerm";
 import { supabase } from "@/lib/supabase";
+import { SifaZugangSection } from "@/components/SifaZugangSection";
 
 const ABO_STATUS_LABELS: Record<string, string> = {
   canceled: "gekündigt",
@@ -439,6 +440,18 @@ export default function EinstellungenPage() {
               Anonymisiert wird nur die Unterschrift selbst — dass die Unterweisung stattgefunden
               hat, bleibt weiterhin nachweisbar.
             </p>
+          </Card>
+        </section>
+
+        <section>
+          <h2 className="font-medium">SiFa-Zugang</h2>
+          <p className="text-foreground/60 text-sm mb-4 max-w-xl">
+            Externe Sicherheitsfachkräfte bekommen mit diesem Code Zugriff auf deine Firma — nach
+            deiner Freigabe können sie Mitarbeiter, Unterweisungen, Rückfragen, Qualifikationen und
+            Archiv verwalten wie du selbst. Firmenprofil, Abo und Konto-Löschung bleiben exklusiv bei dir.
+          </p>
+          <Card className="max-w-lg">
+            {company?.id && <SifaZugangSection companyId={company.id} />}
           </Card>
         </section>
 

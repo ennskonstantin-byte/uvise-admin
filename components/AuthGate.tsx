@@ -11,7 +11,7 @@ import { PasswordInput } from "@/components/PasswordInput";
 // Diese Seiten sind gesetzlich ohne Login erreichbar (Impressumspflicht)
 // + die Passwort-zurücksetzen-Seite (E-Mail-Link) + die öffentliche
 // Marketing-Startseite, von der aus man sich anmelden/registrieren kann.
-const PUBLIC_PATHS = ["/", "/preise", "/impressum", "/datenschutz", "/agb", "/passwort-zuruecksetzen", "/kontakt", "/partner", "/unterweisung-mehrsprachig", "/unterweisung-handwerk", "/unterweisung-baustelle", "/unterweisung-elektro", "/unterweisung-pflege", "/unterweisung-gastronomie", "/unterweisung-kfz", "/unterweisung-shk", "/unterweisung-lager-logistik", "/unterweisung-galabau"];
+const PUBLIC_PATHS = ["/", "/preise", "/impressum", "/datenschutz", "/agb", "/passwort-zuruecksetzen", "/kontakt", "/partner", "/unterweisung-mehrsprachig", "/unterweisung-handwerk", "/unterweisung-baustelle", "/unterweisung-elektro", "/unterweisung-pflege", "/unterweisung-gastronomie", "/unterweisung-kfz", "/unterweisung-shk", "/unterweisung-lager-logistik", "/unterweisung-galabau", "/sifa/registrieren"];
 
 // Öffentlich, ohne dass jeder Slug einzeln eingetragen werden muss: die
 // Ratgeber-Artikel sind reiner SEO-/Marketing-Content ohne geschützte Daten.
@@ -333,6 +333,15 @@ function AuthForm() {
             : "Neue Firma? Hier registrieren"}
         </button>
 
+        {!isRegister && (
+          <Link
+            href="/sifa/registrieren"
+            className="block w-full mt-1 text-center text-sm text-foreground/60 hover:text-foreground"
+          >
+            Bist du Sicherheitsfachkraft (SiFa)? Hier registrieren
+          </Link>
+        )}
+
         <nav aria-label="Rechtliches" className="flex justify-center gap-4 mt-6 text-xs text-foreground/65">
           <Link href="/impressum" className="hover:text-foreground">Impressum</Link>
           <Link href="/datenschutz" className="hover:text-foreground">Datenschutz</Link>
@@ -350,10 +359,15 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
   // bekommen einen freundlichen Hinweis auf die uVise-App.
   // null = Rolle wird noch geprüft
   const [isChef, setIsChef] = useState<boolean | null>(null);
+  // SiFa-Erkennung (Web-Port von Phase 5): ein Konto ohne employees-Zeile
+  // kann statt "Mitarbeiter ohne Zugriff" auch eine Sicherheitsfachkraft
+  // sein -- die hat eine sifa_profiles-Zeile statt employees.
+  const [isSifa, setIsSifa] = useState<boolean | null>(null);
 
   useEffect(() => {
     if (!session) {
       setIsChef(null);
+      setIsSifa(null);
       return;
     }
     let cancelled = false;
@@ -372,11 +386,29 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
         if (cancelled) return;
         if (data) {
           setIsChef(!!data.ist_beauftragter);
+          setIsSifa(false);
+          return;
+        }
+        // Keine employees-Zeile (noch) gefunden -- könnte eine frisch
+        // registrierte SiFa sein, deren create_sifa_profile-RPC ebenfalls
+        // noch nicht committet ist. Gleiche Wiederholungslogik.
+        const { data: sifaRow } = await supabase
+          .from("sifa_profiles")
+          .select("id")
+          .eq("auth_user_id", session!.user.id)
+          .maybeSingle();
+        if (cancelled) return;
+        if (sifaRow) {
+          setIsChef(false);
+          setIsSifa(true);
           return;
         }
         await new Promise((resolve) => setTimeout(resolve, 600));
       }
-      if (!cancelled) setIsChef(false);
+      if (!cancelled) {
+        setIsChef(false);
+        setIsSifa(false);
+      }
     }
     checkRole();
     return () => {
@@ -400,12 +432,19 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
     return <AuthForm />;
   }
 
-  if (isChef === null) {
+  if (isChef === null || isSifa === null) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-page-bg text-foreground/65 text-sm">
         Lädt…
       </div>
     );
+  }
+
+  // SiFa-Konten dürfen durch (die /sifa/*-Seiten laden ihre eigenen,
+  // firmen-gescopten Daten selbst) -- nur ein Konto ohne jede erkannte
+  // Rolle bekommt den Mitarbeiter-Hinweis unten.
+  if (isSifa) {
+    return <>{children}</>;
   }
 
   if (isChef === false) {
@@ -421,6 +460,13 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
           <p className="text-sm text-foreground/60 mb-6">
             Dein Konto ist ein Mitarbeiter-Konto. Bitte nutze die uVise-App — dort
             findest du deine Unterweisungen und Nachweise.
+          </p>
+          <p className="text-xs text-foreground/50 mb-6">
+            Bist du Sicherheitsfachkraft?{" "}
+            <Link href="/sifa/onboarding" className="underline hover:text-foreground">
+              Hier SiFa-Profil anlegen
+            </Link>
+            .
           </p>
           <button
             onClick={async () => {

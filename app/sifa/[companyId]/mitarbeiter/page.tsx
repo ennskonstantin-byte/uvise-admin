@@ -1,0 +1,444 @@
+"use client";
+
+// Mitarbeiter (SiFa) -- Web-Port von Phase 5/App, identischer Kern-Inhalt
+// zu app/mitarbeiter/page.tsx. Einziger Unterschied: Navigation zu
+// /sifa/[companyId]/mitarbeiter/[id] statt /mitarbeiter/[id].
+import { useMemo, useState } from "react";
+import { useParams, useRouter } from "next/navigation";
+import { Search, Pencil, Trash2, Settings2, ChevronRight, Crown, RotateCcw } from "lucide-react";
+import { PageHeader } from "@/components/PageHeader";
+import { Card } from "@/components/Card";
+import { NewEmployeeWizard } from "@/components/NewEmployeeWizard";
+import { EditEmployeeModal } from "@/components/EditEmployeeModal";
+import { EditCategoryModal } from "@/components/EditCategoryModal";
+import { ConfirmModal } from "@/components/ConfirmModal";
+import { QualiIcons } from "@/components/QualiIcons";
+import { EmployeeAvatar } from "@/components/EmployeeAvatar";
+import { type Category, type Employee } from "@/lib/types";
+import { useAppData } from "@/lib/store";
+import { IconImg } from "@/components/Icon3D";
+import { categoryIconSrc } from "@/lib/icons";
+
+export default function SifaMitarbeiterPage() {
+  const router = useRouter();
+  const params = useParams<{ companyId: string }>();
+  const base_ = `/sifa/${params.companyId}/mitarbeiter`;
+  const { employees, categories, deleteEmployee, setEmployeeArchived, deleteCategory } = useAppData();
+  const [query, setQuery] = useState("");
+  const [showWizard, setShowWizard] = useState(false);
+  const [editing, setEditing] = useState<Employee | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [showCategories, setShowCategories] = useState(false);
+  const [tab, setTab] = useState<"aktiv" | "archiviert">("aktiv");
+  const [categoryFilter, setCategoryFilter] = useState<string | null>(null);
+  const [editingCategory, setEditingCategory] = useState<Category | null>(null);
+  const [deletingCategoryId, setDeletingCategoryId] = useState<string | null>(null);
+  const [pendingAction, setPendingAction] = useState<
+    | { type: "archive"; id: string; name: string }
+    | { type: "deleteForever"; id: string; name: string }
+    | { type: "deleteCategory"; id: string; name: string }
+    | null
+  >(null);
+
+  const active = employees.filter((e) => !e.archiviert);
+  const archived = employees.filter((e) => e.archiviert);
+
+  function confirmArchive(id: string, name: string) {
+    setPendingAction({ type: "archive", id, name });
+  }
+  function confirmDeleteForever(id: string, name: string) {
+    setPendingAction({ type: "deleteForever", id, name });
+  }
+  function confirmDeleteCategory(id: string, name: string) {
+    setPendingAction({ type: "deleteCategory", id, name });
+  }
+
+  async function handleDelete(id: string) {
+    setPendingAction(null);
+    setDeletingId(id);
+    try {
+      await setEmployeeArchived(id, true);
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Archivieren fehlgeschlagen. Bitte erneut versuchen.");
+    } finally {
+      setDeletingId(null);
+    }
+  }
+
+  async function handleDeleteForever(id: string) {
+    setPendingAction(null);
+    setDeletingId(id);
+    try {
+      await deleteEmployee(id);
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Löschen fehlgeschlagen. Bitte erneut versuchen.");
+    } finally {
+      setDeletingId(null);
+    }
+  }
+
+  async function handleRestore(id: string) {
+    setDeletingId(id);
+    try {
+      await setEmployeeArchived(id, false);
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Wiederherstellen fehlgeschlagen. Bitte erneut versuchen.");
+    } finally {
+      setDeletingId(null);
+    }
+  }
+
+  async function handleDeleteCategory(id: string) {
+    setPendingAction(null);
+    setDeletingCategoryId(id);
+    try {
+      await deleteCategory(id);
+    } finally {
+      setDeletingCategoryId(null);
+    }
+  }
+
+  const base = tab === "aktiv" ? active : archived;
+
+  const categoryChips = useMemo(
+    () =>
+      categories
+        .map((c) => ({ ...c, count: base.filter((e) => e.kategorie === c.name).length }))
+        .filter((c) => c.count > 0)
+        .sort((a, b) => b.count - a.count),
+    [base, categories]
+  );
+
+  const filtered = useMemo(
+    () =>
+      base
+        .filter((e) => !categoryFilter || e.kategorie === categoryFilter)
+        .filter((e) => `${e.vorname} ${e.nachname} ${e.personalnummer}`.toLowerCase().includes(query.toLowerCase()))
+        .sort((a, b) => (a.ampel === b.ampel ? b.offenePunkte - a.offenePunkte : a.ampel === "rot" ? -1 : 1)),
+    [base, categoryFilter, query]
+  );
+
+  return (
+    <>
+      <PageHeader
+        title="Mitarbeiter"
+        subtitle="Alle Mitarbeiter dieser Firma — nach Kategorie filterbar."
+        action={
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setShowCategories((v) => !v)}
+              className="h-11 w-11 rounded-full border border-border flex items-center justify-center hover:border-foreground/30"
+              aria-label="Kategorien verwalten"
+              title="Kategorien verwalten"
+            >
+              <Settings2 size={18} />
+            </button>
+            <button
+              onClick={() => setShowWizard(true)}
+              className="h-11 w-11 rounded-full text-white text-2xl flex items-center justify-center leading-none"
+              style={{ background: "var(--accent-gradient)" }}
+              aria-label="Neuen Mitarbeiter anlegen"
+            >
+              +
+            </button>
+          </div>
+        }
+      />
+
+      {showCategories && (
+        <Card>
+          <h2 className="font-medium mb-4">Kategorien verwalten</h2>
+          <div className="rounded-3xl border border-border divide-y divide-border overflow-hidden">
+            {categories.map((c) => (
+              <div key={c.id} className="flex items-center gap-4 px-5 py-3">
+                {categoryIconSrc(c.icon) ? (
+                  <IconImg src={categoryIconSrc(c.icon)!} size="xs" />
+                ) : (
+                  <span className="text-lg">{c.icon}</span>
+                )}
+                <p className="flex-1 min-w-0 font-medium truncate">{c.name}</p>
+                <button
+                  onClick={() => setEditingCategory(c)}
+                  className="h-8 w-8 rounded-full border border-border flex items-center justify-center hover:border-foreground/30"
+                  aria-label="Bearbeiten"
+                >
+                  <Pencil size={14} />
+                </button>
+                <button
+                  onClick={() => confirmDeleteCategory(c.id, c.name)}
+                  disabled={deletingCategoryId === c.id}
+                  className="h-8 w-8 rounded-full border border-border flex items-center justify-center text-red-500 hover:border-red-300 disabled:opacity-40"
+                  aria-label="Löschen"
+                >
+                  <Trash2 size={14} />
+                </button>
+              </div>
+            ))}
+            {categories.length === 0 && (
+              <p className="text-foreground/65 text-sm text-center py-6">Noch keine Kategorien angelegt.</p>
+            )}
+          </div>
+        </Card>
+      )}
+
+      <Card>
+        <div className="flex flex-wrap items-center gap-2 mb-5">
+          <button
+            onClick={() => {
+              setTab("aktiv");
+              setCategoryFilter(null);
+            }}
+            className={`rounded-full px-4 py-2 text-sm font-medium ${
+              tab === "aktiv" ? "text-white" : "border border-border text-foreground/70"
+            }`}
+            style={tab === "aktiv" ? { background: "var(--accent-gradient)" } : undefined}
+          >
+            Aktiv ({active.length})
+          </button>
+          <button
+            onClick={() => {
+              setTab("archiviert");
+              setCategoryFilter(null);
+            }}
+            className={`rounded-full px-4 py-2 text-sm font-medium ${
+              tab === "archiviert" ? "text-white" : "border border-border text-foreground/70"
+            }`}
+            style={tab === "archiviert" ? { background: "var(--accent-gradient)" } : undefined}
+          >
+            Archiviert ({archived.length})
+          </button>
+        </div>
+
+        <div className="relative w-full max-w-sm mb-4">
+          <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-foreground/65" />
+          <input
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Name oder MA-Nummer"
+            className="w-full rounded-full border border-border bg-surface pl-9 pr-4 py-2 text-sm outline-none focus:border-foreground/30"
+          />
+        </div>
+
+        {categoryChips.length > 0 && (
+          <div className="flex flex-wrap gap-2 mb-6">
+            <button
+              onClick={() => setCategoryFilter(null)}
+              className={`rounded-full px-3.5 py-1.5 text-sm ${
+                !categoryFilter ? "text-white" : "border border-border text-foreground/70"
+              }`}
+              style={!categoryFilter ? { background: "var(--accent-gradient)" } : undefined}
+            >
+              Alle ({base.length})
+            </button>
+            {categoryChips.map((c) => (
+              <button
+                key={c.id}
+                onClick={() => setCategoryFilter(c.name)}
+                className={`rounded-full px-3.5 py-1.5 text-sm ${
+                  categoryFilter === c.name ? "text-white" : "border border-border text-foreground/70"
+                }`}
+                style={categoryFilter === c.name ? { background: "var(--accent-gradient)" } : undefined}
+              >
+                <span className="inline-flex items-center gap-1.5">
+                  {categoryIconSrc(c.icon) ? <IconImg src={categoryIconSrc(c.icon)!} size="xs" /> : c.icon}
+                  {c.name} ({c.count})
+                </span>
+              </button>
+            ))}
+          </div>
+        )}
+
+        <div className="flex flex-col gap-2.5">
+          {filtered.map((e) => {
+            const catIcon = categories.find((c) => c.name === e.kategorie)?.icon;
+            const attention = tab === "aktiv" && e.offenePunkte > 0;
+            return (
+              <div
+                key={e.id}
+                role="button"
+                tabIndex={0}
+                onClick={() => router.push(`${base_}/${e.id}`)}
+                onKeyDown={(ev) => {
+                  if (ev.key === "Enter" || ev.key === " ") {
+                    ev.preventDefault();
+                    router.push(`${base_}/${e.id}`);
+                  }
+                }}
+                style={{
+                  borderLeftColor:
+                    tab === "archiviert" ? "var(--border)" : attention ? "#dc2626" : "var(--ampel-green)",
+                }}
+                className={`btn-feedback rounded-2xl border border-border border-l-4 bg-background shadow-sm cursor-pointer hover:bg-surface px-5 py-3.5 ${
+                  tab === "archiviert" ? "opacity-60" : ""
+                }`}
+              >
+                <div className="flex items-center gap-4">
+                  <div
+                    className="relative shrink-0"
+                    title={
+                      tab === "archiviert"
+                        ? "Archiviert"
+                        : e.offenePunkte > 0
+                          ? `${e.offenePunkte} offene Unterweisung(en)`
+                          : "Alles unterschrieben"
+                    }
+                  >
+                    {e.istBeauftragter ? (
+                      <div className="rounded-full p-[2px]" style={{ background: "var(--accent-gradient)" }}>
+                        <div className="rounded-full bg-background p-[2px]">
+                          <EmployeeAvatar
+                            vorname={e.vorname}
+                            nachname={e.nachname}
+                            fotoUrl={e.fotoUrl}
+                            size={40}
+                            grayscale={tab === "archiviert"}
+                          />
+                        </div>
+                      </div>
+                    ) : (
+                      <EmployeeAvatar
+                        vorname={e.vorname}
+                        nachname={e.nachname}
+                        fotoUrl={e.fotoUrl}
+                        size={44}
+                        grayscale={tab === "archiviert"}
+                      />
+                    )}
+                    {tab === "aktiv" &&
+                      (e.offenePunkte > 0 ? (
+                        <span className="absolute -top-1 -right-1 h-4 min-w-4 px-0.5 rounded-full bg-red-600 text-white text-[9px] font-bold flex items-center justify-center border-2 border-background">
+                          {e.offenePunkte}
+                        </span>
+                      ) : (
+                        <span
+                          className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border-2 border-background"
+                          style={{ background: "var(--ampel-green)" }}
+                        />
+                      ))}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <p className="font-medium truncate">
+                        {e.vorname} {e.nachname}
+                      </p>
+                      {e.istBeauftragter && (
+                        <span className="inline-flex items-center gap-1 rounded-full border border-border bg-surface px-2 py-0.5 text-[10px] font-bold text-violet-500">
+                          <Crown size={10} /> Leitung
+                        </span>
+                      )}
+                      {tab === "aktiv" && <QualiIcons icons={e.qualifikationsIcons} />}
+                    </div>
+                    <div className="flex items-center gap-2 flex-wrap mt-0.5">
+                      {e.kategorie && (
+                        <span className="inline-flex items-center gap-1 rounded-full bg-surface px-2 py-0.5 text-[11px] font-semibold text-foreground/65">
+                          {catIcon &&
+                            (categoryIconSrc(catIcon) ? (
+                              <IconImg src={categoryIconSrc(catIcon)!} size="xs" />
+                            ) : (
+                              <span>{catIcon}</span>
+                            ))}
+                          {e.kategorie}
+                        </span>
+                      )}
+                      {e.personalnummer && <span className="text-xs text-foreground/65">{e.personalnummer}</span>}
+                    </div>
+                  </div>
+                  {tab === "aktiv" ? (
+                    <>
+                      <button
+                        onClick={(ev) => {
+                          ev.stopPropagation();
+                          setEditing(e);
+                        }}
+                        className="h-8 w-8 rounded-full border border-border flex items-center justify-center hover:border-foreground/30 shrink-0"
+                        aria-label="Bearbeiten"
+                      >
+                        <Pencil size={14} className="text-blue-500" />
+                      </button>
+                      <button
+                        onClick={(ev) => {
+                          ev.stopPropagation();
+                          confirmArchive(e.id, `${e.vorname} ${e.nachname}`);
+                        }}
+                        disabled={deletingId === e.id}
+                        className="h-8 w-8 rounded-full border border-border flex items-center justify-center text-red-600 hover:border-red-300 disabled:opacity-40 shrink-0"
+                        aria-label="Löschen"
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <button
+                        onClick={(ev) => {
+                          ev.stopPropagation();
+                          handleRestore(e.id);
+                        }}
+                        disabled={deletingId === e.id}
+                        className="h-8 w-8 rounded-full border border-border flex items-center justify-center hover:border-foreground/30 disabled:opacity-40 shrink-0"
+                        aria-label="Wiederherstellen"
+                        title="Wiederherstellen"
+                      >
+                        <RotateCcw size={14} className="text-violet-500" />
+                      </button>
+                      <button
+                        onClick={(ev) => {
+                          ev.stopPropagation();
+                          confirmDeleteForever(e.id, `${e.vorname} ${e.nachname}`);
+                        }}
+                        disabled={deletingId === e.id}
+                        className="h-8 w-8 rounded-full border border-border flex items-center justify-center text-red-600 hover:border-red-300 disabled:opacity-40 shrink-0"
+                        aria-label="Endgültig löschen"
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    </>
+                  )}
+                  <ChevronRight size={16} className="text-foreground/40 shrink-0" />
+                </div>
+              </div>
+            );
+          })}
+          {filtered.length === 0 && (
+            <p className="px-5 py-6 text-sm text-foreground/65 text-center rounded-2xl border border-border">
+              {tab === "aktiv" ? "Keine Mitarbeiter gefunden." : "Keine archivierten Mitarbeiter."}
+            </p>
+          )}
+        </div>
+      </Card>
+
+      {showWizard && <NewEmployeeWizard onClose={() => setShowWizard(false)} />}
+      {editing && <EditEmployeeModal employee={editing} onClose={() => setEditing(null)} />}
+      {editingCategory && <EditCategoryModal category={editingCategory} onClose={() => setEditingCategory(null)} />}
+      {pendingAction?.type === "archive" && (
+        <ConfirmModal
+          title="Mitarbeiter archivieren"
+          message={`${pendingAction.name} archivieren (z.B. bei Kündigung)? Nachweise und Daten bleiben erhalten und sind über den Reiter „Archiviert" erreichbar.`}
+          confirmLabel="Archivieren"
+          onConfirm={() => handleDelete(pendingAction.id)}
+          onClose={() => setPendingAction(null)}
+        />
+      )}
+      {pendingAction?.type === "deleteForever" && (
+        <ConfirmModal
+          title="Mitarbeiter endgültig löschen"
+          message={`${pendingAction.name} endgültig löschen? Persönliche Daten und noch offene (unsignierte) Zuweisungen werden entfernt. Bereits signierte, aufbewahrungspflichtige Nachweise bleiben davon unberührt bestehen -- in dem Fall ist nur Archivieren möglich. Das lässt sich nicht rückgängig machen.`}
+          confirmLabel="Endgültig löschen"
+          danger
+          onConfirm={() => handleDeleteForever(pendingAction.id)}
+          onClose={() => setPendingAction(null)}
+        />
+      )}
+      {pendingAction?.type === "deleteCategory" && (
+        <ConfirmModal
+          title="Kategorie löschen"
+          message={`Kategorie "${pendingAction.name}" wirklich löschen? Mitarbeiter behalten die Kategorie als Text, bis sie neu zugeordnet werden.`}
+          confirmLabel="Löschen"
+          danger
+          onConfirm={() => handleDeleteCategory(pendingAction.id)}
+          onClose={() => setPendingAction(null)}
+        />
+      )}
+    </>
+  );
+}

@@ -3,13 +3,22 @@ import { type Employee } from "@/lib/types";
 import { QualiIcons } from "@/components/QualiIcons";
 import { EmployeeAvatar } from "@/components/EmployeeAvatar";
 
-export function EmployeeCard({ employee }: { employee: Employee }) {
+// hrefBase erlaubt die Wiederverwendung unter /sifa/[companyId]/mitarbeiter/...
+// (Web-Port Phase 5) -- ohne den Prop-Default bliebe der Link immer auf der
+// Chef-Route hängen, deren useAppData() für eine SiFa leer wäre.
+export function EmployeeCard({
+  employee,
+  hrefBase = "/mitarbeiter",
+}: {
+  employee: Employee;
+  hrefBase?: string;
+}) {
   const { id, vorname, nachname, kategorie, ampel, offenePunkte, qualifikationsIcons, fotoUrl } =
     employee;
 
   return (
     <Link
-      href={`/mitarbeiter/${id}`}
+      href={`${hrefBase}/${id}`}
       className="uv-glass-panel btn-feedback text-left p-5 block transition-transform hover:-translate-y-0.5"
       style={{ ["--glow" as string]: ampel === "rot" ? "var(--uv-glow-amber, rgba(245,179,1,0.28))" : "var(--uv-glow-green, rgba(23,178,106,0.3))" }}
     >

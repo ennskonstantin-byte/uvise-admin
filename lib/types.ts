@@ -294,6 +294,25 @@ export const ENTERPRISE_KONTAKT = {
   href: "/kontakt",
 };
 
+// SiFa-Bereich (Web-Port von Phase 5/App, Migration 0078): eigenes Profil,
+// unabhängig von employees (eine SiFa hat keine einzelne Firma).
+export type SifaProfile = {
+  vorname: string;
+  nachname: string;
+  firmenSchaetzung: "1-3" | "4-10" | "11-25" | "25+" | null;
+  onboardingCompletedAt: string | null;
+};
+
+// Eine Zeile aus sifa_grants, angereichert mit dem Firmennamen (Join) für
+// die "Meine Firmen"-Liste.
+export type SifaGrant = {
+  id: string;
+  companyId: string;
+  companyName: string;
+  status: "angefragt" | "freigegeben" | "entfernt";
+  requestedAt: string;
+};
+
 // true wenn unter 18 (dann Unterweisung 2× jährlich)
 export function istMinderjaehrig(geburtsdatum: string | null): boolean {
   if (!geburtsdatum) return false;
