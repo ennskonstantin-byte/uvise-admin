@@ -6,7 +6,7 @@ import { useEscapeClose } from "@/lib/useEscapeClose";
 import { SuccessOverlay, SUCCESS_OVERLAY_MS } from "@/components/SuccessOverlay";
 import type { Employee } from "@/lib/types";
 import { IconImg } from "@/components/Icon3D";
-import { trainingIconSrc } from "@/lib/icons";
+import { resolveDynamicIcon } from "@/lib/icons";
 
 // Umgekehrte Blickrichtung zu AssignTrainingModal: hier startet man beim
 // Mitarbeiter und wählt aus, welche noch fehlenden Unterweisungen er/sie
@@ -85,7 +85,7 @@ export function AssignTrainingToEmployeeModal({
                 onChange={() => toggle(t.id)}
               />
               <span className="text-sm flex items-center gap-1.5">
-                {trainingIconSrc(t.icon) ? <IconImg src={trainingIconSrc(t.icon)!} size="xs" /> : t.icon}
+                {resolveDynamicIcon("training", t.icon) ? <IconImg src={resolveDynamicIcon("training", t.icon)!} size="xs" /> : t.icon}
                 {t.name}
               </span>
             </label>

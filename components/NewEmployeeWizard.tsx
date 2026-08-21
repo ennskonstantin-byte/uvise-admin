@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { CATEGORY_ICON_OPTIONS, QUALIFICATION_PRESETS, istMinderjaehrig as isMinderjaehrig } from "@/lib/types";
 import { IconImg } from "@/components/Icon3D";
-import { categoryIconSrc, qualificationIconSrc } from "@/lib/icons";
+import { resolveDynamicIcon } from "@/lib/icons";
 import { useAppData, istEmailKonflikt, istEmailFormatFehler } from "@/lib/store";
 import { useEscapeClose } from "@/lib/useEscapeClose";
 import { DateSelect } from "@/components/DateSelect";
@@ -277,7 +277,7 @@ export function NewEmployeeWizard({ onClose }: { onClose: () => void }) {
                   style={kategorie === c.name ? { background: "var(--accent-gradient)" } : undefined}
                 >
                   <span className="inline-flex items-center gap-1.5">
-                    {categoryIconSrc(c.icon) ? <IconImg src={categoryIconSrc(c.icon)!} size="xs" /> : c.icon}
+                    {resolveDynamicIcon("category", c.icon) ? <IconImg src={resolveDynamicIcon("category", c.icon)!} size="xs" /> : c.icon}
                     {c.name}
                   </span>
                 </button>
@@ -314,8 +314,8 @@ export function NewEmployeeWizard({ onClose }: { onClose: () => void }) {
                           : "border-border"
                       }`}
                     >
-                      {categoryIconSrc(opt.icon) ? (
-                        <IconImg src={categoryIconSrc(opt.icon)!} size="xs" />
+                      {resolveDynamicIcon("category", opt.icon) ? (
+                        <IconImg src={resolveDynamicIcon("category", opt.icon)!} size="xs" />
                       ) : (
                         <span className="text-lg">{opt.icon}</span>
                       )}
@@ -458,8 +458,8 @@ export function NewEmployeeWizard({ onClose }: { onClose: () => void }) {
                   }
                 >
                   <span className="text-sm inline-flex items-center gap-1">
-                    {qualificationIconSrc(preset.icon) ? (
-                      <IconImg src={qualificationIconSrc(preset.icon)!} size="xs" />
+                    {resolveDynamicIcon("qualification", preset.icon) ? (
+                      <IconImg src={resolveDynamicIcon("qualification", preset.icon)!} size="xs" />
                     ) : (
                       preset.icon
                     )}
@@ -476,8 +476,8 @@ export function NewEmployeeWizard({ onClose }: { onClose: () => void }) {
                   return (
                     <div key={q} className="flex items-center gap-3">
                       <span className="text-sm flex-1 flex items-center gap-2">
-                        {preset?.icon && qualificationIconSrc(preset.icon) ? (
-                          <IconImg src={qualificationIconSrc(preset.icon)!} size="xs" />
+                        {preset?.icon && resolveDynamicIcon("qualification", preset.icon) ? (
+                          <IconImg src={resolveDynamicIcon("qualification", preset.icon)!} size="xs" />
                         ) : (
                           <span className="text-base">{preset?.icon ?? "📋"}</span>
                         )}

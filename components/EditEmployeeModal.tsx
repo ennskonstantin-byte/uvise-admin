@@ -3,14 +3,13 @@
 import { useState } from "react";
 import { CATEGORY_ICON_OPTIONS, istMinderjaehrig as isMinderjaehrig, type Employee } from "@/lib/types";
 import { IconImg } from "@/components/Icon3D";
-import { categoryIconSrc } from "@/lib/icons";
+import { resolveDynamicIcon } from "@/lib/icons";
 import { useAppData, istEmailKonflikt, istEmailFormatFehler } from "@/lib/store";
 import { DateSelect } from "@/components/DateSelect";
 import { EmployeeAvatar } from "@/components/EmployeeAvatar";
 import { useEscapeClose } from "@/lib/useEscapeClose";
 import { fehlerText } from "@/lib/fehler";
 import type { Qualification } from "@/lib/types";
-import { qualificationIconSrc } from "@/lib/icons";
 import { NewQualificationModal } from "@/components/NewQualificationModal";
 import { EditQualificationModal } from "@/components/EditQualificationModal";
 
@@ -195,7 +194,7 @@ export function EditEmployeeModal({
                   style={kategorie === c.name ? { background: "var(--accent-gradient)" } : undefined}
                 >
                   <span className="inline-flex items-center gap-1.5">
-                    {categoryIconSrc(c.icon) ? <IconImg src={categoryIconSrc(c.icon)!} size="xs" /> : c.icon}
+                    {resolveDynamicIcon("category", c.icon) ? <IconImg src={resolveDynamicIcon("category", c.icon)!} size="xs" /> : c.icon}
                     {c.name}
                   </span>
                 </button>
@@ -232,7 +231,7 @@ export function EditEmployeeModal({
                           : "border-border"
                       }`}
                     >
-                      {categoryIconSrc(opt.icon) ? <IconImg src={categoryIconSrc(opt.icon)!} size="xs" /> : opt.icon}
+                      {resolveDynamicIcon("category", opt.icon) ? <IconImg src={resolveDynamicIcon("category", opt.icon)!} size="xs" /> : opt.icon}
                     </button>
                   ))}
                 </div>
@@ -274,8 +273,8 @@ export function EditEmployeeModal({
                   onClick={() => setEditingQualification(q)}
                   className="flex w-full items-center gap-3 px-3 py-2.5 text-left hover:bg-surface"
                 >
-                  {qualificationIconSrc(q.icon) ? (
-                    <IconImg src={qualificationIconSrc(q.icon)!} size="xs" />
+                  {resolveDynamicIcon("qualification", q.icon) ? (
+                    <IconImg src={resolveDynamicIcon("qualification", q.icon)!} size="xs" />
                   ) : (
                     <span className="text-base">{q.icon}</span>
                   )}

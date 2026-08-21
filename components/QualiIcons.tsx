@@ -1,5 +1,5 @@
 import { IconImg } from "@/components/Icon3D";
-import { qualificationIconSrc } from "@/lib/icons";
+import { resolveDynamicIcon } from "@/lib/icons";
 
 // Qualifikations-Icons als kleine runde Plaketten neben dem Namen.
 // Zeigt bis zu `max` Icons, danach einen "+N"-Zähler für den Rest.
@@ -14,7 +14,7 @@ export function QualiIcons({ icons, max = 3 }: { icons: string[]; max?: number }
           key={i}
           className="h-7 w-7 rounded-full bg-background border border-border flex items-center justify-center text-base shrink-0"
         >
-          {qualificationIconSrc(ic) ? <IconImg src={qualificationIconSrc(ic)!} size="xs" /> : ic}
+          {resolveDynamicIcon("qualification", ic) ? <IconImg src={resolveDynamicIcon("qualification", ic)!} size="xs" /> : ic}
         </span>
       ))}
       {rest > 0 && (

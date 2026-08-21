@@ -16,7 +16,7 @@ import { useAppData } from "@/lib/store";
 import { supabase } from "@/lib/supabase";
 import { printTraining } from "@/lib/printTraining";
 import { IconImg } from "@/components/Icon3D";
-import { trainingIconSrc, categoryIconSrc } from "@/lib/icons";
+import { resolveDynamicIcon } from "@/lib/icons";
 
 export default function UnterweisungenPage() {
   const { trainings, bundles, deleteTraining, deleteBundle, withdrawTraining, employeeTrainings } =
@@ -198,8 +198,8 @@ export default function UnterweisungenPage() {
             <div className="uv-list-zebra rounded-3xl border border-border overflow-hidden">
               {trainings.map((t) => (
                 <div key={t.id} className="flex items-center gap-4 px-5 py-4">
-                  {trainingIconSrc(t.icon) ? (
-                    <IconImg src={trainingIconSrc(t.icon)!} size="md" />
+                  {resolveDynamicIcon("training", t.icon) ? (
+                    <IconImg src={resolveDynamicIcon("training", t.icon)!} size="md" />
                   ) : (
                     <span className="text-lg">{t.icon}</span>
                   )}
@@ -316,8 +316,8 @@ export default function UnterweisungenPage() {
             {bundles.map((b) => (
               <div key={b.id} className="uv-glass-panel p-5" style={{ ["--glow" as string]: "var(--uv-glow-cyan)" }}>
                 <div className="flex items-start justify-between">
-                  {categoryIconSrc(b.icon) ? (
-                    <IconImg src={categoryIconSrc(b.icon)!} size="md" />
+                  {resolveDynamicIcon("category", b.icon) ? (
+                    <IconImg src={resolveDynamicIcon("category", b.icon)!} size="md" />
                   ) : (
                     <span className="text-2xl">{b.icon}</span>
                   )}

@@ -9,7 +9,7 @@ import { EmployeeAvatar } from "@/components/EmployeeAvatar";
 import { TRAINING_ICON_OPTIONS, BUNDLE_ICONS, type Training } from "@/lib/types";
 import { fehlerText } from "@/lib/fehler";
 import { IconImg } from "@/components/Icon3D";
-import { trainingIconSrc, categoryIconSrc } from "@/lib/icons";
+import { resolveDynamicIcon } from "@/lib/icons";
 
 function DistributionDialog({
   training,
@@ -192,7 +192,7 @@ function DistributionDialog({
                     onChange={() => toggleCategory(c.name)}
                   />
                   <span className="inline-flex items-center gap-1.5">
-                    {categoryIconSrc(c.icon) ? <IconImg src={categoryIconSrc(c.icon)!} size="xs" /> : c.icon}
+                    {resolveDynamicIcon("category", c.icon) ? <IconImg src={resolveDynamicIcon("category", c.icon)!} size="xs" /> : c.icon}
                     {c.name}
                   </span>
                 </label>
@@ -336,7 +336,7 @@ export function NewTrainingWizard({ onClose }: { onClose: () => void }) {
                     icon === opt.icon ? "border-foreground/50 bg-surface" : "border-border"
                   }`}
                 >
-                  {trainingIconSrc(opt.icon) ? <IconImg src={trainingIconSrc(opt.icon)!} size="xs" /> : opt.icon}
+                  {resolveDynamicIcon("training", opt.icon) ? <IconImg src={resolveDynamicIcon("training", opt.icon)!} size="xs" /> : opt.icon}
                 </button>
               ))}
             </div>
@@ -445,7 +445,7 @@ export function NewTrainingWizard({ onClose }: { onClose: () => void }) {
                   style={bundleId === b.id ? { background: "var(--accent-gradient)" } : undefined}
                 >
                   <span className="inline-flex items-center gap-1.5">
-                    {categoryIconSrc(b.icon) ? <IconImg src={categoryIconSrc(b.icon)!} size="xs" /> : b.icon}
+                    {resolveDynamicIcon("category", b.icon) ? <IconImg src={resolveDynamicIcon("category", b.icon)!} size="xs" /> : b.icon}
                     {b.name}
                   </span>
                 </button>

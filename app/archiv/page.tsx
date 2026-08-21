@@ -11,7 +11,7 @@ import { EmployeeAvatar } from "@/components/EmployeeAvatar";
 import { useAppData } from "@/lib/store";
 import { RECENT_SIGNED_DAYS, isRecentlySigned } from "@/lib/recentlySigned";
 import { IconImg } from "@/components/Icon3D";
-import { trainingIconSrc, categoryIconSrc } from "@/lib/icons";
+import { resolveDynamicIcon } from "@/lib/icons";
 
 const YEARS = ["2026", "2025", "2024"];
 
@@ -193,8 +193,8 @@ export default function ArchivPage() {
         <Card>
           <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
             <h1 className="text-2xl font-semibold flex items-center gap-2">
-              {selectedTraining?.icon && trainingIconSrc(selectedTraining.icon) && (
-                <IconImg src={trainingIconSrc(selectedTraining.icon)!} size="sm" />
+              {selectedTraining?.icon && resolveDynamicIcon("training", selectedTraining.icon) && (
+                <IconImg src={resolveDynamicIcon("training", selectedTraining.icon)!} size="sm" />
               )}
               {selectedTraining?.name} · {year}
             </h1>
@@ -265,8 +265,8 @@ export default function ArchivPage() {
 
         <Card>
           <h1 className="text-2xl font-semibold mb-6 flex items-center gap-2">
-            {selectedTraining?.icon && trainingIconSrc(selectedTraining.icon) && (
-              <IconImg src={trainingIconSrc(selectedTraining.icon)!} size="sm" />
+            {selectedTraining?.icon && resolveDynamicIcon("training", selectedTraining.icon) && (
+              <IconImg src={resolveDynamicIcon("training", selectedTraining.icon)!} size="sm" />
             )}
             {selectedTraining?.name}
           </h1>
@@ -295,8 +295,8 @@ export default function ArchivPage() {
                 className="uv-glass-panel text-left p-5 hover:-translate-y-0.5 transition-transform" style={{ ["--glow" as string]: "var(--uv-glow-blue)" }}
               >
                 <div className="mb-3">
-                  {trainingIconSrc(t.icon) ? (
-                    <IconImg src={trainingIconSrc(t.icon)!} size="md" />
+                  {resolveDynamicIcon("training", t.icon) ? (
+                    <IconImg src={resolveDynamicIcon("training", t.icon)!} size="md" />
                   ) : (
                     <p className="text-2xl">{t.icon}</p>
                   )}
@@ -461,8 +461,8 @@ export default function ArchivPage() {
                 style={category === c.name ? { background: "var(--accent-gradient)" } : undefined}
               >
                 <span className="inline-flex items-center gap-1.5">
-                  {categoryIconSrc(c.icon) ? (
-                    <IconImg src={categoryIconSrc(c.icon)!} size="xs" />
+                  {resolveDynamicIcon("category", c.icon) ? (
+                    <IconImg src={resolveDynamicIcon("category", c.icon)!} size="xs" />
                   ) : (
                     c.icon
                   )}

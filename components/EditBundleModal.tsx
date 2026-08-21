@@ -6,7 +6,7 @@ import { useAppData } from "@/lib/store";
 import { useEscapeClose } from "@/lib/useEscapeClose";
 import { fehlerText } from "@/lib/fehler";
 import { IconImg } from "@/components/Icon3D";
-import { categoryIconSrc, trainingIconSrc } from "@/lib/icons";
+import { resolveDynamicIcon } from "@/lib/icons";
 
 export function EditBundleModal({
   bundle,
@@ -63,7 +63,7 @@ export function EditBundleModal({
                     icon === i ? "border-foreground/50 bg-surface" : "border-border"
                   }`}
                 >
-                  {categoryIconSrc(i) ? <IconImg src={categoryIconSrc(i)!} size="sm" /> : i}
+                  {resolveDynamicIcon("category", i) ? <IconImg src={resolveDynamicIcon("category", i)!} size="sm" /> : i}
                 </button>
               ))}
             </div>
@@ -104,7 +104,7 @@ export function EditBundleModal({
                     }
                   />
                   <span className="inline-flex items-center gap-1.5">
-                    {trainingIconSrc(t.icon) ? <IconImg src={trainingIconSrc(t.icon)!} size="xs" /> : t.icon}
+                    {resolveDynamicIcon("training", t.icon) ? <IconImg src={resolveDynamicIcon("training", t.icon)!} size="xs" /> : t.icon}
                     {t.name}
                   </span>
                 </label>

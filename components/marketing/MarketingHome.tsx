@@ -16,7 +16,6 @@ import {
   Car,
   Wrench,
   Warehouse,
-  TreeDeciduous,
 } from "lucide-react";
 import { LogoMark } from "@/components/Logo";
 import { useAppData } from "@/lib/store";
@@ -26,7 +25,6 @@ import { VorlesenDemo } from "@/components/marketing/VorlesenDemo";
 import { AppPreview } from "@/components/marketing/AppPreview";
 import { SignalRule } from "@/components/marketing/SignalRule";
 import { Button as MovingBorderButton } from "@/components/ui/moving-border";
-import { AmpelDots } from "@/components/marketing/AmpelDots";
 import { SUPPORT_EMAIL, FACEBOOK_URL, INSTAGRAM_URL } from "@/lib/legal";
 import { TrackPageView } from "@/components/TrackPageView";
 import { AffiliateRef } from "@/components/AffiliateRef";
@@ -70,10 +68,9 @@ const FEATURES = [
     text: "Unklarheiten direkt aus der Unterweisung heraus klären — die Antwort kommt sofort auf dem Handy an.",
   },
   {
-    // Einzige Karte mit eigenem Ampel-Symbol statt Icon-Kachel: die
-    // Funktion, die dem gesamten Seiten-Leitmotiv (der Ampel-Leiste)
-    // ihren Namen gibt, bekommt auch visuell die echte Ampel.
-    special: "ampel" as const,
+    // [Phase 8 / Commit 2] Der AmpelDots-Platzhalter wird durch das echte
+    // Ampel-Symbol (dashboard.ampel, Web-only) ersetzt.
+    img: "ampel" as IconKey,
     accent: "blau" as const,
     title: "Ampel-System",
     text: "Auf einen Blick sehen, wer offene Punkte hat — sortiert nach Kategorie, Abteilung oder Standort.",
@@ -128,7 +125,7 @@ const BRANCHEN = [
   { icon: Car, title: "KFZ-Werkstatt", href: "/unterweisung-kfz" },
   { icon: Wrench, title: "SHK", href: "/unterweisung-shk" },
   { icon: Warehouse, title: "Lager & Logistik", href: "/unterweisung-lager-logistik" },
-  { icon: TreeDeciduous, title: "GaLaBau", href: "/unterweisung-galabau" },
+  { img: "galabau" as IconKey, title: "GaLaBau", href: "/unterweisung-galabau" },
   { icon: Languages, title: "Mehrsprachige Teams", href: "/unterweisung-mehrsprachig" },
 ];
 
@@ -530,13 +527,7 @@ export function MarketingHome() {
                 <Reveal key={f.title} delay={(i % 4) * 0.06}>
                   <motion.div whileHover={{ y: -4 }} transition={{ duration: 0.2 }} className="h-full">
                     <GlassCard glow={ACCENTS[f.accent].glow} className="h-full p-6">
-                      {"special" in f && f.special === "ampel" ? (
-                        <div className="mb-4">
-                          <AmpelDots size={20} />
-                        </div>
-                      ) : (
-                        "img" in f && <AccentTile img={f.img} accent={f.accent} />
-                      )}
+                      {"img" in f && <AccentTile img={f.img} accent={f.accent} />}
                       <h3 className="font-semibold mt-4 mb-1.5" style={{ color: "var(--mk-ink)" }}>{f.title}</h3>
                       <p className="text-sm text-[var(--mk-ink-60)] leading-relaxed">{f.text}</p>
                     </GlassCard>
@@ -603,7 +594,11 @@ export function MarketingHome() {
                         glow={ACCENTS[(["blau", "cyan", "gruen", "amber"] as const)[i % 4]].glow}
                         className="h-full p-6 flex items-center gap-4"
                       >
-                        <AccentTile icon={b.icon} accent={(["blau", "cyan", "gruen", "amber"] as const)[i % 4]} />
+                        <AccentTile
+                          icon={"icon" in b ? b.icon : undefined}
+                          img={"img" in b ? b.img : undefined}
+                          accent={(["blau", "cyan", "gruen", "amber"] as const)[i % 4]}
+                        />
                         <span className="font-semibold" style={{ color: "var(--mk-ink)" }}>{b.title}</span>
                       </GlassCard>
                     </motion.div>

@@ -16,7 +16,7 @@ import { EmployeeAvatar } from "@/components/EmployeeAvatar";
 import { Icon3D, IconImg } from "@/components/Icon3D";
 import { type Category, type Employee } from "@/lib/types";
 import { useAppData } from "@/lib/store";
-import { categoryIconSrc } from "@/lib/icons";
+import { resolveDynamicIcon } from "@/lib/icons";
 
 export default function SifaMitarbeiterPage() {
   const router = useRouter();
@@ -150,8 +150,8 @@ export default function SifaMitarbeiterPage() {
           <div className="rounded-3xl border border-border divide-y divide-border overflow-hidden">
             {categories.map((c) => (
               <div key={c.id} className="flex items-center gap-4 px-5 py-3">
-                {categoryIconSrc(c.icon) ? (
-                  <IconImg src={categoryIconSrc(c.icon)!} size="xs" />
+                {resolveDynamicIcon("category", c.icon) ? (
+                  <IconImg src={resolveDynamicIcon("category", c.icon)!} size="xs" />
                 ) : (
                   <span className="text-lg">{c.icon}</span>
                 )}

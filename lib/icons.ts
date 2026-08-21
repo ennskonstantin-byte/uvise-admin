@@ -684,19 +684,3 @@ export function resolveSemanticIcon(key: SemanticIconKey): string | undefined {
     }
   }
 }
-
-// ---------------------------------------------------------------------------
-// [Phase 8 / Commit 1] Übergangs-Wrapper. Halten die bestehenden Aufrufer
-// lauffähig, bis Commit 2 sie auf resolveDynamicIcon() umstellt. Enthalten
-// KEINE eigene Auflösungslogik — sie delegieren ausschließlich. Werden in
-// Commit 2 ersatzlos entfernt.
-// ---------------------------------------------------------------------------
-export function trainingIconSrc(emoji: string): string | undefined {
-  return resolveDynamicIcon('training', emoji);
-}
-export function categoryIconSrc(emoji: string): string | undefined {
-  return resolveDynamicIcon('category', emoji);
-}
-export function qualificationIconSrc(emoji: string): string | undefined {
-  return resolveDynamicIcon('qualification', emoji);
-}
