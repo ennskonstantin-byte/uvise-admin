@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { DashboardShell } from "@/components/DashboardShell";
+import { Calendar, Bot } from "lucide-react";
 
 type Post = {
   id: string;
@@ -382,7 +383,7 @@ export default function MarketingPage() {
       {zeigeKalender ? (
         <section className="rounded-2xl border border-border bg-background p-5 max-w-2xl mb-8">
           <div className="flex items-center justify-between mb-3">
-            <h2 className="font-medium">📅 Redaktionsplan</h2>
+            <h2 className="font-medium flex items-center gap-1.5"><Calendar size={16} /> Redaktionsplan</h2>
             <button onClick={() => setZeigeKalender(false)} className="text-xs text-foreground/50">
               ausblenden
             </button>
@@ -390,7 +391,7 @@ export default function MarketingPage() {
 
           {/* Kampagne mit KI erzeugen */}
           <div className="rounded-xl border border-border bg-page-bg p-3 mb-4">
-            <p className="text-sm font-medium mb-2">🤖 Kampagne mit KI erzeugen</p>
+            <p className="text-sm font-medium mb-2 flex items-center gap-1.5"><Bot size={16} /> Kampagne mit KI erzeugen</p>
             <div className="flex flex-wrap items-end gap-2 text-sm">
               <label className="flex flex-col gap-1">
                 <span className="text-foreground/60 text-xs">Ab</span>

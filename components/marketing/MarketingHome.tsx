@@ -4,19 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { motion, useReducedMotion } from "framer-motion";
-import {
-  Languages,
-  Check,
-  Menu,
-  X,
-  HardHat,
-  Zap,
-  HeartPulse,
-  UtensilsCrossed,
-  Car,
-  Wrench,
-  Warehouse,
-} from "lucide-react";
+import { Check, Menu, X, Languages } from "lucide-react";
 import { LogoMark } from "@/components/Logo";
 import { useAppData } from "@/lib/store";
 import { PLANS, CHEF_GRATIS_HINWEIS, ENTERPRISE_KONTAKT } from "@/lib/types";
@@ -31,7 +19,8 @@ import { AffiliateRef } from "@/components/AffiliateRef";
 import { ChatWidget } from "@/components/marketing/ChatWidget";
 import { FAQ } from "@/components/marketing/faqData";
 import { DriftBackground } from "@/components/marketing/DriftBackground";
-import { Icon3D } from "@/components/Icon3D";
+import { Icon3D, IconImg } from "@/components/Icon3D";
+import { resolveDynamicIcon } from "@/lib/icons";
 import type { IconKey } from "@/lib/icons";
 
 // Akzent je Bereich (STYLE.md: Unterweisungen=Blau, Rückfragen=Cyan,
@@ -116,17 +105,20 @@ const PRODUCTS = [
   },
 ];
 
+// [Icon-Nachtrag 12.08.26] Lucide-Platzhalter durch echte i3d-hq-Symbole aus
+// dem bestehenden (Unterweisungs-/Kategorie-)Set ersetzt -- nur GaLaBau hatte
+// kein passendes Symbol und bekam ein eigens generiertes (img: "galabau").
 const BRANCHEN = [
-  { icon: HardHat, title: "Handwerk", href: "/unterweisung-handwerk" },
-  { icon: HardHat, title: "Baustelle", href: "/unterweisung-baustelle" },
-  { icon: Zap, title: "Elektro", href: "/unterweisung-elektro" },
-  { icon: HeartPulse, title: "Pflege", href: "/unterweisung-pflege" },
-  { icon: UtensilsCrossed, title: "Gastronomie", href: "/unterweisung-gastronomie" },
-  { icon: Car, title: "KFZ-Werkstatt", href: "/unterweisung-kfz" },
-  { icon: Wrench, title: "SHK", href: "/unterweisung-shk" },
-  { icon: Warehouse, title: "Lager & Logistik", href: "/unterweisung-lager-logistik" },
+  { imgSrc: resolveDynamicIcon("training", "🛠️"), title: "Handwerk", href: "/unterweisung-handwerk" },
+  { imgSrc: resolveDynamicIcon("training", "🏗️"), title: "Baustelle", href: "/unterweisung-baustelle" },
+  { imgSrc: resolveDynamicIcon("training", "⚡"), title: "Elektro", href: "/unterweisung-elektro" },
+  { imgSrc: resolveDynamicIcon("training", "🩺"), title: "Pflege", href: "/unterweisung-pflege" },
+  { imgSrc: resolveDynamicIcon("category", "🍳"), title: "Gastronomie", href: "/unterweisung-gastronomie" },
+  { imgSrc: resolveDynamicIcon("training", "🚗"), title: "KFZ-Werkstatt", href: "/unterweisung-kfz" },
+  { imgSrc: resolveDynamicIcon("training", "💧"), title: "SHK", href: "/unterweisung-shk" },
+  { imgSrc: resolveDynamicIcon("training", "🚛"), title: "Lager & Logistik", href: "/unterweisung-lager-logistik" },
   { img: "galabau" as IconKey, title: "GaLaBau", href: "/unterweisung-galabau" },
-  { icon: Languages, title: "Mehrsprachige Teams", href: "/unterweisung-mehrsprachig" },
+  { img: "sprache" as IconKey, title: "Mehrsprachige Teams", href: "/unterweisung-mehrsprachig" },
 ];
 
 // Eyebrow-Pille: schmales Glas-Etikett mit Cyan-Rand-Glow (STYLE.md:
@@ -191,15 +183,18 @@ function GlassCard({
 function AccentTile({
   icon: Icon,
   img,
+  imgSrc,
   accent,
   size = 20,
 }: {
   icon?: React.ComponentType<{ size?: number }>;
   img?: IconKey;
+  imgSrc?: string;
   accent: keyof typeof ACCENTS;
   size?: number;
 }) {
-  if (img) return <Icon3D name={img} size="lg" />;
+  if (imgSrc) return <IconImg src={imgSrc} size="xl" />;
+  if (img) return <Icon3D name={img} size="xl" />;
   const a = ACCENTS[accent];
   return (
     <div
@@ -527,7 +522,7 @@ export function MarketingHome() {
                 <Reveal key={f.title} delay={(i % 4) * 0.06}>
                   <motion.div whileHover={{ y: -4 }} transition={{ duration: 0.2 }} className="h-full">
                     <GlassCard glow={ACCENTS[f.accent].glow} className="h-full p-6">
-                      {"img" in f && <AccentTile img={f.img} accent={f.accent} />}
+                      <AccentTile img={f.img} accent={f.accent} />
                       <h3 className="font-semibold mt-4 mb-1.5" style={{ color: "var(--mk-ink)" }}>{f.title}</h3>
                       <p className="text-sm text-[var(--mk-ink-60)] leading-relaxed">{f.text}</p>
                     </GlassCard>
@@ -595,8 +590,8 @@ export function MarketingHome() {
                         className="h-full p-6 flex items-center gap-4"
                       >
                         <AccentTile
-                          icon={"icon" in b ? b.icon : undefined}
                           img={"img" in b ? b.img : undefined}
+                          imgSrc={"imgSrc" in b ? b.imgSrc : undefined}
                           accent={(["blau", "cyan", "gruen", "amber"] as const)[i % 4]}
                         />
                         <span className="font-semibold" style={{ color: "var(--mk-ink)" }}>{b.title}</span>
