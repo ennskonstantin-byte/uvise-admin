@@ -7,7 +7,7 @@ import { SuccessOverlay, SUCCESS_OVERLAY_MS } from "@/components/SuccessOverlay"
 import { BUNDLE_ICONS as ICONS } from "@/lib/types";
 import { fehlerText } from "@/lib/fehler";
 import { IconImg } from "@/components/Icon3D";
-import { categoryIconSrc } from "@/lib/icons";
+import { resolveDynamicIcon } from "@/lib/icons";
 
 export function NewBundleWizard({ onClose }: { onClose: () => void }) {
   useEscapeClose(onClose);
@@ -64,7 +64,7 @@ export function NewBundleWizard({ onClose }: { onClose: () => void }) {
                     icon === i ? "border-foreground/50 bg-surface" : "border-border"
                   }`}
                 >
-                  {categoryIconSrc(i) ? <IconImg src={categoryIconSrc(i)!} size="sm" /> : i}
+                  {resolveDynamicIcon("category", i) ? <IconImg src={resolveDynamicIcon("category", i)!} size="sm" /> : i}
                 </button>
               ))}
             </div>

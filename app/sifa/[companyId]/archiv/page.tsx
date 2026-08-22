@@ -14,7 +14,7 @@ import { EmployeeAvatar } from "@/components/EmployeeAvatar";
 import { useAppData } from "@/lib/store";
 import { RECENT_SIGNED_DAYS, isRecentlySigned } from "@/lib/recentlySigned";
 import { IconImg } from "@/components/Icon3D";
-import { trainingIconSrc, categoryIconSrc } from "@/lib/icons";
+import { resolveDynamicIcon } from "@/lib/icons";
 
 const YEARS = ["2026", "2025", "2024"];
 
@@ -172,8 +172,8 @@ export default function SifaArchivPage() {
         <Card>
           <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
             <h1 className="text-2xl font-semibold flex items-center gap-2">
-              {selectedTraining?.icon && trainingIconSrc(selectedTraining.icon) && (
-                <IconImg src={trainingIconSrc(selectedTraining.icon)!} size="sm" />
+              {selectedTraining?.icon && resolveDynamicIcon("training", selectedTraining.icon) && (
+                <IconImg src={resolveDynamicIcon("training", selectedTraining.icon)!} size="sm" />
               )}
               {selectedTraining?.name} · {year}
             </h1>
@@ -234,8 +234,8 @@ export default function SifaArchivPage() {
 
         <Card>
           <h1 className="text-2xl font-semibold mb-6 flex items-center gap-2">
-            {selectedTraining?.icon && trainingIconSrc(selectedTraining.icon) && (
-              <IconImg src={trainingIconSrc(selectedTraining.icon)!} size="sm" />
+            {selectedTraining?.icon && resolveDynamicIcon("training", selectedTraining.icon) && (
+              <IconImg src={resolveDynamicIcon("training", selectedTraining.icon)!} size="sm" />
             )}
             {selectedTraining?.name}
           </h1>
@@ -262,7 +262,7 @@ export default function SifaArchivPage() {
                 style={{ ["--glow" as string]: "var(--uv-glow-blue)" }}
               >
                 <div className="mb-3">
-                  {trainingIconSrc(t.icon) ? <IconImg src={trainingIconSrc(t.icon)!} size="md" /> : <p className="text-2xl">{t.icon}</p>}
+                  {resolveDynamicIcon("training", t.icon) ? <IconImg src={resolveDynamicIcon("training", t.icon)!} size="md" /> : <p className="text-2xl">{t.icon}</p>}
                 </div>
                 <p className="font-medium">{t.name}</p>
               </button>
@@ -395,7 +395,7 @@ export default function SifaArchivPage() {
                 style={category === c.name ? { background: "var(--accent-gradient)" } : undefined}
               >
                 <span className="inline-flex items-center gap-1.5">
-                  {categoryIconSrc(c.icon) ? <IconImg src={categoryIconSrc(c.icon)!} size="xs" /> : c.icon}
+                  {resolveDynamicIcon("category", c.icon) ? <IconImg src={resolveDynamicIcon("category", c.icon)!} size="xs" /> : c.icon}
                   {c.name}
                 </span>
               </button>

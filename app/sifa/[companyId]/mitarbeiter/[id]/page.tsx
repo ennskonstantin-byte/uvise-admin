@@ -18,7 +18,7 @@ import { EmployeeAvatar } from "@/components/EmployeeAvatar";
 import { trainingName } from "@/lib/types";
 import { useAppData } from "@/lib/store";
 import { IconImg } from "@/components/Icon3D";
-import { qualificationIconSrc } from "@/lib/icons";
+import { resolveDynamicIcon } from "@/lib/icons";
 
 const REMINDER_HINT =
   "Erinnerung vorgemerkt. Der automatische E-Mail-Versand wird aktiv, sobald Resend eingerichtet ist.";
@@ -223,8 +223,8 @@ export default function SifaEmployeeDetailPage() {
               className="flex w-full items-center gap-4 px-5 py-3 text-left hover:bg-surface"
               aria-label={`Qualifikation ${q.name} bearbeiten`}
             >
-              {qualificationIconSrc(q.icon) ? (
-                <IconImg src={qualificationIconSrc(q.icon)!} size="lg" />
+              {resolveDynamicIcon("qualification", q.icon) ? (
+                <IconImg src={resolveDynamicIcon("qualification", q.icon)!} size="lg" />
               ) : (
                 <span className="text-3xl">{q.icon}</span>
               )}
