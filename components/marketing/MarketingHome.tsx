@@ -11,6 +11,7 @@ import { PLANS, CHEF_GRATIS_HINWEIS, ENTERPRISE_KONTAKT } from "@/lib/types";
 import { Reveal } from "@/components/marketing/Reveal";
 import { VorlesenDemo } from "@/components/marketing/VorlesenDemo";
 import { AppPreview } from "@/components/marketing/AppPreview";
+import { WebDashboardPreview } from "@/components/marketing/WebDashboardPreview";
 import { SignalRule } from "@/components/marketing/SignalRule";
 import { Button as MovingBorderButton } from "@/components/ui/moving-border";
 import { SUPPORT_EMAIL, FACEBOOK_URL, INSTAGRAM_URL } from "@/lib/legal";
@@ -565,6 +566,15 @@ export function MarketingHome() {
                 </Reveal>
               ))}
             </div>
+            <Reveal delay={0.24} className="mt-8">
+              <span
+                className="mk-mono block text-[11px] uppercase tracking-wide mb-3"
+                style={{ color: "var(--mk-ink-50)" }}
+              >
+                Web-Dashboard
+              </span>
+              <WebDashboardPreview />
+            </Reveal>
           </div>
         </section>
 

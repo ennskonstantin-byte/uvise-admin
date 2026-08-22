@@ -292,17 +292,28 @@ async function resolveSignedUrls(pathsOrUrls: (string | null | undefined)[]): Pr
 
 export function AppDataProvider({ children }: { children: React.ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
-  const [sessionLoading, setSessionLoading] = useState(true);
+  // DEMO_MODE ist ein Build-Zeit-Konstante (NEXT_PUBLIC_*, von Next.js beim
+  // Build statisch eingesetzt) — im Vorschau-Modus ist die Sitzung also nie
+  // "noch am Laden", sondern von Anfang an fertig (kein Login, kein Warten
+  // auf Supabase).
+  const [sessionLoading, setSessionLoading] = useState(!DEMO_MODE);
   const [dataLoading, setDataLoading] = useState(false);
 
-  const [company, setCompany] = useState<Company | null>(null);
-  const [employees, setEmployees] = useState<Employee[]>([]);
-  const [trainings, setTrainings] = useState<Training[]>([]);
-  const [bundles, setBundles] = useState<Bundle[]>([]);
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [qualifications, setQualifications] = useState<Qualification[]>([]);
-  const [questions, setQuestions] = useState<Question[]>([]);
-  const [employeeTrainings, setEmployeeTrainings] = useState<EmployeeTraining[]>([]);
+  // Im Vorschau-Modus sind die Beispieldaten (lib/demoFixtures.ts) bereits
+  // beim ersten Rendern bekannt — dafür braucht es keinen Effekt, der sie
+  // erst nachträglich per setState nachreicht (react-hooks/set-state-in-effect).
+  const [company, setCompany] = useState<Company | null>(() => (DEMO_MODE ? DEMO_COMPANY : null));
+  const [employees, setEmployees] = useState<Employee[]>(() => (DEMO_MODE ? DEMO_EMPLOYEES : []));
+  const [trainings, setTrainings] = useState<Training[]>(() => (DEMO_MODE ? DEMO_TRAININGS : []));
+  const [bundles, setBundles] = useState<Bundle[]>(() => (DEMO_MODE ? DEMO_BUNDLES : []));
+  const [categories, setCategories] = useState<Category[]>(() => (DEMO_MODE ? DEMO_CATEGORIES : []));
+  const [qualifications, setQualifications] = useState<Qualification[]>(() =>
+    DEMO_MODE ? DEMO_QUALIFICATIONS : [],
+  );
+  const [questions, setQuestions] = useState<Question[]>(() => (DEMO_MODE ? DEMO_QUESTIONS : []));
+  const [employeeTrainings, setEmployeeTrainings] = useState<EmployeeTraining[]>(() =>
+    DEMO_MODE ? DEMO_EMPLOYEE_TRAININGS : [],
+  );
 
   // Coalescing für loadData (M-09, sichere Teil-Optimierung): Ohne das löste
   // jede Schreibaktion einen eigenen vollständigen Reload aller Kern-Tabellen
@@ -526,23 +537,12 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     // [v2c, 18.08.26] Vorschau-Modus: KEIN Login, KEINE Zugangsdaten, KEIN
-    // Supabase-Aufruf — der Store liefert stattdessen feste Beispieldaten
-    // (lib/demoFixtures.ts). Ersetzt den zuvor angedachten Auto-Login, der zu
-    // Recht an der Sicherheits-Klassifizierung gescheitert ist: ein
-    // Vorschau-Snapshot braucht keinen echten Account, nur echte Screens mit
-    // Beispielinhalten.
-    if (DEMO_MODE) {
-      setCompany(DEMO_COMPANY);
-      setCategories(DEMO_CATEGORIES);
-      setEmployees(DEMO_EMPLOYEES);
-      setTrainings(DEMO_TRAININGS);
-      setBundles(DEMO_BUNDLES);
-      setQualifications(DEMO_QUALIFICATIONS);
-      setQuestions(DEMO_QUESTIONS);
-      setEmployeeTrainings(DEMO_EMPLOYEE_TRAININGS);
-      setSessionLoading(false);
-      return;
-    }
+    // Supabase-Aufruf. Ersetzt den zuvor angedachten Auto-Login, der zu Recht
+    // an der Sicherheits-Klassifizierung gescheitert ist: ein Vorschau-
+    // Snapshot braucht keinen echten Account, nur echte Screens mit
+    // Beispielinhalten — die (wie Session/Daten oben) bereits als Anfangswert
+    // gesetzt sind, es bleibt hier also nichts mehr zu tun.
+    if (DEMO_MODE) return;
 
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);

@@ -6,7 +6,7 @@ import { motion } from "framer-motion";
 // Versions-Stempel gegen hartnäckigen Browser-Cache (v.a. Safari/iPhone):
 // wird vom Demo-Neubau-Skript automatisch hochgezählt — dadurch bekommt die
 // iframe-URL bei jedem Neubau eine neue Adresse und niemand sieht alte Builds.
-const DEMO_VERSION = "2026-08-18-1718";
+const DEMO_VERSION = "2026-08-22-1005";
 
 const APPS = [
   {
@@ -24,6 +24,13 @@ const APPS = [
     src: `/preview-ma/index.html?v=${DEMO_VERSION}`,
     hint: "Angemeldet als Lena Bauer (Mitarbeiterin) — probier ruhig \"Jetzt signieren\" und die Vorlese-/Übersetzungsfunktion aus.",
     frameTitle: "Vorschau der uVise Mitarbeiter-App: Unterweisung signieren",
+  },
+  {
+    key: "sifa",
+    label: "SiFa-App",
+    src: `/preview-sifa/index.html?v=${DEMO_VERSION}`,
+    hint: "Angemeldet als externe Sicherheitsfachkraft — Unterweisungen und Qualifikationen der betreuten Demo-Firma im Blick.",
+    frameTitle: "Vorschau der uVise SiFa-App: Unterweisungen und Qualifikationen einsehen",
   },
 ] as const;
 
