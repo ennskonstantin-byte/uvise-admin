@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { CheckCircle2 } from "lucide-react";
 import { CATEGORY_ICON_OPTIONS, QUALIFICATION_PRESETS, istMinderjaehrig as isMinderjaehrig } from "@/lib/types";
 import { IconImg } from "@/components/Icon3D";
 import { resolveDynamicIcon } from "@/lib/icons";
@@ -143,7 +144,7 @@ export function NewEmployeeWizard({ onClose }: { onClose: () => void }) {
     return (
       <div role="dialog" aria-modal="true" aria-label="Mitarbeiter angelegt" className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
         <div className="w-full max-w-md rounded-3xl bg-background border border-border p-6 sm:p-8 text-center">
-          <p className="text-4xl mb-4">✅</p>
+          <p className="mb-4 flex justify-center"><CheckCircle2 size={48} className="text-green-500" /></p>
           <p className="font-medium">
             {vorname} {nachname} wurde angelegt.
           </p>

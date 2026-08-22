@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { useAppData } from "@/lib/store";
+import { DEMO_MODE } from "@/lib/demoMode";
 import { LogoMark } from "@/components/Logo";
 import { PasswordInput } from "@/components/PasswordInput";
 
@@ -355,6 +356,14 @@ function AuthForm() {
 export function AuthGate({ children }: { children: React.ReactNode }) {
   const { session, loading } = useAppData();
   const pathname = usePathname();
+  // [v2c, 18.08.26] Zugangsdatenfreier Vorschau-Export (preview-web): der
+  // Store liefert feste Beispieldaten statt einer echten Sitzung
+  // (lib/demoFixtures.ts), es gibt also bewusst KEINE Session — ohne diese
+  // Ausnahme stünde hier das Login-Formular. Greift ausschließlich, wenn
+  // NEXT_PUBLIC_DEMO_MODE beim Build gesetzt war; in jedem echten Build ist
+  // die Konstante false und dieser Zweig existiert nach dem Tree-Shaking
+  // nicht mehr.
+  const demoBypass = DEMO_MODE;
   // Anmelde-Weiche: nur Beauftragte dürfen ins Admin — normale Mitarbeiter
   // bekommen einen freundlichen Hinweis auf die uVise-App.
   // null = Rolle wird noch geprüft
@@ -416,7 +425,7 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
     };
   }, [session]);
 
-  if (istOeffentlicherPfad(pathname)) {
+  if (istOeffentlicherPfad(pathname) || demoBypass) {
     return <>{children}</>;
   }
 

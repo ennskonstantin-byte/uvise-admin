@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Paperclip } from "lucide-react";
 import { TRAINING_ICON_OPTIONS, type Training } from "@/lib/types";
 import { useAppData } from "@/lib/store";
 import { IconImg } from "@/components/Icon3D";
@@ -165,9 +166,9 @@ export function EditTrainingModal({
                     />
                   </span>
                   {pdfFileName ? (
-                    <span className="text-sm text-foreground/60">📎 {pdfFileName}</span>
+                    <span className="text-sm text-foreground/60 inline-flex items-center gap-1"><Paperclip size={14} /> {pdfFileName}</span>
                   ) : training.typ === "hochgeladen" ? (
-                    <span className="text-sm text-foreground/60">📎 Aktuelle PDF bleibt erhalten</span>
+                    <span className="text-sm text-foreground/60 inline-flex items-center gap-1"><Paperclip size={14} /> Aktuelle PDF bleibt erhalten</span>
                   ) : null}
                 </label>
                 <p className="text-xs text-foreground/60 mb-2">
