@@ -18,6 +18,17 @@ import {
   AMPEL_WARN_TAGE,
 } from "@/lib/types";
 import { RECENT_SIGNED_DAYS } from "@/lib/recentlySigned";
+import { DEMO_MODE } from "@/lib/demoMode";
+import {
+  DEMO_COMPANY,
+  DEMO_CATEGORIES,
+  DEMO_EMPLOYEES,
+  DEMO_TRAININGS,
+  DEMO_BUNDLES,
+  DEMO_QUALIFICATIONS,
+  DEMO_QUESTIONS,
+  DEMO_EMPLOYEE_TRAININGS,
+} from "@/lib/demoFixtures";
 
 // Wirft den Supabase/Postgrest-Fehler als echte Error-Instanz weiter. Ohne
 // .throwOnError() liefert postgrest-js bei einer fehlgeschlagenen Anfrage nur
@@ -514,6 +525,25 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
   }, [runLoad]);
 
   useEffect(() => {
+    // [v2c, 18.08.26] Vorschau-Modus: KEIN Login, KEINE Zugangsdaten, KEIN
+    // Supabase-Aufruf — der Store liefert stattdessen feste Beispieldaten
+    // (lib/demoFixtures.ts). Ersetzt den zuvor angedachten Auto-Login, der zu
+    // Recht an der Sicherheits-Klassifizierung gescheitert ist: ein
+    // Vorschau-Snapshot braucht keinen echten Account, nur echte Screens mit
+    // Beispielinhalten.
+    if (DEMO_MODE) {
+      setCompany(DEMO_COMPANY);
+      setCategories(DEMO_CATEGORIES);
+      setEmployees(DEMO_EMPLOYEES);
+      setTrainings(DEMO_TRAININGS);
+      setBundles(DEMO_BUNDLES);
+      setQualifications(DEMO_QUALIFICATIONS);
+      setQuestions(DEMO_QUESTIONS);
+      setEmployeeTrainings(DEMO_EMPLOYEE_TRAININGS);
+      setSessionLoading(false);
+      return;
+    }
+
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setSessionLoading(false);

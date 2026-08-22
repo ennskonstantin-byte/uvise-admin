@@ -12,6 +12,15 @@
       "runtimeExecutable": "npm",
       "runtimeArgs": ["run", "dev", "--", "-p", "3001"],
       "port": 3001
+    },
+    {
+      "name": "sicherakte-admin-web-demo",
+      "runtimeExecutable": "sh",
+      "runtimeArgs": [
+        "-c",
+        "NEXT_PUBLIC_DEMO_MODE=true npm run dev -- -p 3002"
+      ],
+      "port": 3002
     }
   ]
 }

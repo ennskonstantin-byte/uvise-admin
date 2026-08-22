@@ -58,6 +58,10 @@ export const CATEGORY_ICON_OPTIONS: { name: string; icon: string }[] = [
   { name: "Sonstiges 2", icon: "2️⃣" },
   { name: "Sonstiges 3", icon: "3️⃣" },
   { name: "Sonstiges 4", icon: "4️⃣" },
+  // [v3, P1-3, 18.08.26] Paritäts-Fix: die App bietet Sonstiges 1-5 an
+  // (chef/lib/types.ts), hier endete die Liste bisher bei 4 — dadurch war
+  // category.number5 im Web nur über den Bundle-Picker erreichbar.
+  { name: "Sonstiges 5", icon: "5️⃣" },
 ];
 
 export type Training = {
