@@ -5,7 +5,7 @@
 import Image from "next/image";
 import { ICON, resolveSemanticIcon, type IconKey, type SemanticIconKey } from "@/lib/icons";
 
-const SIZE_PX = { lg: 39, md: 28, sm: 23, xs: 17 } as const;
+const SIZE_PX = { xl: 56, lg: 39, md: 28, sm: 23, xs: 17 } as const;
 type Size = keyof typeof SIZE_PX;
 
 // [Phase 8 / Commit 1] Minimale Resolvervorbereitung: zusätzlich zum
@@ -38,7 +38,10 @@ export function Icon3D({
   );
 }
 
-// Für dynamische Pfade (resolveDynamicIcon), wo kein fester IconKey vorliegt.
+// Für dynamische Pfade (Ergebnis von resolveDynamicIcon(family, value) aus
+// lib/icons.ts — löst zur Laufzeit über die zentrale SemanticIconKey-Schicht
+// auf, statt wie zuvor per trainingIconSrc/categoryIconSrc/
+// qualificationIconSrc direkt auf ein Bild), wo kein fester IconKey vorliegt.
 export function IconImg({
   src,
   size = "md",
